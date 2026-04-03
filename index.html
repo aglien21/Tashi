@@ -70,8 +70,8 @@
 
     <div id="s-prod">
         <div class="search-box">
-            <input id="sq" placeholder="Kërko produktin ose kodin..." oninput="search()">
-        </div>
+    <input id="sq" type="text" placeholder="Kërko produktin ose kodin..." oninput="search()">
+</div>
         <div class="cats">
             <button class="cat-btn active" onclick="filterCat('All', this)">Gjithçka</button>
             <button class="cat-btn" onclick="filterCat('Vetura', this)">Vetura</button>
@@ -113,8 +113,13 @@
 const URL = "https://script.google.com/macros/s/AKfycbwHEIk2KyPlfeqZkHZmzjz3Xs1vPehMEkM4MDDQUuo1BDzDZVFM7W2Itil3-rwoTO1XIQ/exec"; 
 const WA = "355692336829"; 
 
-let all = [], filtered = [], cart = [], user = "", role = "";
+let all = [];      // Këtu do të ruhen të gjitha produktet nga Sheets
+let filtered = []; // Këtu do të ruhen produktet e filtruara (nga kërkimi ose kategoritë)
+let cart = [];     // Shporta
+let user = ""; 
+let role = "";
 
+// 1. LOGIN
 async function login() {
     let u = document.getElementById("user").value, p = document.getElementById("pass").value;
     try {
@@ -124,59 +129,86 @@ async function login() {
             user = u; role = d.role;
             document.getElementById("login-screen").classList.add("hidden");
             document.getElementById("app").classList.remove("hidden");
-            document.getElementById("uDisp").innerText = "👤 "+u;
-            document.getElementById("bDisp").innerText = (d.bilanci||0)+" L";
-            if(role=="admin") document.getElementById("n3").classList.remove("hidden");
-            loadProd();
-        } else alert("Gabim në hyrje!");
-    } catch(e) { alert("Gabim lidhjeje!"); }
+            document.getElementById("uDisp").innerText = "👤 " + u;
+            document.getElementById("bDisp").innerText = (d.bilanci || 0) + " L";
+            if(role == "admin") document.getElementById("n3").classList.remove("hidden");
+            loadProd(); // Ngarkojmë produktet fillestare
+        } else alert("Emri ose fjalëkalimi i gabuar!");
+    } catch(e) { alert("Gabim lidhjeje me serverin!"); }
 }
 
+// 2. NGARKIMI I PRODUKTEVE
 async function loadProd() {
-    let r = await fetch(URL);
-    all = await r.json();
-    filtered = all;
-    render();
+    try {
+        let r = await fetch(URL);
+        let data = await r.json();
+        all = data;      // Ruajmë gjithçka te 'all'
+        filtered = data; // Në fillim, lista e filtruar është e barabartë me të gjitha
+        render();        // Shfaqim produktet
+    } catch(e) { console.error("Gabim gjatë ngarkimit:", e); }
 }
 
-function render() {
-    let h = "";
-    filtered.forEach(p => {
-        let imgHtml = p.img ? `<img src="${p.img}" onclick="window.open('${p.img}', '_blank')">` 
-                            : `<div style="height:110px;background:#eee;border-radius:8px;display:flex;align-items:center;justify-content:center">🔋</div>`;
-        
-        let specsBtn = (p.specs && p.specs !== "") ? 
-            `<button class="btn-specs" onclick="window.open('${p.specs}', '_blank')">📄 Specifikat Teknike</button>` : "";
-
-        h += `<div class="card">
-                <div>
-                    ${imgHtml}
-                    <span class="code-tag">${p.code || ''}</span>
-                    <b>${p.name}</b>
-                    <span style="color:var(--p); font-weight:bold; font-size:1.1em;">${p.price} L</span>
-                </div>
-                <div>
-                    ${specsBtn}
-                    <button class="btn-add" onclick="add('${p.name}',${p.price})">SHTO NË SHPORTË</button>
-                </div>
-              </div>`;
-    });
-    document.getElementById("grid").innerHTML = h;
-}
-
+// 3. FUNKSIONI I KËRKIMIT (SEARCH) - I RREGULLUAR
 function search() {
-    let q = document.getElementById("sq").value.toLowerCase();
-    filtered = all.filter(p => p.name.toLowerCase().includes(q) || (p.code && p.code.toLowerCase().includes(q)));
-    render();
+    let q = document.getElementById("sq").value.toLowerCase().trim();
+    
+    // Filtrojmë listen 'all' dhe rezultatin e kalojmë te 'filtered'
+    filtered = all.filter(p => {
+        let emri = (p.name || "").toString().toLowerCase();
+        let kodi = (p.code || "").toString().toLowerCase();
+        let kategoria = (p.category || "").toString().toLowerCase();
+        
+        return emri.includes(q) || kodi.includes(q) || kategoria.includes(q);
+    });
+    
+    render(); // Rifreskojmë pamjen
 }
 
+// 4. FILTRIMI SIPAS KATEGORISË
 function filterCat(c, btn) {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    filtered = (c=="All") ? all : all.filter(p => p.category == c);
+    document.getElementById("sq").value = ""; // Pastrojmë kërkimin kur ndërrojmë kategori
+    
+    if(c == "All") {
+        filtered = all;
+    } else {
+        filtered = all.filter(p => p.category == c);
+    }
     render();
 }
 
+// 5. SHFAQJA E PRODUKTEVE (RENDER)
+function render() {
+    let h = "";
+    if (filtered.length === 0) {
+        h = "<div style='grid-column: 1/-1; text-align:center; padding:50px; color:#666;'>Asnjë produkt nuk u gjet.</div>";
+    } else {
+        filtered.forEach(p => {
+            let imgHtml = p.img ? `<img src="${p.img}" onclick="window.open('${p.img}', '_blank')">` 
+                                : `<div style="height:110px;background:#eee;border-radius:8px;display:flex;align-items:center;justify-content:center">🔋</div>`;
+            
+            let specsBtn = (p.specs && p.specs !== "" && p.specs !== "undefined") ? 
+                `<button class="btn-specs" onclick="window.open('${p.specs}', '_blank')">📄 Specifikat Teknike</button>` : "";
+
+            h += `<div class="card">
+                    <div>
+                        ${imgHtml}
+                        <span class="code-tag">${p.code || ''}</span>
+                        <b>${p.name}</b>
+                        <span style="color:var(--p); font-weight:bold; font-size:1.1em;">${p.price} L</span>
+                    </div>
+                    <div>
+                        ${specsBtn}
+                        <button class="btn-add" onclick="add('${p.name}',${p.price})">SHTO NË SHPORTË</button>
+                    </div>
+                  </div>`;
+        });
+    }
+    document.getElementById("grid").innerHTML = h;
+}
+
+// 6. SHPORTA DHE POROSIA
 function add(n, p) {
     let i = cart.find(x => x.name == n);
     if(i) i.qty++; else cart.push({name:n, price:p, qty:1});
@@ -195,22 +227,20 @@ function updateUI() {
     document.getElementById("total").innerText = t;
     document.getElementById("btnOrder").innerText = `DËRGO POROSINË (${c})`;
     document.getElementById("cart-items").innerHTML = h;
-    document.getElementById("cart-ui").classList.toggle("hidden", cart.length==0);
+    document.getElementById("cart-ui").classList.toggle("hidden", cart.length == 0);
 }
 
 async function order() {
-    if(cart.length==0) return;
+    if(cart.length == 0) return;
     let t = document.getElementById("total").innerText;
     let d = cart.map(x => `${x.name} x${x.qty}`).join(", ");
-    
     await fetch(URL, {method:"POST", body:JSON.stringify({action:"order", user:user, detajet:d, total:t})});
-    
     let txt = `*POROSI E RE - TASHI BATTERY*\n--------------\nKlienti: ${user}\nArtikujt: ${d}\n*TOTALI: ${t} L*`;
     window.open(`https://wa.me/${WA}?text=${encodeURIComponent(txt)}`);
-
-    alert("Porosia u dërgua!"); cart=[]; updateUI(); tab('prod');
+    alert("Porosia u dërgua!"); cart = []; updateUI(); tab('prod');
 }
 
+// 7. ADMIN FUNCTIONS
 async function regPay() {
     let u = document.getElementById("adm-user").value, a = document.getElementById("adm-pay").value;
     if(!u || !a) return alert("Plotëso emrin dhe shumën!");
@@ -223,38 +253,32 @@ async function loadHistory(isAdmin = false) {
     if(!target) return alert("Zgjidh një klient!");
     
     let r = await fetch(URL, {method:"POST", body:JSON.stringify({action:"history", user:user, targetUser:target})});
-    let d = await r.json(); // Tani d përmban {items: [...], borxhi: X}
+    let d = await r.json();
 
-    // Krijojmë kutinë e borxhit
-    let borxhHtml = `
+    let borxhHtml = isAdmin ? `
         <div style="background:#fff3f3; border:1px solid #ffcccc; padding:15px; border-radius:8px; margin-bottom:15px; text-align:center;">
             <span style="font-size:14px; color:#666;">Borxhi Total i ${target}:</span><br>
             <b style="font-size:24px; color:red;">${d.borxhi} L</b>
-        </div>
-    `;
+        </div>` : "";
 
     let listaHtml = d.items.length ? d.items.map(x => `
         <div class="history-item">
             <small>${x.date}</small><br>
             <b>${x.type}: ${x.total}L</b><br>
             <small>${x.detajet||""}</small>
-        </div>
-    `).join("") : "<p>Nuk ka të dhëna.</p>";
+        </div>`).join("") : "<p style='padding:15px'>Nuk ka të dhëna.</p>";
 
-    if(isAdmin) {
-        document.getElementById("adm-hist-res").innerHTML = borxhHtml + listaHtml;
-    } else {
-        document.getElementById("hist-list").innerHTML = listaHtml;
-    }
+    if(isAdmin) document.getElementById("adm-hist-res").innerHTML = borxhHtml + listaHtml;
+    else document.getElementById("hist-list").innerHTML = listaHtml;
 }
+
+// 8. NAVIGATION
 function tab(t) {
     ["s-prod", "s-hist", "s-admin"].forEach(s => document.getElementById(s).classList.add("hidden"));
     ["n1", "n2", "n3"].forEach(n => document.getElementById(n).classList.remove("active"));
-    document.getElementById("s-"+t).classList.remove("hidden");
-    if(t=="prod") document.getElementById("n1").classList.add("active");
-    if(t=="hist") { document.getElementById("n2").classList.add("active"); loadHistory(); }
-    if(t=="admin") document.getElementById("n3").classList.add("active");
+    document.getElementById("s-" + t).classList.remove("hidden");
+    if(t == "prod") document.getElementById("n1").classList.add("active");
+    if(t == "hist") { document.getElementById("n2").classList.add("active"); loadHistory(); }
+    if(t == "admin") document.getElementById("n3").classList.add("active");
 }
 </script>
-</body>
-</html>
