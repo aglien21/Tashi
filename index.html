@@ -1,206 +1,260 @@
 <!DOCTYPE html>
-<html lang="sq">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TASHI-BATTERY - Sistemi i Rishitësve</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TASHI-BATTERY</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-        .container { max-width: 1000px; margin: auto; padding: 20px; }
+        :root { --p: #075E54; --s: #128C7E; --bg: #f0f2f5; --w: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); padding-bottom: 140px; }
+        
+        /* Identifikimi */
+        #login-screen { text-align: center; padding: 60px 20px; background: white; min-height: 100vh; box-sizing: border-box; }
+        .logo-icon { font-size: 50px; background: var(--p); color: white; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto 20px; }
+        input { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        /* Header & Nav */
+        .header { background: var(--p); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top:0; z-index:99; }
+        .nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 55px; z-index:98; }
+        .nav button { flex:1; padding: 12px; border:none; background:none; font-weight:bold; color: #555; cursor: pointer; }
+        .nav button.active { border-bottom: 3px solid var(--p); color: var(--p); }
+
+        /* Produktet */
+        .search-box { padding: 10px; background: white; }
+        .cats { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: white; border-bottom: 1px solid #eee; }
+        .cat-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; background: #f9f9f9; white-space: nowrap; font-size: 12px; cursor: pointer; }
+        .cat-btn.active { background: var(--s); color: white; border-color: var(--s); }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
+        .card { background: white; padding: 12px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; min-height: 320px; }
+        .card img { width: 100%; height: 110px; object-fit: contain; margin-bottom: 8px; border-radius: 8px; cursor: zoom-in; }
+        .card b { font-size: 14px; min-height: 38px; display: block; overflow: hidden; }
+        .code-tag { font-size: 10px; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
+        
+        .btn-specs { width: 100%; padding: 6px; margin-top: 5px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; font-size: 11px; cursor: pointer; color: #555; }
+        .btn-add { background: #25D366; color: white; border: none; width: 100%; padding: 12px 5px; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+
+        /* Shporta */
+        #cart-ui { background: white; margin: 15px; padding: 15px; border-radius: 12px; border: 1px dashed var(--p); }
+        .cart-item { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #eee; }
+
+        /* Footer */
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #ddd; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+        .btn-order { background: var(--p); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        .history-item { background: white; margin: 10px; padding: 15px; border-radius: 10px; border-left: 5px solid var(--p); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
-        
-        /* Header */
-        header { background: #1e2a38; color: white; padding: 15px 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; border-radius: 0 0 15px 15px; }
-        .logo { height: 45px; }
-        .center-header { text-align: center; }
-        .client-name-display { text-align: right; font-size: 1.1em; font-weight: bold; color: #f39c12; }
-
-        /* Login Box */
-        .login-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 350px; margin: 80px auto; text-align: center; }
-        .login-box input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn-login { width: 100%; background: #2980b9; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
-
-        /* Grid i Baterive */
-        .battery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 20px; padding-bottom: 120px; }
-        .card { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 15px; text-align: center; position: relative; }
-        .card img { width: 100%; height: 150px; object-fit: contain; }
-        .badge { position: absolute; top: 10px; left: 10px; background: #f39c12; color: white; padding: 4px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; }
-        .name { font-weight: bold; margin: 10px 0; font-size: 13px; height: 35px; overflow: hidden; color: #333; }
-        .price { color: #27ae60; font-size: 17px; font-weight: bold; margin-bottom: 10px; }
-        
-        .qty-box { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
-        .qty-input { width: 70px; padding: 8px; border: 1px solid #bbb; border-radius: 6px; text-align: center; font-size: 16px; }
-        
-        /* Footer Cart */
-        .cart-summary { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px 25px; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 1000; border-top: 1px solid #ddd; }
-        .total-large { font-size: 18px; font-weight: bold; color: #1e2a38; }
-        .btn-send { background: #25D366; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; -webkit-appearance: none; }
     </style>
 </head>
 <body>
 
-    <div id="login-section" class="login-box">
-        <h2 style="color:#1e2a38">TASHI-BATTERY</h2>
-        <p style="font-size:14px; color:#666;">Sistemi i Porosive</p>
-        <input type="text" id="user" placeholder="Username" 
-               autocorrect="off" autocapitalize="none" spellcheck="false">
-        <input type="password" id="pass" placeholder="Password" 
-               autocorrect="off" autocapitalize="none" spellcheck="false">
-        <button class="btn-login" onclick="login()">HYR NË KATALOG</button>
-        <p id="error" style="color:red; font-size:13px; margin-top:10px;"></p>
+<div id="login-screen">
+    <div class="logo-icon">🔋</div>
+    <h2 style="color:var(--p); margin:0;">TASHI-BATTERY</h2>
+    <p style="color:#666">Sistemi i Porosive Online</p><br>
+    <input id="user" placeholder="Përdoruesi">
+    <input id="pass" type="password" placeholder="Fjalëkalimi">
+    <button onclick="login()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">HYR NË SISTEM</button>
+</div>
+
+<div id="app" class="hidden">
+    <div class="header">
+        <span id="uDisp"></span>
+        <span id="bDisp" style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px;"></span>
     </div>
 
-    <div id="main-section" class="hidden">
-        <header>
-            <div><b style="font-size:12px;">INTACT</b></div>
-            <div class="center-header">
-                <div style="font-size:11px; opacity:0.8;">Bilanci: <b id="display-bilanci">0</b> L</div>
-            </div>
-            <div class="client-name-display" id="display-user"></div>
-        </header>
-
-        <div class="container">
-            <div class="battery-grid" id="batteryContainer"></div>
-        </div>
-
-        <div class="cart-summary">
-            <div class="total-large">Totali: <span id="grandTotal">0</span> L</div>
-            <button class="btn-send" onclick="dergoPorosine()">DËRGO ✅</button>
-        </div>
+    <div class="nav">
+        <button id="n1" class="active" onclick="tab('prod')">PRODUKTE</button>
+        <button id="n2" onclick="tab('hist')">HISTORIKU</button>
+        <button id="n3" class="hidden" onclick="tab('admin')">ADMIN</button>
     </div>
+
+    <div id="s-prod">
+        <div class="search-box">
+            <input id="sq" placeholder="Kërko produktin ose kodin..." oninput="search()">
+        </div>
+        <div class="cats">
+            <button class="cat-btn active" onclick="filterCat('All', this)">Gjithçka</button>
+            <button class="cat-btn" onclick="filterCat('Vetura', this)">Vetura</button>
+            <button class="cat-btn" onclick="filterCat('Kamiona', this)">Kamiona</button>
+            <button class="cat-btn" onclick="filterCat('VRLA', this)">VRLA</button>
+            <button class="cat-btn" onclick="filterCat('Inverter', this)">Inverter</button>
+            <button class="cat-btn" onclick="filterCat('Aksesor', this)">Aksesor</button>
+        </div>
+        <div id="grid" class="grid"></div>
+    </div>
+
+    <div id="s-hist" class="hidden">
+        <div id="hist-list"></div>
+    </div>
+
+    <div id="s-admin" class="hidden" style="padding:15px">
+        <h3>Paneli i Adminit</h3>
+        <input id="adm-user" placeholder="Emri i Klientit">
+        <button onclick="loadHistory(true)" style="width:100%; padding:12px; background:#555; color:white; border:none; border-radius:5px; margin-bottom:15px;">Shih Llogarinë</button>
+        <hr>
+        <h4>Regjistro Pagesë</h4>
+        <input id="adm-pay" type="number" placeholder="Shuma L">
+        <button onclick="regPay()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:8px; font-weight:bold;">RUAN PAGESËN</button>
+        <div id="adm-hist-res" style="margin-top:20px"></div>
+    </div>
+
+    <div id="cart-ui" class="hidden">
+        <b style="color:var(--p)">Shporta:</b>
+        <div id="cart-items"></div>
+    </div>
+
+    <div class="footer">
+        <div>Total: <b id="total" style="color:var(--p); font-size:1.2em">0</b> L</div>
+        <button id="btnOrder" class="btn-order" onclick="order()">DËRGO POROSINË (0)</button>
+    </div>
+</div>
 
 <script>
-    // Linku i ri i Deployment nga Google Apps Script (Sigurohu të jetë versioni i fundit)
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyHQsgGQA80UPI2VuSNOH9V0N5LdOD0kAHqe-urKyExOAHk0dGDFm1hkhS9jtcJm-kWrA/exec";
-    const TEL_NR = "355692336829";
+const URL = "https://script.google.com/macros/s/AKfycbwHEIk2KyPlfeqZkHZmzjz3Xs1vPehMEkM4MDDQUuo1BDzDZVFM7W2Itil3-rwoTO1XIQ/exec"; 
+const WA = "355692336829"; 
 
-    const users = {
-        "admin": "shefi2026",
-        "nardi": "nardi2",
-        "ardi": "ardi1",
-        "aglien": "agli3",
-        "arjan": "arjan4",
-        "andi": "andi5",
-    };
+let all = [], filtered = [], cart = [], user = "", role = "";
 
-    const batteries = [
-        {name:"Intact Premium 50Ah (540A) [PP50MF]", price:6300},
-        {name:"Intact Start 62Ah (540A) [56219]", price:6500},
-        {name:"Intact Start 74Ah (680A) [57412]", price:7500, badge:"🔥Best Seller"},
-        {name:"Intact Premium 78Ah (760A) [PP78MF]", price:9000},
-        {name:"Intact Start 100Ah (850A) [60044]", price:10200, badge:"🔥Best Seller"},
-        {name:"Intact Premium 100Ah (900A) [PP100MF]", price:11900},
-        {name:"Intact Start 100Ah (850A) [60032]", price:10200},
-        {name:"Intact Start-Stop 70Ah (760A) [EFB70SS]", price:10500},
-        {name:"Intact Start-Stop 70Ah (760A) [AGM70SS]", price:13000},
-        {name:"Intact Start 115Ah (1000A) [60210]", price:14875},
-        {name:"Intact Start-Stop 80Ah (800A) [AGM80SS]", price:15400},
-        {name:"Intact Start-Stop 95Ah (850A) [AGM95SS]", price:16900, badge:"🔥Best Seller"},
-        {name:"Intact Start-Stop 105Ah (950A) [AGM105SS]", price:20400},
-        {name:"Intact Start 180Ah (1000A) [68032SHD]", price:21000},
-        {name:"Intact Start 225Ah (1150A) [72512SHD]", price:26000}
-    ];
+async function login() {
+    let u = document.getElementById("user").value, p = document.getElementById("pass").value;
+    try {
+        let r = await fetch(URL, {method:"POST", body:JSON.stringify({action:"login", user:u, pass:p})});
+        let d = await r.json();
+        if(d.status=="ok"){
+            user = u; role = d.role;
+            document.getElementById("login-screen").classList.add("hidden");
+            document.getElementById("app").classList.remove("hidden");
+            document.getElementById("uDisp").innerText = "👤 "+u;
+            document.getElementById("bDisp").innerText = (d.bilanci||0)+" L";
+            if(role=="admin") document.getElementById("n3").classList.remove("hidden");
+            loadProd();
+        } else alert("Gabim në hyrje!");
+    } catch(e) { alert("Gabim lidhjeje!"); }
+}
 
-    const images = {
-        "PP50MF":"https://www.intact-batterien.de/packshots/intact_premium_power_b_pp50mf_00_450.jpg",
-        "56219":"https://www.intact-batterien.de/packshots/intact_start_power_b_56219gug_00_450.jpg",
-        "57412":"https://www.intact-batterien.de/packshots/intact_start_power_b_57412gug_00_450.jpg",
-        "PP78MF":"https://www.intact-batterien.de/packshots/intact_premium_power_b_pp78mf_00_450.jpg",
-        "60044":"https://www.intact-batterien.de/packshots/intact_start_power_b_60044gug_00_450.jpg",
-        "PP100MF":"https://www.intact-batterien.de/packshots/intact_premium_power_b_pp100mf_00_450.jpg",
-        "60032":"https://www.intact-batterien.de/packshots/intact_start_power_asia_b_60032gug_00_450.jpg",
-        "EFB70SS":"https://www.intact-batterien.de/packshots/intact_startstop_power_efb_b_efb70ss_00_450.jpg",
-        "AGM70SS":"https://www.intact-batterien.de/packshots/intact_startstop_power_agm_b_agm70ss_00_450.jpg",
-        "60210":"https://www.intact-batterien.de/packshots/intact_start_power_truck_b_60210gug_00_450.jpg",
-        "AGM80SS":"https://www.intact-batterien.de/packshots/intact_startstop_power_agm_b_agm80ss_00_450.jpg",
-        "AGM95SS":"https://www.intact-batterien.de/packshots/intact_startstop_power_agm_b_agm95ss_00_450.jpg",
-        "AGM105SS":"https://www.intact-batterien.de/packshots/intact_startstop_power_agm_b_agm105ss_00_450.jpg",
-        "68032SHD":"https://www.intact-batterien.de/packshots/intact_start_power_truck_b_68032shdgug_00_450.jpg",
-        "72512SHD":"https://www.intact-batterien.de/packshots/intact_start_power_truck_b_72512shdgug_00_450.jpg"
-    };
+async function loadProd() {
+    let r = await fetch(URL);
+    all = await r.json();
+    filtered = all;
+    render();
+}
 
-    let currentUser = "";
+function render() {
+    let h = "";
+    filtered.forEach(p => {
+        let imgHtml = p.img ? `<img src="${p.img}" onclick="window.open('${p.img}', '_blank')">` 
+                            : `<div style="height:110px;background:#eee;border-radius:8px;display:flex;align-items:center;justify-content:center">🔋</div>`;
+        
+        let specsBtn = (p.specs && p.specs !== "") ? 
+            `<button class="btn-specs" onclick="window.open('${p.specs}', '_blank')">📄 Specifikat Teknike</button>` : "";
 
-    function login() {
-        let u = document.getElementById('user').value.toLowerCase().trim();
-        let p = document.getElementById('pass').value.trim();
+        h += `<div class="card">
+                <div>
+                    ${imgHtml}
+                    <span class="code-tag">${p.code || ''}</span>
+                    <b>${p.name}</b>
+                    <span style="color:var(--p); font-weight:bold; font-size:1.1em;">${p.price} L</span>
+                </div>
+                <div>
+                    ${specsBtn}
+                    <button class="btn-add" onclick="add('${p.name}',${p.price})">SHTO NË SHPORTË</button>
+                </div>
+              </div>`;
+    });
+    document.getElementById("grid").innerHTML = h;
+}
 
-        if (users[u] && users[u] === p) {
-            currentUser = u;
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('main-section').classList.remove('hidden');
-            document.getElementById('display-user').innerText = u.toUpperCase();
-            renderCatalog();
-            refreshBilanci();
-        } else {
-            document.getElementById('error').innerText = "Username ose Password gabim!";
-        }
+function search() {
+    let q = document.getElementById("sq").value.toLowerCase();
+    filtered = all.filter(p => p.name.toLowerCase().includes(q) || (p.code && p.code.toLowerCase().includes(q)));
+    render();
+}
+
+function filterCat(c, btn) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtered = (c=="All") ? all : all.filter(p => p.category == c);
+    render();
+}
+
+function add(n, p) {
+    let i = cart.find(x => x.name == n);
+    if(i) i.qty++; else cart.push({name:n, price:p, qty:1});
+    updateUI();
+}
+
+function updateUI() {
+    let t = 0, c = 0, h = "";
+    cart.forEach((x, idx) => {
+        t += x.price * x.qty; c += x.qty;
+        h += `<div class="cart-item">
+                <span>${x.name} (x${x.qty})</span>
+                <span>${x.price * x.qty}L <button onclick="cart.splice(${idx},1);updateUI()" style="border:none;color:red;background:none;font-weight:bold;cursor:pointer;margin-left:10px;">X</button></span>
+              </div>`;
+    });
+    document.getElementById("total").innerText = t;
+    document.getElementById("btnOrder").innerText = `DËRGO POROSINË (${c})`;
+    document.getElementById("cart-items").innerHTML = h;
+    document.getElementById("cart-ui").classList.toggle("hidden", cart.length==0);
+}
+
+async function order() {
+    if(cart.length==0) return;
+    let t = document.getElementById("total").innerText;
+    let d = cart.map(x => `${x.name} x${x.qty}`).join(", ");
+    
+    await fetch(URL, {method:"POST", body:JSON.stringify({action:"order", user:user, detajet:d, total:t})});
+    
+    let txt = `*POROSI E RE - TASHI BATTERY*\n--------------\nKlienti: ${user}\nArtikujt: ${d}\n*TOTALI: ${t} L*`;
+    window.open(`https://wa.me/${WA}?text=${encodeURIComponent(txt)}`);
+
+    alert("Porosia u dërgua!"); cart=[]; updateUI(); tab('prod');
+}
+
+async function regPay() {
+    let u = document.getElementById("adm-user").value, a = document.getElementById("adm-pay").value;
+    if(!u || !a) return alert("Plotëso emrin dhe shumën!");
+    await fetch(URL, {method:"POST", body:JSON.stringify({action:"payment", user:u, amount:a})});
+    alert("Pagesa u ruajt!"); location.reload();
+}
+
+async function loadHistory(isAdmin = false) {
+    let target = isAdmin ? document.getElementById("adm-user").value : user;
+    if(!target) return alert("Zgjidh një klient!");
+    
+    let r = await fetch(URL, {method:"POST", body:JSON.stringify({action:"history", user:user, targetUser:target})});
+    let d = await r.json(); // Tani d përmban {items: [...], borxhi: X}
+
+    // Krijojmë kutinë e borxhit
+    let borxhHtml = `
+        <div style="background:#fff3f3; border:1px solid #ffcccc; padding:15px; border-radius:8px; margin-bottom:15px; text-align:center;">
+            <span style="font-size:14px; color:#666;">Borxhi Total i ${target}:</span><br>
+            <b style="font-size:24px; color:red;">${d.borxhi} L</b>
+        </div>
+    `;
+
+    let listaHtml = d.items.length ? d.items.map(x => `
+        <div class="history-item">
+            <small>${x.date}</small><br>
+            <b>${x.type}: ${x.total}L</b><br>
+            <small>${x.detajet||""}</small>
+        </div>
+    `).join("") : "<p>Nuk ka të dhëna.</p>";
+
+    if(isAdmin) {
+        document.getElementById("adm-hist-res").innerHTML = borxhHtml + listaHtml;
+    } else {
+        document.getElementById("hist-list").innerHTML = listaHtml;
     }
-
-    function renderCatalog() {
-        const container = document.getElementById("batteryContainer");
-        container.innerHTML = "";
-        batteries.forEach((b, i) => {
-            const code = b.name.match(/\[(.*?)\]/)[1];
-            container.innerHTML += `
-                <div class="card">
-                    ${b.badge ? `<div class="badge">${b.badge}</div>` : ""}
-                    <img src="${images[code] || ''}" alt="Bateri">
-                    <div class="name">${b.name}</div>
-                    <div class="price">${b.price.toLocaleString()} L</div>
-                    <div class="qty-box">
-                        <input type="number" value="0" min="0" class="qty-input" oninput="updateGrandTotal()">
-                    </div>
-                </div>`;
-        });
-    }
-
-    function updateGrandTotal() {
-        let total = 0;
-        document.querySelectorAll('.qty-input').forEach((input, i) => {
-            let sasia = parseInt(input.value) || 0;
-            total += sasia * batteries[i].price;
-        });
-        document.getElementById('grandTotal').innerText = total.toLocaleString();
-    }
-
-    function refreshBilanci() {
-        let b = localStorage.getItem('bilanci_' + currentUser) || 0;
-        document.getElementById('display-bilanci').innerText = parseFloat(b).toLocaleString();
-    }
-
-    function dergoPorosine() {
-        let totaliSot = 0;
-        let infoText = "";
-        document.querySelectorAll('.qty-input').forEach((input, i) => {
-            let sasia = parseInt(input.value) || 0;
-            if (sasia > 0) {
-                totaliSot += sasia * batteries[i].price;
-                infoText += `▪️ ${batteries[i].name}: ${sasia} copë\n`;
-            }
-        });
-
-        if (totaliSot <= 0) { alert("Shto sasi!"); return; }
-
-        // METODA E RE 'GET' - E domosdoshme për iPhone
-        const params = new URLSearchParams({
-            "user": currentUser,
-            "detajet": infoText.replace(/\n/g, ", "),
-            "vlera": totaliSot
-        });
-
-        // Kjo kërkesë GET nuk bllokohet nga Safari
-        const img = new Image();
-        img.src = GOOGLE_URL + "?" + params.toString();
-
-        let bilanciRi = parseFloat(localStorage.getItem('bilanci_' + currentUser) || 0) + totaliSot;
-        localStorage.setItem('bilanci_' + currentUser, bilanciRi);
-
-        setTimeout(() => {
-            let msg = `*POROSI E RE - INTACT*\n👤 Nga: ${currentUser.toUpperCase()}\n\n${infoText}\n💰 Totali: ${totaliSot.toLocaleString()} LEK\n📈 Bilanci: ${bilanciRi.toLocaleString()} LEK`;
-            window.location.href = `https://wa.me/${TEL_NR}?text=${encodeURIComponent(msg)}`;
-        }, 500);
-    }
+}
+function tab(t) {
+    ["s-prod", "s-hist", "s-admin"].forEach(s => document.getElementById(s).classList.add("hidden"));
+    ["n1", "n2", "n3"].forEach(n => document.getElementById(n).classList.remove("active"));
+    document.getElementById("s-"+t).classList.remove("hidden");
+    if(t=="prod") document.getElementById("n1").classList.add("active");
+    if(t=="hist") { document.getElementById("n2").classList.add("active"); loadHistory(); }
+    if(t=="admin") document.getElementById("n3").classList.add("active");
+}
 </script>
 </body>
 </html>
