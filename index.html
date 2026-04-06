@@ -1,298 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="sq">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TASHI-BATTERY</title>
-
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2083/2083201.png">
-    
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2083/2083201.png">
-
-    <meta name="theme-color" content="#075E54">
-    <meta name="apple-mobile-web-app-status-bar-style" content="#075E54">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
+    <title>Buxheti Familjar PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ... stilet e tua vazhdojne ketu ... */
-        /* ... ketu vazhdojne stilet e tua ... */
-        /* ... stilet që ke pasur ... */
-        :root { --p: #075E54; --s: #128C7E; --bg: #f0f2f5; --w: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); padding-bottom: 140px; }
-        
-        /* Identifikimi */
-        #login-screen { text-align: center; padding: 60px 20px; background: white; min-height: 100vh; box-sizing: border-box; }
-        .logo-icon { font-size: 50px; background: var(--p); color: white; width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 0 auto 20px; }
-        input { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        
-        /* Header & Nav */
-        .header { background: var(--p); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top:0; z-index:99; }
-        .nav { display: flex; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 55px; z-index:98; }
-        .nav button { flex:1; padding: 12px; border:none; background:none; font-weight:bold; color: #555; cursor: pointer; }
-        .nav button.active { border-bottom: 3px solid var(--p); color: var(--p); }
-
-        /* Produktet */
-        .search-box { padding: 10px; background: white; }
-        .cats { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: white; border-bottom: 1px solid #eee; }
-        .cat-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; background: #f9f9f9; white-space: nowrap; font-size: 12px; cursor: pointer; }
-        .cat-btn.active { background: var(--s); color: white; border-color: var(--s); }
-
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
-        .card { background: white; padding: 12px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; min-height: 320px; }
-        .card img { width: 100%; height: 110px; object-fit: contain; margin-bottom: 8px; border-radius: 8px; cursor: zoom-in; }
-        .card b { font-size: 14px; min-height: 38px; display: block; overflow: hidden; }
-        .code-tag { font-size: 10px; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
-        
-        .btn-specs { width: 100%; padding: 6px; margin-top: 5px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; font-size: 11px; cursor: pointer; color: #555; }
-        .btn-add { background: #25D366; color: white; border: none; width: 100%; padding: 12px 5px; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
-
-        /* Shporta */
-        #cart-ui { background: white; margin: 15px; padding: 15px; border-radius: 12px; border: 1px dashed var(--p); }
-        .cart-item { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #eee; }
-
-        /* Footer */
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #ddd; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-        .btn-order { background: var(--p); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-        .history-item { background: white; margin: 10px; padding: 15px; border-radius: 10px; border-left: 5px solid var(--p); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .hidden { display: none !important; }
+        .kat-btn { transition: all 0.2s; cursor: pointer; border: 2px solid #f3f4f6; }
+        .kat-selected { border-color: #10b981 !important; background-color: #ecfdf5 !important; transform: scale(1.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fade-in 0.3s ease-out forwards; }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-<div id="login-screen">
-    <div class="logo-icon">🔋</div>
-    <h2 style="color:var(--p); margin:0;">TASHI-BATTERY</h2>
-    <p style="color:#666">Sistemi i Porosive Online</p><br>
-    <input id="user" placeholder="Përdoruesi">
-    <input id="pass" type="password" placeholder="Fjalëkalimi">
-    <button onclick="login()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">HYR NË SISTEM</button>
-</div>
-
-<div id="app" class="hidden">
-    <div class="header">
-        <span id="uDisp"></span>
-        <span id="bDisp" style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px;"></span>
-    </div>
-
-    <div class="nav">
-        <button id="n1" class="active" onclick="tab('prod')">PRODUKTE</button>
-        <button id="n2" onclick="tab('hist')">HISTORIKU</button>
-        <button id="n3" class="hidden" onclick="tab('admin')">ADMIN</button>
-    </div>
-
-    <div id="s-prod">
-        <div class="search-box">
-    <input id="sq" type="text" placeholder="Kërko produktin ose kodin..." oninput="search()">
-</div>
-        <div class="cats">
-            <button class="cat-btn active" onclick="filterCat('All', this)">Gjithçka</button>
-            <button class="cat-btn" onclick="filterCat('Vetura', this)">Vetura</button>
-            <button class="cat-btn" onclick="filterCat('Kamiona', this)">Kamiona</button>
-            <button class="cat-btn" onclick="filterCat('VRLA', this)">VRLA</button>
-            <button class="cat-btn" onclick="filterCat('Inverter', this)">Inverter</button>
-            <button class="cat-btn" onclick="filterCat('Aksesor', this)">Aksesor</button>
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-6 animate-in">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-extrabold text-gray-800">💰 Buxheti Im</h2>
+            <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">LIVE SYNC</span>
         </div>
-        <div id="grid" class="grid"></div>
-    </div>
-
-    <div id="s-hist" class="hidden">
-        <div id="hist-list"></div>
-    </div>
-
-    <div id="s-admin" class="hidden" style="padding:15px">
-        <h3>Paneli i Adminit</h3>
-        <input id="adm-user" placeholder="Emri i Klientit">
-        <button onclick="loadHistory(true)" style="width:100%; padding:12px; background:#555; color:white; border:none; border-radius:5px; margin-bottom:15px;">Shih Llogarinë</button>
-        <hr>
-        <h4>Regjistro Pagesë</h4>
-        <input id="adm-pay" type="number" placeholder="Shuma L">
-        <button onclick="regPay()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:8px; font-weight:bold;">RUAN PAGESËN</button>
-        <div id="adm-hist-res" style="margin-top:20px"></div>
-    </div>
-
-    <div id="cart-ui" class="hidden">
-        <b style="color:var(--p)">Shporta:</b>
-        <div id="cart-items"></div>
-    </div>
-
-    <div class="footer">
-        <div>Total: <b id="total" style="color:var(--p); font-size:1.2em">0</b> L</div>
-        <button id="btnOrder" class="btn-order" onclick="order()">DËRGO POROSINË (0)</button>
-    </div>
-</div>
-
-<script>
-const URL = "https://script.google.com/macros/s/AKfycbzh9CgSM7xHRvh8FGy5IYAGzlCiCOOuoKRvimzJkji-or8DQ2rJoAP1xHap4x-9YZvJ5g/exec"; 
-const WA = "355692336829"; 
-
-let all = [];      // Këtu do të ruhen të gjitha produktet nga Sheets
-let filtered = []; // Këtu do të ruhen produktet e filtruara (nga kërkimi ose kategoritë)
-let cart = [];     // Shporta
-let user = ""; 
-let role = "";
-
-// 1. LOGIN
-async function login() {
-    let u = document.getElementById("user").value, p = document.getElementById("pass").value;
-    try {
-        let r = await fetch(URL, {method:"POST", body:JSON.stringify({action:"login", user:u, pass:p})});
-        let d = await r.json();
-        if(d.status=="ok"){
-            user = u; role = d.role;
-            document.getElementById("login-screen").classList.add("hidden");
-            document.getElementById("app").classList.remove("hidden");
-            document.getElementById("uDisp").innerText = "👤 " + u;
-            document.getElementById("bDisp").innerText = (d.bilanci || 0) + " L";
-            if(role == "admin") document.getElementById("n3").classList.remove("hidden");
-            loadProd(); // Ngarkojmë produktet fillestare
-        } else alert("Emri ose fjalëkalimi i gabuar!");
-    } catch(e) { alert("Gabim lidhjeje me serverin!"); }
-}
-
-// 2. NGARKIMI I PRODUKTEVE
-async function loadProd() {
-    try {
-        let r = await fetch(URL);
-        let data = await r.json();
-        all = data;      // Ruajmë gjithçka te 'all'
-        filtered = data; // Në fillim, lista e filtruar është e barabartë me të gjitha
-        render();        // Shfaqim produktet
-    } catch(e) { console.error("Gabim gjatë ngarkimit:", e); }
-}
-
-// 3. FUNKSIONI I KËRKIMIT (SEARCH) - I RREGULLUAR
-function search() {
-    let q = document.getElementById("sq").value.toLowerCase().trim();
-    
-    // Filtrojmë listen 'all' dhe rezultatin e kalojmë te 'filtered'
-    filtered = all.filter(p => {
-        let emri = (p.name || "").toString().toLowerCase();
-        let kodi = (p.code || "").toString().toLowerCase();
-        let kategoria = (p.category || "").toString().toLowerCase();
         
-        return emri.includes(q) || kodi.includes(q) || kategoria.includes(q);
-    });
-    
-    render(); // Rifreskojmë pamjen
-}
+        <div class="mb-5">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">Shuma (Lekë)</label>
+            <input type="number" id="shuma" inputmode="decimal" placeholder="0" 
+                class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-3xl font-semibold focus:border-green-500 focus:bg-white outline-none transition-all">
+        </div>
 
-// 4. FILTRIMI SIPAS KATEGORISË
-function filterCat(c, btn) {
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById("sq").value = ""; // Pastrojmë kërkimin kur ndërrojmë kategori
-    
-    if(c == "All") {
-        filtered = all;
-    } else {
-        filtered = all.filter(p => p.category == c);
-    }
-    render();
-}
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Kategoria</label>
+        <div id="grid-kategori" class="grid grid-cols-3 gap-3 mb-6">
+            </div>
 
-// 5. SHFAQJA E PRODUKTEVE (RENDER)
-function render() {
-    let h = "";
-    if (filtered.length === 0) {
-        h = "<div style='grid-column: 1/-1; text-align:center; padding:50px; color:#666;'>Asnjë produkt nuk u gjet.</div>";
-    } else {
-        filtered.forEach(p => {
-            let imgHtml = p.img ? `<img src="${p.img}" onclick="window.open('${p.img}', '_blank')">` 
-                                : `<div style="height:110px;background:#eee;border-radius:8px;display:flex;align-items:center;justify-content:center">🔋</div>`;
-            
-            let specsBtn = (p.specs && p.specs !== "" && p.specs !== "undefined") ? 
-                `<button class="btn-specs" onclick="window.open('${p.specs}', '_blank')">📄 Specifikat Teknike</button>` : "";
+        <div class="mb-6">
+            <input type="text" id="shenime" placeholder="Shënime ose detaje..." 
+                class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-green-500 focus:bg-white transition-all">
+        </div>
 
-            h += `<div class="card">
-                    <div>
-                        ${imgHtml}
-                        <span class="code-tag">${p.code || ''}</span>
-                        <b>${p.name}</b>
-                        <span style="color:var(--p); font-weight:bold; font-size:1.1em;">${p.price} L</span>
-                    </div>
-                    <div>
-                        ${specsBtn}
-                        <button class="btn-add" onclick="add('${p.name}',${p.price})">SHTO NË SHPORTË</button>
-                    </div>
-                  </div>`;
+        <button onclick="ruajGjithcka()" id="btn-ruaj" 
+            class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-2xl text-xl shadow-lg active:scale-95 transition-all">
+            RUAJ SHPENZIMIN
+        </button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+               // --- 1. CONFIG E FIREBASE (E SAIPARASHTRUAR) ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyCmtg3-Zg_cBRFYheD9ja3uwSY_SJR2xQY",
+          authDomain: "buxheti-familjar.firebaseapp.com",
+          projectId: "buxheti-familjar",
+          storageBucket: "buxheti-familjar.firebasestorage.app",
+          messagingSenderId: "56587868570",
+          appId: "1:56587868570:web:5f98611e10a4813b3a4223",
+          measurementId: "G-JJVL052492"
+        };
+
+        // --- 2. VENDOS KETU URL-NE E GOOGLE SCRIPT (/exec) ---
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/XXXXXXXX/exec";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const kategorite = [
+            { emri: "Market", ikona: "🛒" },
+            { emri: "Ujë", ikona: "💧" },
+            { emri: "Energji", ikona: "⚡" },
+            { emri: "Tregu", ikona: "🧺" },
+            { emri: "Rroba", ikona: "🛍️" },
+            { emri: "Makinë", ikona: "🚗" },
+            { emri: "Kafe", ikona: "☕" },
+            { emri: "Shëndet", ikona: "💊" },
+            { emri: "Tjetër", ikona: "📝" }
+        ];
+
+        let kategoriaZgjedhur = "";
+
+        // Ndertimi i Gridit
+        const grid = document.getElementById("grid-kategori");
+        kategorite.forEach(k => {
+            const div = document.createElement("div");
+            div.className = "kat-btn bg-gray-50 p-4 rounded-2xl text-center";
+            div.innerHTML = `<div class="text-3xl">${k.ikona}</div><div class="text-[10px] font-black uppercase mt-1 text-gray-600">${k.emri}</div>`;
+            div.onclick = () => {
+                document.querySelectorAll('.kat-btn').forEach(b => b.classList.remove('kat-selected'));
+                div.classList.add('kat-selected');
+                kategoriaZgjedhur = k.emri;
+                // Dridhje e lehte e telefonit nese mbeshtetet
+                if(window.navigator.vibrate) window.navigator.vibrate(10);
+            };
+            grid.appendChild(div);
         });
-    }
-    document.getElementById("grid").innerHTML = h;
-}
 
-// 6. SHPORTA DHE POROSIA
-function add(n, p) {
-    let i = cart.find(x => x.name == n);
-    if(i) i.qty++; else cart.push({name:n, price:p, qty:1});
-    updateUI();
-}
+        window.ruajGjithcka = async () => {
+            const shuma = document.getElementById("shuma").value;
+            const shenime = document.getElementById("shenime").value;
+            const btn = document.getElementById("btn-ruaj");
 
-function updateUI() {
-    let t = 0, c = 0, h = "";
-    cart.forEach((x, idx) => {
-        t += x.price * x.qty; c += x.qty;
-        h += `<div class="cart-item">
-                <span>${x.name} (x${x.qty})</span>
-                <span>${x.price * x.qty}L <button onclick="cart.splice(${idx},1);updateUI()" style="border:none;color:red;background:none;font-weight:bold;cursor:pointer;margin-left:10px;">X</button></span>
-              </div>`;
-    });
-    document.getElementById("total").innerText = t;
-    document.getElementById("btnOrder").innerText = `DËRGO POROSINË (${c})`;
-    document.getElementById("cart-items").innerHTML = h;
-    document.getElementById("cart-ui").classList.toggle("hidden", cart.length == 0);
-}
+            if (!shuma || !kategoriaZgjedhur) {
+                alert("Zgjidh kategorinë dhe shuma!");
+                return;
+            }
 
-async function order() {
-    if(cart.length == 0) return;
-    let t = document.getElementById("total").innerText;
-    let d = cart.map(x => `${x.name} x${x.qty}`).join(", ");
-    await fetch(URL, {method:"POST", body:JSON.stringify({action:"order", user:user, detajet:d, total:t})});
-    let txt = `*POROSI E RE - TASHI BATTERY*\n--------------\nKlienti: ${user}\nArtikujt: ${d}\n*TOTALI: ${t} L*`;
-    window.open(`https://wa.me/${WA}?text=${encodeURIComponent(txt)}`);
-    alert("Porosia u dërgua!"); cart = []; updateUI(); tab('prod');
-}
+            // UI REACTION (Imediate)
+            btn.innerText = "✅ U RUAJT!";
+            btn.disabled = true;
+            btn.classList.add("opacity-50", "scale-95");
 
-// 7. ADMIN FUNCTIONS
-async function regPay() {
-    let u = document.getElementById("adm-user").value, a = document.getElementById("adm-pay").value;
-    if(!u || !a) return alert("Plotëso emrin dhe shumën!");
-    await fetch(URL, {method:"POST", body:JSON.stringify({action:"payment", user:u, amount:a})});
-    alert("Pagesa u ruajt!"); location.reload();
-}
+            try {
+                // A) RUAN NE FIREBASE (Super Shpejt)
+                addDoc(collection(db, "shpenzimet"), {
+                    shuma: Number(shuma),
+                    kategoria: kategoriaZgjedhur,
+                    shenime: shenime,
+                    data: serverTimestamp(),
+                    perdoruesi: "Ian"
+                });
 
-async function loadHistory(isAdmin = false) {
-    let target = isAdmin ? document.getElementById("adm-user").value : user;
-    if(!target) return alert("Zgjidh një klient!");
-    
-    let r = await fetch(URL, {method:"POST", body:JSON.stringify({action:"history", user:user, targetUser:target})});
-    let d = await r.json();
+                // B) DERGON NE GOOGLE SHEETS & TELEGRAM (Ne prapaskene)
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: JSON.stringify({
+                        action: "shto",
+                        user: "Ian",
+                        kat: kategoriaZgjedhur,
+                        shuma: shuma,
+                        shenime: shenime
+                    })
+                });
 
-    let borxhHtml = isAdmin ? `
-        <div style="background:#fff3f3; border:1px solid #ffcccc; padding:15px; border-radius:8px; margin-bottom:15px; text-align:center;">
-            <span style="font-size:14px; color:#666;">Borxhi Total i ${target}:</span><br>
-            <b style="font-size:24px; color:red;">${d.borxhi} L</b>
-        </div>` : "";
+                // Reset fushave pas 1 sekonde
+                setTimeout(() => {
+                    document.getElementById("shuma").value = "";
+                    document.getElementById("shenime").value = "";
+                    btn.innerText = "RUAJ SHPENZIMIN";
+                    btn.disabled = false;
+                    btn.classList.remove("opacity-50", "scale-95");
+                    document.querySelectorAll('.kat-btn').forEach(b => b.classList.remove('kat-selected'));
+                    kategoriaZgjedhur = "";
+                }, 1000);
 
-    let listaHtml = d.items.length ? d.items.map(x => `
-        <div class="history-item">
-            <small>${x.date}</small><br>
-            <b>${x.type}: ${x.total}L</b><br>
-            <small>${x.detajet||""}</small>
-        </div>`).join("") : "<p style='padding:15px'>Nuk ka të dhëna.</p>";
-
-    if(isAdmin) document.getElementById("adm-hist-res").innerHTML = borxhHtml + listaHtml;
-    else document.getElementById("hist-list").innerHTML = listaHtml;
-}
-
-// 8. NAVIGATION
-function tab(t) {
-    ["s-prod", "s-hist", "s-admin"].forEach(s => document.getElementById(s).classList.add("hidden"));
-    ["n1", "n2", "n3"].forEach(n => document.getElementById(n).classList.remove("active"));
-    document.getElementById("s-" + t).classList.remove("hidden");
-    if(t == "prod") document.getElementById("n1").classList.add("active");
-    if(t == "hist") { document.getElementById("n2").classList.add("active"); loadHistory(); }
-    if(t == "admin") document.getElementById("n3").classList.add("active");
-}
-</script>
+            } catch (e) {
+                alert("Gabim! Provo përsëri.");
+                btn.innerText = "PROVO PËRSËRI";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
