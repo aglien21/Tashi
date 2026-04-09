@@ -2,151 +2,101 @@
 <html lang="sq">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buxheti Familjar PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finance App v13 - IAN PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .kat-btn { transition: all 0.2s; cursor: pointer; border: 2px solid #f3f4f6; }
-        .kat-selected { border-color: #10b981 !important; background-color: #ecfdf5 !important; transform: scale(1.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-in { animation: fade-in 0.3s ease-out forwards; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+        body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .box { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .pad { background: white; border: 2px solid #e2e8f0; padding: 12px; border-radius: 15px; text-align: center; cursor: pointer; font-weight: 800; font-size: 11px; transition: 0.2s; }
+        .pad.active { border-color: #2563eb; background: #2563eb; color: white; transform: scale(0.95); }
+        .list-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; display: flex; justify-content: space-between; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="p-4 text-slate-800">
 
-    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-6 animate-in">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-extrabold text-gray-800">💰 Buxheti Im</h2>
-            <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">LIVE SYNC</span>
+<div id="login-ui" class="max-w-xs mx-auto mt-20 box text-center">
+    <h1 class="text-2xl font-black italic uppercase mb-6 text-slate-900">Finance <span class="text-blue-600">App</span></h1>
+    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl border-2 font-bold bg-slate-50 outline-none">
+        <option value="Ian">IAN</option>
+        <option value="Arjanit">ARJANIT</option>
+        <option value="Joni">JONI</option>
+    </select>
+    <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl border-2 text-center font-bold outline-none" inputmode="numeric">
+    <button onclick="login()" class="w-full p-4 bg-slate-900 text-white rounded-2xl font-black active:scale-95 transition-all">HYR TANI</button>
+</div>
+
+<div id="app-ui" class="max-w-md mx-auto hidden pt-2">
+    <div class="box text-center mb-4">
+        <input id="shuma" type="number" placeholder="0" class="w-full text-center text-5xl font-black text-blue-600 outline-none mb-4" inputmode="numeric">
+        <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="pad" onclick="setKat(this, 'Ushqim')">Ushqim</div>
+            <div class="pad" onclick="setKat(this, 'Transport')">Transport</div>
+            <div class="pad" onclick="setKat(this, 'Qejf')">Qejf</div>
+            <div class="pad" onclick="setKat(this, 'Te tjera')">Të tjera</div>
         </div>
-        
-        <div class="mb-5">
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">Shuma (Lekë)</label>
-            <input type="number" id="shuma" inputmode="decimal" placeholder="0" 
-                class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-3xl font-semibold focus:border-green-500 focus:bg-white outline-none transition-all">
-        </div>
-
-        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Kategoria</label>
-        <div id="grid-kategori" class="grid grid-cols-3 gap-3 mb-6">
-            </div>
-
-        <div class="mb-6">
-            <input type="text" id="shenime" placeholder="Shënime ose detaje..." 
-                class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-green-500 focus:bg-white transition-all">
-        </div>
-
-        <button onclick="ruajGjithcka()" id="btn-ruaj" 
-            class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-2xl text-xl shadow-lg active:scale-95 transition-all">
-            RUAJ SHPENZIMIN
-        </button>
+        <button onclick="regjistro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg uppercase tracking-widest mb-4 active:scale-95">REGJISTRO</button>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div class="box">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">Historiku i Sheets</h3>
+            <button onclick="shfaqHistorikun()" class="text-blue-600 text-xs font-bold underline">Rifresko</button>
+        </div>
+        <div id="historiku-list" class="text-sm space-y-1">
+            <p class="text-slate-400 italic text-xs text-center">Duke ngarkuar të dhënat...</p>
+        </div>
+    </div>
+</div>
 
-               // --- 1. CONFIG E FIREBASE (E SAIPARASHTRUAR) ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyCmtg3-Zg_cBRFYheD9ja3uwSY_SJR2xQY",
-          authDomain: "buxheti-familjar.firebaseapp.com",
-          projectId: "buxheti-familjar",
-          storageBucket: "buxheti-familjar.firebasestorage.app",
-          messagingSenderId: "56587868570",
-          appId: "1:56587868570:web:5f98611e10a4813b3a4223",
-          measurementId: "G-JJVL052492"
-        };
+<script>
+    let uAktual = "", katZgjedhur = "";
 
-        // --- 2. VENDOS KETU URL-NE E GOOGLE SCRIPT (/exec) ---
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHxsrhVP3Z2MwYbT4SkZggg5jl9Zqj3L6M7v8kRdmwlnvn2tSbTyAaThUtKXmbJcan5A/exec";
+    // ID-TE QE MOREM NGA LINKU YT I PRE-FILLED
+    const ID_EMRI = "entry.603674021";
+    const ID_SHUMA = "entry.1273774300";
+    // Keto te tjerat i gjejme ne baze te renditjes se formes
+    const ID_DATA = "entry.222237084"; 
+    const ID_KAT = "entry.2064104278";
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    function login() {
+        const u = document.getElementById("user-select").value;
+        const p = document.getElementById("pass").value;
+        const pins = {"Ian": "1234", "Arjanit": "0000", "Joni": "1111"};
+        if(pins[u] === p) {
+            uAktual = u;
+            document.getElementById("login-ui").style.display = "none";
+            document.getElementById("app-ui").classList.remove("hidden");
+            shfaqHistorikun();
+        } else alert("PIN i gabuar!");
+    }
 
-        const kategorite = [
-            { emri: "Market", ikona: "🛒" },
-            { emri: "Ujë", ikona: "💧" },
-            { emri: "Energji", ikona: "⚡" },
-            { emri: "Tregu", ikona: "🧺" },
-            { emri: "Rroba", ikona: "🛍️" },
-            { emri: "Makinë", ikona: "🚗" },
-            { emri: "Kafe", ikona: "☕" },
-            { emri: "Shëndet", ikona: "💊" },
-            { emri: "Tjetër", ikona: "📝" }
-        ];
+    function setKat(el, kat) {
+        document.querySelectorAll('.pad').forEach(p => p.classList.remove('active'));
+        el.classList.add('active'); 
+        katZgjedhur = kat;
+    }
 
-        let kategoriaZgjedhur = "";
+    function regjistro() {
+        const sh = document.getElementById("shuma").value;
+        if(!sh || !katZgjedhur) return alert("Ploteso shumen dhe zgjidh kategorine!");
+        
+        const d = new Date();
+        const ds = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
 
-        // Ndertimi i Gridit
-        const grid = document.getElementById("grid-kategori");
-        kategorite.forEach(k => {
-            const div = document.createElement("div");
-            div.className = "kat-btn bg-gray-50 p-4 rounded-2xl text-center";
-            div.innerHTML = `<div class="text-3xl">${k.ikona}</div><div class="text-[10px] font-black uppercase mt-1 text-gray-600">${k.emri}</div>`;
-            div.onclick = () => {
-                document.querySelectorAll('.kat-btn').forEach(b => b.classList.remove('kat-selected'));
-                div.classList.add('kat-selected');
-                kategoriaZgjedhur = k.emri;
-                // Dridhje e lehte e telefonit nese mbeshtetet
-                if(window.navigator.vibrate) window.navigator.vibrate(10);
-            };
-            grid.appendChild(div);
-        });
+        // LINKU FINAL ME ID-TE E SAKTA
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSe15aI4gNRPCvUnTEBruWt0SK3K_eCUX7MIM47MBRpVTT-3yQ/viewform?usp=pp_url&${ID_EMRI}=${encodeURIComponent(uAktual)}&${ID_SHUMA}=${encodeURIComponent(sh)}&${ID_KAT}=${encodeURIComponent(katZgjedhur)}&${ID_DATA}=${encodeURIComponent(ds)}`;
 
-        window.ruajGjithcka = async () => {
-            const shuma = document.getElementById("shuma").value;
-            const shenime = document.getElementById("shenime").value;
-            const btn = document.getElementById("btn-ruaj");
+        window.location.href = url;
+    }
 
-            if (!shuma || !kategoriaZgjedhur) {
-                alert("Zgjidh kategorinë dhe shuma!");
-                return;
-            }
-
-            // UI REACTION (Imediate)
-            btn.innerText = "✅ U RUAJT!";
-            btn.disabled = true;
-            btn.classList.add("opacity-50", "scale-95");
-
-            try {
-                // A) RUAN NE FIREBASE (Super Shpejt)
-                addDoc(collection(db, "shpenzimet"), {
-                    shuma: Number(shuma),
-                    kategoria: kategoriaZgjedhur,
-                    shenime: shenime,
-                    data: serverTimestamp(),
-                    perdoruesi: "Ian"
-                });
-
-                // B) DERGON NE GOOGLE SHEETS & TELEGRAM (Ne prapaskene)
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify({
-                        action: "shto",
-                        user: "Ian",
-                        kat: kategoriaZgjedhur,
-                        shuma: shuma,
-                        shenime: shenime
-                    })
-                });
-
-                // Reset fushave pas 1 sekonde
-                setTimeout(() => {
-                    document.getElementById("shuma").value = "";
-                    document.getElementById("shenime").value = "";
-                    btn.innerText = "RUAJ SHPENZIMIN";
-                    btn.disabled = false;
-                    btn.classList.remove("opacity-50", "scale-95");
-                    document.querySelectorAll('.kat-btn').forEach(b => b.classList.remove('kat-selected'));
-                    kategoriaZgjedhur = "";
-                }, 1000);
-
-            } catch (e) {
-                alert("Gabim! Provo përsëri.");
-                btn.innerText = "PROVO PËRSËRI";
-                btn.disabled = false;
-            }
-        };
-    </script>
+    async function shfaqHistorikun() {
+        const listContainer = document.getElementById("historiku-list");
+        // Ketu vendoset ID-ja e Sheets per te lexuar te dhenat (jo e Forms)
+        // Nese nuk e ke ID-ne e Sheets, thjesht shiko nese hapet forma me emrin tend tani.
+        listContainer.innerHTML = "<p class='text-center text-slate-400 text-xs'>ID e Sheets duhet lidhur...</p>";
+    }
+</script>
 </body>
 </html>
