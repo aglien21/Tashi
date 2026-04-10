@@ -3,95 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance Ultimate - Ian</title>
+    <title>Finance App PRO - Ian</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
-        body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .box { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .pad { background: white; border: 2px solid #e2e8f0; padding: 12px; border-radius: 15px; text-align: center; cursor: pointer; font-weight: 800; font-size: 11px; transition: 0.2s; }
-        .pad.active { border-color: #2563eb; background: #2563eb; color: white; }
-        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+        body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
+        .box { background: white; padding: 22px; border-radius: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .pad { background: white; border: 2px solid #e2e8f0; padding: 15px; border-radius: 20px; text-align: center; cursor: pointer; font-weight: 800; font-size: 11px; transition: 0.2s; }
+        .pad.active { border-color: #2563eb; background: #2563eb; color: white; transform: scale(0.95); }
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="p-4">
 
 <div id="login-ui" class="max-w-xs mx-auto mt-20 box text-center">
-    <h1 class="text-2xl font-black mb-6 italic">Finance <span class="text-blue-600">APP</span></h1>
-    <div id="status-load" class="text-[10px] text-slate-400 mb-4 uppercase font-bold tracking-widest">Duke u lidhur me serverin...</div>
-    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl border-2 font-bold bg-slate-50 outline-none border-slate-100"></select>
+    <h1 class="text-2xl font-black italic mb-6">Finance <span class="text-blue-600">PRO</span></h1>
+    <div id="status-load" class="text-[10px] text-slate-400 mb-4 uppercase font-bold tracking-widest">Duke u lidhur...</div>
+    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl border-2 font-bold bg-slate-50 outline-none border-slate-100">
+        <option value="">Ngarkimi...</option>
+    </select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl border-2 text-center font-bold outline-none border-slate-100" inputmode="numeric">
-    <button onclick="login()" id="btn-login" disabled class="w-full p-4 bg-slate-300 text-white rounded-2xl font-black">PRIT...</button>
+    <button onclick="login()" id="btn-login" disabled class="w-full p-4 bg-slate-200 text-white rounded-2xl font-black">PRIT...</button>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden pt-2">
     <div class="box text-center">
         <input id="shuma" type="number" placeholder="0 L" class="w-full text-center text-5xl font-black text-blue-600 outline-none mb-6" inputmode="numeric">
-        <div id="kategorite-grid" class="grid grid-cols-2 gap-2 mb-6">
+        
+        <div id="kategorite-grid" class="grid grid-cols-2 gap-2 mb-6 text-xs">
             </div>
-        <button id="btn-save" onclick="regjistroGjithcka()" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg uppercase active:scale-95 transition-all">REGJISTRO ✅</button>
+        
+        <button id="btn-save" onclick="regjistroGjithcka()" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-200 uppercase tracking-widest active:scale-95 transition-all">
+            REGJISTRO ✅
+        </button>
     </div>
 
     <div class="box">
-        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 text-center">Statistikat e Muajit</h3>
-        <canvas id="myChart" style="max-height: 180px;"></canvas>
+        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 text-center tracking-widest">Analiza Mujore</h3>
+        <canvas id="myChart" style="max-height: 200px;"></canvas>
     </div>
 </div>
 
 <script>
-        const SHEET_ID = "10G3upOlUypMC_ITUu1jtWa8LQRWTtw1oVgCVP88AqIs";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxWPW1VeQyvhT6O_6JjUotS85NdFdgm0sIA42rmkpDfz7X6rdORMmkGaRrnyJibOaRB/exec"; // Kujdes: Linkun që more te Deploy!
+    // KONFIGURIMI FINAL
+    const SHEET_ID = "10G3upOlUypMC_ITUu1jtWa8LQRWTtw1oVgCVP88AqIs";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxWPW1VeQyvhT6O_6JjUotS85NdFdgm0sIA42rmkpDfz7X6rdORMmkGaRrnyJibOaRB/exec";
     
-    let dbPerdoruesit = {"Ian": "1234"}; // Rezervë nëse Sheets dështon
+    let dbPerdoruesit = {"Ian": "1234", "Aglien": "2016"}; 
     let uAktual = "", katZgjedhur = "", chartInstance = null;
 
+    // 1. NGARKIMI I KONFIGURIMIT (USERS & KATEGORITE)
     async function loadConfig() {
         try {
-            // Provon të marrë përdoruesit nga faqja "Perdoruesit"
             const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Perdoruesit`);
-            if (!res.ok) throw new Error();
-            
             const csv = await res.text();
             const rows = csv.split('\n').slice(1);
             
             let userHTML = "";
             rows.forEach(r => {
-                const cols = r.split(',').map(c => c.replace(/"/g, '').trim());
+                const cols = r.replace(/"/g, '').split(/[,,;]/); 
                 if(cols[0] && cols[1]) {
-                    dbPerdoruesit[cols[0]] = cols[1]; 
-                    userHTML += `<option value="${cols[0]}">${cols[0]}</option>`;
+                    const emri = cols[0].trim();
+                    const pin = cols[1].trim();
+                    dbPerdoruesit[emri] = pin;
+                    userHTML += `<option value="${emri}">${emri}</option>`;
                 }
             });
-            
-            if(userHTML !== "") {
-                document.getElementById('user-select').innerHTML = userHTML;
-            }
-            enableLogin();
+            if(userHTML !== "") document.getElementById('user-select').innerHTML = userHTML;
         } catch (e) {
-            console.log("Duke përdorur përdoruesit rezervë...");
+            console.log("Duke përdorur rezervën...");
             document.getElementById('user-select').innerHTML = '<option value="Ian">Ian</option><option value="Aglien">Aglien</option>';
-            enableLogin();
         }
-        
-        // Ngarko Kategoritë
-        const kats = ["Ushqim", "Transport", "Qejf", "Market", "Fatura"];
+
+        const kats = ["Ushqim 🍕", "Transport 🚗", "Qejf 🎮", "Market 🛒", "Fatura 📄", "Të tjera 📦"];
         let katHTML = "";
         kats.forEach(k => {
-            katHTML += `<div class="pad" onclick="setKat(this, '${k}')">${k}</div>`;
+            const emriKat = k.split(' ')[0];
+            katHTML += `<div class="pad" onclick="setKat(this, '${emriKat}')">${k}</div>`;
         });
         document.getElementById('kategorite-grid').innerHTML = katHTML;
-    }
-
-    function enableLogin() {
+        
         document.getElementById('btn-login').disabled = false;
         document.getElementById('btn-login').className = "w-full p-4 bg-slate-900 text-white rounded-2xl font-black";
         document.getElementById('btn-login').innerText = "HYR";
-        document.getElementById('status-load').innerText = "Sistemi Gati";
+        document.getElementById('status-load').innerText = "Sistemi Gati ✅";
     }
 
-    // PIN Login
     function login() {
         const u = document.getElementById("user-select").value;
         const p = document.getElementById("pass").value;
@@ -100,44 +99,21 @@
             document.getElementById("login-ui").style.display = "none";
             document.getElementById("app-ui").classList.remove("hidden");
             buildChart();
-        } else alert("PIN i gabuar!");
-    }
-
-    // Rregullimi i dërgimit
-    async function regjistroGjithcka() {
-        const sh = document.getElementById("shuma").value;
-        if(!sh || !katZgjedhur) return alert("Ploteso te dhenat!");
-        
-        const btn = document.getElementById('btn-save');
-        btn.innerHTML = 'DUKE RUAJTUR...';
-        btn.disabled = true;
-
-        const data = { emri: uAktual, kategoria: katZgjedhur, shuma: sh };
-
-        try {
-            // Këtu duhet WEB_APP_URL që morëm nga Apps Script
-            await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(data)
-            });
-            
-            alert("U krye! ✅");
-            document.getElementById("shuma").value = "";
-            btn.innerHTML = "REGJISTRO ✅";
-            btn.disabled = false;
-            buildChart();
-        } catch (e) {
-            alert("Gabim! Kontrollo nëse ke vendosur Web App URL.");
-            btn.innerHTML = "REGJISTRO ✅";
-            btn.disabled = false;
+        } else {
+            alert("PIN i gabuar!");
         }
     }
 
+    function setKat(el, kat) {
+        document.querySelectorAll('.pad').forEach(p => p.classList.remove('active'));
+        el.classList.add('active'); 
+        katZgjedhur = kat;
+    }
 
+    // 2. REGJISTRIMI (SHEETS + TELEGRAM)
     async function regjistroGjithcka() {
         const sh = document.getElementById("shuma").value;
-        if(!sh || !katZgjedhur) return alert("Plotëso të dhënat!");
+        if(!sh || !katZgjedhur) return alert("Vendos shumën dhe zgjidh kategorinë!");
         
         const btn = document.getElementById('btn-save');
         btn.innerHTML = '<div class="loading-spinner"></div> DUKE U RUAJTUR...';
@@ -146,36 +122,39 @@
         const data = { emri: uAktual, kategoria: katZgjedhur, shuma: sh };
 
         try {
-            // Dërgimi te Apps Script (ai merret me Sheets dhe Telegram vetë)
             await fetch(WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(data)
             });
             
-            alert("U regjistrua! Kontrollo Telegramin. ✅");
+            alert("Sukses! U dërgua në Sheets dhe Telegram. ✅");
             document.getElementById("shuma").value = "";
             btn.innerHTML = "REGJISTRO ✅";
             btn.disabled = false;
-            buildChart(); // Rifresko grafikun
+            buildChart();
         } catch (e) {
-            alert("Gabim! Provo sërish.");
+            alert("Ndodhi një gabim në dërgim!");
             btn.innerHTML = "REGJISTRO ✅";
             btn.disabled = false;
         }
     }
 
+    // 3. GRAFIKU DINAMIK
     async function buildChart() {
         try {
             const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Log`);
-            const data = await res.text();
-            const rows = data.split('\n').slice(1).map(r => r.split('","').map(c => c.replace(/"/g, '')));
+            const csv = await res.text();
+            const rows = csv.split('\n').slice(1);
             
             let katsData = {};
-            rows.forEach(cols => {
+            rows.forEach(r => {
+                const cols = r.replace(/"/g, '').split(/[,,;]/);
+                // Kolona 2 = Kategoria, Kolona 3 = Shuma
                 if(cols[2] && cols[3]) {
+                    const k = cols[2].trim();
                     const v = parseFloat(cols[3]);
-                    katsData[cols[2]] = (katsData[cols[2]] || 0) + v;
+                    if(!isNaN(v)) katsData[k] = (katsData[k] || 0) + v;
                 }
             });
 
@@ -188,12 +167,18 @@
                     datasets: [{
                         data: Object.values(katsData),
                         backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'],
-                        borderWidth: 0
+                        borderWidth: 0,
+                        hoverOffset: 10
                     }]
                 },
-                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+                options: { 
+                    cutout: '70%',
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 15, font: { size: 10, weight: 'bold' } } } 
+                    } 
+                }
             });
-        } catch (e) { console.log("Grafiku nuk u ngarkua"); }
+        } catch (e) { console.log("Grafiku ende nuk ka të dhëna"); }
     }
 
     loadConfig();
