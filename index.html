@@ -3,94 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance App v14 - Historiku</title>
+    <title>Finance App PRO - Ian</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
-        body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .box { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .list-item { border-bottom: 1px solid #f1f5f9; padding: 12px 5px; display: flex; justify-content: space-between; align-items: center; }
-        .list-item:last-child { border-bottom: none; }
+        body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
+        .box { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .pad { background: white; border: 2px solid #e2e8f0; padding: 12px; border-radius: 15px; text-align: center; cursor: pointer; font-weight: 800; font-size: 11px; transition: 0.2s; }
+        .pad.active { border-color: #2563eb; background: #2563eb; color: white; transform: scale(0.95); }
     </style>
 </head>
-<body class="p-4 text-slate-800">
+<body class="p-4">
 
 <div id="login-ui" class="max-w-xs mx-auto mt-20 box text-center">
-    <h1 class="text-2xl font-black italic uppercase mb-6 text-slate-900">Finance <span class="text-blue-600">App</span></h1>
-    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl border-2 font-bold bg-slate-50 outline-none">
+    <h1 class="text-2xl font-black italic mb-6">Finance <span class="text-blue-600">PRO</span></h1>
+    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl border-2 font-bold bg-slate-50 outline-none border-slate-100">
         <option value="Ian">IAN</option>
+        <option value="Aglien">AGLIEN</option>
         <option value="Arjanit">ARJANIT</option>
-        <option value="Joni">JONI</option>
     </select>
-    <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl border-2 text-center font-bold outline-none" inputmode="numeric">
-    <button onclick="login()" class="w-full p-4 bg-slate-900 text-white rounded-2xl font-black">HYR</button>
+    <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl border-2 text-center font-bold outline-none border-slate-100" inputmode="numeric">
+    <button onclick="login()" class="w-full p-4 bg-slate-900 text-white rounded-2xl font-black shadow-lg">HYR TANI</button>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden pt-2">
-    <div class="box text-center mb-4">
-        <input id="shuma" type="number" placeholder="Lekë" class="w-full text-center text-5xl font-black text-blue-600 outline-none mb-6" inputmode="numeric">
-        <button onclick="regjistro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg uppercase tracking-widest active:scale-95 transition-all">REGJISTRO</button>
+    
+    <div class="box text-center">
+        <input id="shuma" type="number" placeholder="0 L" class="w-full text-center text-5xl font-black text-blue-600 outline-none mb-4" inputmode="numeric">
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <div class="pad" onclick="setKat(this, 'Ushqim')">Ushqim 🍕</div>
+            <div class="pad" onclick="setKat(this, 'Transport')">Transport 🚗</div>
+            <div class="pad" onclick="setKat(this, 'Qejf')">Qejf 🎮</div>
+            <div class="pad" onclick="setKat(this, 'Market')">Market 🛒</div>
+        </div>
+        <button onclick="regjistro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg mb-2 active:scale-95 transition-all">1. REGJISTRO NË SHEETS</button>
+        <button onclick="dergoTelegram()" class="w-full p-3 bg-sky-500 text-white rounded-2xl font-black text-sm active:scale-95 transition-all">2. DËRGO NË TELEGRAM ✈️</button>
     </div>
 
     <div class="box">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">Historiku (Emri & Shënime)</h3>
-            <button onclick="shfaqHistorikun()" class="p-2 bg-slate-100 rounded-full text-xs">🔄</button>
+        <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-2">
+            <span>Buxheti (Limit: 10,000 L)</span>
+            <span id="prog-text">0 / 10,000 L</span>
         </div>
-        <div id="historiku-list" class="space-y-1">
-            <p class="text-slate-400 italic text-xs text-center">Duke ngarkuar...</p>
+        <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden">
+            <div id="prog-bar" class="bg-blue-600 h-full transition-all duration-700" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="box">
+        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest text-center">Analiza e Shpenzimeve</h3>
+        <canvas id="myChart" style="max-height: 200px;"></canvas>
+    </div>
+
+    <div class="box">
+        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Përmbledhja Mujore</h3>
+        <div id="raporti-mujor" class="text-sm space-y-2">
+            <div class="flex justify-between font-bold border-b pb-2">
+                <span>Prill 2026</span>
+                <span id="total-muaji" class="text-blue-600">0 L</span>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // --- KONFIGURIMI ---
     const SHEET_ID = "1DXgZ5N05s5H1Lz4mESwMujiTBX-twlGzwoSBO_6Ehns";
-    let uAktual = "";
+    const TG_TOKEN = "8782069667:AAFB-obtVC7LNw3Tt86mxlvqUNnC58H1DwE";
+    const TG_CHAT_ID = "5461448562";
+
+    // ID-TE E SAKTA NGA PRE-FILLED LINKU YT
+    const ID_KAT = "entry.1175504239";
+    const ID_EMRI = "entry.1555027509";
+    const ID_PERDORUESI = "entry.603674021";
+    const ID_SHUMA = "entry.1273774300";
+
+    const LIMITI_MUJOR = 10000;
+    let uAktual = "", katZgjedhur = "", chartInstance = null;
 
     function login() {
         const u = document.getElementById("user-select").value;
         const p = document.getElementById("pass").value;
-        const pins = {"Ian": "1234", "Arjanit": "0000", "Joni": "1111"};
-        if(pins[u] === p) {
+        if(p === "1234") { 
             uAktual = u;
             document.getElementById("login-ui").style.display = "none";
             document.getElementById("app-ui").classList.remove("hidden");
-            shfaqHistorikun();
+            shfaqTeDhenat();
         } else alert("PIN i gabuar!");
     }
 
-    async function shfaqHistorikun() {
-        const listContainer = document.getElementById("historiku-list");
+    function setKat(el, kat) {
+        document.querySelectorAll('.pad').forEach(p => p.classList.remove('active'));
+        el.classList.add('active'); 
+        katZgjedhur = kat;
+    }
+
+    async function shfaqTeDhenat() {
         try {
-            // Marrim te dhenat si CSV
             const sheetURL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-            const response = await fetch(sheetURL);
-            const csvData = await response.text();
-            
-            // Ndajme rreshtat dhe heqim thonjëzat
-            const rows = csvData.split('\n').slice(1).reverse(); // slice(1) heq rreshtin e pare (Headers)
-            
-            let html = "";
-            rows.slice(0, 10).forEach(row => {
-                const cols = row.split(',').map(c => c.replace(/"/g, ''));
-                if(cols.length >= 2) {
-                    html += `
-                    <div class="list-item">
-                        <span class="font-bold text-slate-700">${cols[1]}</span>
-                        <span class="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-lg">${cols[2] || "Pa shënim"}</span>
-                    </div>`;
+            const res = await fetch(sheetURL);
+            const data = await res.text();
+            const rows = data.split('\n').slice(1).map(r => r.split('","').map(c => c.replace(/"/g, '')));
+
+            let totali = 0;
+            let kategorite = { 'Ushqim': 0, 'Transport': 0, 'Qejf': 0, 'Market': 0 };
+
+            rows.forEach(cols => {
+                if(cols.length > 3) {
+                    const vlera = parseFloat(cols[4]) || 0; // Kolona e shumes ne Sheets
+                    totali += vlera;
+                    const katName = cols[1]; // Kolona e kategorise
+                    if(kategorite[katName] !== undefined) kategorite[katName] += vlera;
                 }
             });
-            listContainer.innerHTML = html || "<p class='text-center text-xs text-slate-400'>Nuk ka të dhëna.</p>";
-        } catch (e) {
-            listContainer.innerHTML = "<p class='text-center text-red-400 text-xs'>Gabim në lexim. Sigurohu që Sheets është 'Public'!</p>";
-        }
+
+            // Perditeso UI
+            const perqindja = Math.min((totali / LIMITI_MUJOR) * 100, 100);
+            document.getElementById('prog-bar').style.width = perqindja + "%";
+            document.getElementById('prog-text').innerText = `${totali} / ${LIMITI_MUJOR} L`;
+            document.getElementById('total-muaji').innerText = `${totali} L`;
+
+            updateChart(kategorite);
+        } catch (e) { console.error("Sheets nuk u lexua"); }
+    }
+
+    function updateChart(dataKats) {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        if(chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(dataKats),
+                datasets: [{
+                    data: Object.values(dataKats),
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+        });
     }
 
     function regjistro() {
         const sh = document.getElementById("shuma").value;
-        const url = `https://docs.google.com/forms/d/e/1FAIpQLSe15aI4gNRPCvUnTEBruWt0SK3K_eCUX7MIM47MBRpVTT-3yQ/viewform?usp=pp_url&entry.603674021=${encodeURIComponent(uAktual)}&entry.1273774300=${encodeURIComponent(sh)}`;
+        if(!sh || !katZgjedhur) return alert("Ploteso shumen dhe kategorine!");
+        
+        // Linku me ID-te e tua te sakta
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSe15aI4gNRPCvUnTEBruWt0SK3K_eCUX7MIM47MBRpVTT-3yQ/viewform?usp=pp_url&${ID_KAT}=${katZgjedhur}&${ID_EMRI}=${uAktual}&${ID_PERDORUESI}=${uAktual}&${ID_SHUMA}=${sh}`;
         window.location.href = url;
+    }
+
+    function dergoTelegram() {
+        const sh = document.getElementById("shuma").value;
+        if(!sh || !katZgjedhur) return alert("Ploteso te dhenat!");
+        
+        const mesazhi = encodeURIComponent(`📊 *Shpenzim i ri*\n👤 Perdoruesi: ${uAktual}\n💰 Shuma: ${sh} L\n📂 Kategoria: ${katZgjedhur}`);
+        const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${mesazhi}&parse_mode=Markdown`;
+        
+        fetch(url).then(res => {
+            if(res.ok) alert("U dërgua në Telegram! ✅");
+            else alert("Gabim me Telegramin!");
+        });
     }
 </script>
 </body>
