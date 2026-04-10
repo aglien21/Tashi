@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance App v13 - IAN PRO</title>
+    <title>Finance App v14 - Historiku</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
         body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; }
         .box { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .pad { background: white; border: 2px solid #e2e8f0; padding: 12px; border-radius: 15px; text-align: center; cursor: pointer; font-weight: 800; font-size: 11px; transition: 0.2s; }
-        .pad.active { border-color: #2563eb; background: #2563eb; color: white; transform: scale(0.95); }
-        .list-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; display: flex; justify-content: space-between; }
+        .list-item { border-bottom: 1px solid #f1f5f9; padding: 12px 5px; display: flex; justify-content: space-between; align-items: center; }
+        .list-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="p-4 text-slate-800">
@@ -24,41 +23,29 @@
         <option value="Joni">JONI</option>
     </select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl border-2 text-center font-bold outline-none" inputmode="numeric">
-    <button onclick="login()" class="w-full p-4 bg-slate-900 text-white rounded-2xl font-black active:scale-95 transition-all">HYR TANI</button>
+    <button onclick="login()" class="w-full p-4 bg-slate-900 text-white rounded-2xl font-black">HYR</button>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden pt-2">
     <div class="box text-center mb-4">
-        <input id="shuma" type="number" placeholder="0" class="w-full text-center text-5xl font-black text-blue-600 outline-none mb-4" inputmode="numeric">
-        <div class="grid grid-cols-2 gap-2 mb-6">
-            <div class="pad" onclick="setKat(this, 'Ushqim')">Ushqim</div>
-            <div class="pad" onclick="setKat(this, 'Transport')">Transport</div>
-            <div class="pad" onclick="setKat(this, 'Qejf')">Qejf</div>
-            <div class="pad" onclick="setKat(this, 'Te tjera')">Të tjera</div>
-        </div>
-        <button onclick="regjistro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg uppercase tracking-widest mb-4 active:scale-95">REGJISTRO</button>
+        <input id="shuma" type="number" placeholder="Lekë" class="w-full text-center text-5xl font-black text-blue-600 outline-none mb-6" inputmode="numeric">
+        <button onclick="regjistro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg uppercase tracking-widest active:scale-95 transition-all">REGJISTRO</button>
     </div>
 
     <div class="box">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">Historiku i Sheets</h3>
-            <button onclick="shfaqHistorikun()" class="text-blue-600 text-xs font-bold underline">Rifresko</button>
+            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">Historiku (Emri & Shënime)</h3>
+            <button onclick="shfaqHistorikun()" class="p-2 bg-slate-100 rounded-full text-xs">🔄</button>
         </div>
-        <div id="historiku-list" class="text-sm space-y-1">
-            <p class="text-slate-400 italic text-xs text-center">Duke ngarkuar të dhënat...</p>
+        <div id="historiku-list" class="space-y-1">
+            <p class="text-slate-400 italic text-xs text-center">Duke ngarkuar...</p>
         </div>
     </div>
 </div>
 
 <script>
-    let uAktual = "", katZgjedhur = "";
-
-    // ID-TE QE MOREM NGA LINKU YT I PRE-FILLED
-    const ID_EMRI = "entry.603674021";
-    const ID_SHUMA = "entry.1273774300";
-    // Keto te tjerat i gjejme ne baze te renditjes se formes
-    const ID_DATA = "entry.222237084"; 
-    const ID_KAT = "entry.2064104278";
+    const SHEET_ID = "1DXgZ5N05s5H1Lz4mESwMujiTBX-twlGzwoSBO_6Ehns";
+    let uAktual = "";
 
     function login() {
         const u = document.getElementById("user-select").value;
@@ -72,30 +59,38 @@
         } else alert("PIN i gabuar!");
     }
 
-    function setKat(el, kat) {
-        document.querySelectorAll('.pad').forEach(p => p.classList.remove('active'));
-        el.classList.add('active'); 
-        katZgjedhur = kat;
+    async function shfaqHistorikun() {
+        const listContainer = document.getElementById("historiku-list");
+        try {
+            // Marrim te dhenat si CSV
+            const sheetURL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+            const response = await fetch(sheetURL);
+            const csvData = await response.text();
+            
+            // Ndajme rreshtat dhe heqim thonjëzat
+            const rows = csvData.split('\n').slice(1).reverse(); // slice(1) heq rreshtin e pare (Headers)
+            
+            let html = "";
+            rows.slice(0, 10).forEach(row => {
+                const cols = row.split(',').map(c => c.replace(/"/g, ''));
+                if(cols.length >= 2) {
+                    html += `
+                    <div class="list-item">
+                        <span class="font-bold text-slate-700">${cols[1]}</span>
+                        <span class="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-lg">${cols[2] || "Pa shënim"}</span>
+                    </div>`;
+                }
+            });
+            listContainer.innerHTML = html || "<p class='text-center text-xs text-slate-400'>Nuk ka të dhëna.</p>";
+        } catch (e) {
+            listContainer.innerHTML = "<p class='text-center text-red-400 text-xs'>Gabim në lexim. Sigurohu që Sheets është 'Public'!</p>";
+        }
     }
 
     function regjistro() {
         const sh = document.getElementById("shuma").value;
-        if(!sh || !katZgjedhur) return alert("Ploteso shumen dhe zgjidh kategorine!");
-        
-        const d = new Date();
-        const ds = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
-
-        // LINKU FINAL ME ID-TE E SAKTA
-        const url = `https://docs.google.com/forms/d/e/1FAIpQLSe15aI4gNRPCvUnTEBruWt0SK3K_eCUX7MIM47MBRpVTT-3yQ/viewform?usp=pp_url&${ID_EMRI}=${encodeURIComponent(uAktual)}&${ID_SHUMA}=${encodeURIComponent(sh)}&${ID_KAT}=${encodeURIComponent(katZgjedhur)}&${ID_DATA}=${encodeURIComponent(ds)}`;
-
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSe15aI4gNRPCvUnTEBruWt0SK3K_eCUX7MIM47MBRpVTT-3yQ/viewform?usp=pp_url&entry.603674021=${encodeURIComponent(uAktual)}&entry.1273774300=${encodeURIComponent(sh)}`;
         window.location.href = url;
-    }
-
-    async function shfaqHistorikun() {
-        const listContainer = document.getElementById("historiku-list");
-        // Ketu vendoset ID-ja e Sheets per te lexuar te dhenat (jo e Forms)
-        // Nese nuk e ke ID-ne e Sheets, thjesht shiko nese hapet forma me emrin tend tani.
-        listContainer.innerHTML = "<p class='text-center text-slate-400 text-xs'>ID e Sheets duhet lidhur...</p>";
     }
 </script>
 </body>
