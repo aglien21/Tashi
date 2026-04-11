@@ -203,24 +203,33 @@
 
     // SINHRONIZIMI I KURSIMEVE ME GOOGLE SHEETS
     async function syncKursimToSheet() {
-        const emri = document.getElementById("obj-emri").value;
-        const mbledhur = localStorage.getItem("kursime_mbledhura") || 0;
-        const synimi = localStorage.getItem("obj_vlera") || 0;
-        
-        localStorage.setItem("obj_emri", emri);
-        
-        // Dërgojmë të dhënat në Sheet që të mos humbin
+    const emri = document.getElementById("obj-emri").value;
+    const mbledhur = localStorage.getItem("kursime_mbledhura") || 0;
+    const synimi = localStorage.getItem("obj_vlera") || 0;
+    
+    localStorage.setItem("obj_emri", emri);
+    
+    // Kjo pjesë siguron që Apps Script ta marrë informacionin saktë
+    const dhenat = {
+        action: "sync_kursim",
+        user: uAktual,
+        emri: emri,
+        mbledhur: mbledhur,
+        synimi: synimi
+    };
+
+    try {
         await fetch(URL, { 
             method: "POST", 
-            body: JSON.stringify({ 
-                action: "sync_kursim", 
-                user: uAktual, 
-                emri: emri, 
-                mbledhur: mbledhur, 
-                synimi: synimi 
-            }) 
+            mode: "no-cors", // Kjo ndihmon nëse ka bllokime nga browser-i
+            body: JSON.stringify(dhenat) 
         });
+        console.log("Kursimet u sinkronizuan!");
+    } catch (e) {
+        console.log("Gabim gjatë dërgimit:", e);
     }
+}
+
 
     function initKursimet() {
         document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im";
