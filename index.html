@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa-Family</title>
+    <title>Financa-Family Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -20,8 +20,6 @@
         
         @keyframes pulse-red { 0%, 100% { color: #ef4444; } 50% { color: #fca5a5; opacity: 0.8; } }
         .limit-warning { animation: pulse-red 1.5s infinite; font-weight: 900; }
-        .logo-pulse { animation: pulse-soft 3s infinite ease-in-out; }
-        @keyframes pulse-soft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         .pazar-item.done { text-decoration: line-through; opacity: 0.4; background: #f1f5f9 !important; border-color: transparent !important; }
     </style>
 </head>
@@ -34,7 +32,7 @@
 
 <div id="login-ui" class="max-w-xs mx-auto mt-16 box text-center shadow-2xl border border-blue-100/50">
     <div class="flex justify-center mb-6">
-        <div class="bg-blue-600/10 dark:bg-blue-600/20 p-8 rounded-full logo-pulse">
+        <div class="bg-blue-600/10 p-8 rounded-full">
             <svg class="w-20 h-20 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6m-9-6v3m3-3v3m3-3v3"></path></svg>
         </div>
     </div>
@@ -47,10 +45,10 @@
 <div id="app-ui" class="max-w-md mx-auto hidden">
     <div class="flex justify-between items-center mb-4 gap-2 text-[11px] font-black uppercase">
         <div class="flex gap-1">
-            <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent text-blue-600"></select>
+            <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent text-blue-600 font-bold"></select>
             <select id="sel-viti" onchange="merrRaportin()" class="bg-transparent text-slate-400"></select>
         </div>
-        <span class="text-slate-400">Paneli 🏠</span>
+        <span class="text-slate-400">Arka Aktive 🏠</span>
     </div>
 
     <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl relative text-center">
@@ -59,7 +57,7 @@
         <div id="top-3-container" class="mb-4 flex justify-center gap-2"></div>
         <div id="piechart" style="width: 100%; height: 160px;"></div>
         <div class="mt-4 px-2">
-            <div class="flex justify-between text-[9px] font-black uppercase mb-1 text-slate-400">
+            <div class="flex justify-between text-[9px] font-black uppercase mb-1 text-slate-400 text-left">
                 <span>Limit Mujor</span>
                 <span id="txt-limit">0 / 0 L</span>
             </div>
@@ -92,11 +90,14 @@
             <h3 class="text-[10px] font-black uppercase text-slate-500 italic">🛒 Lista e Pazarit</h3>
             <button onclick="pastroPazarin()" class="text-[9px] font-bold text-red-400 uppercase">Fshi të blerat</button>
         </div>
-        <div class="flex gap-2 mb-3">
-            <select id="pazar-select" class="flex-1 p-3 rounded-xl text-xs outline-none bg-slate-50 dark:bg-slate-700">
-                <option value="">Zgjidh Artikull...</option>
+        <div class="flex flex-col gap-2 mb-3">
+            <select id="pazar-select" class="w-full p-3 rounded-xl text-xs outline-none bg-slate-50 dark:bg-slate-700">
+                <option value="">Zgjidh nga kategoritë...</option>
             </select>
-            <button onclick="shtoNePazar()" class="bg-blue-600 text-white px-5 rounded-xl font-black shadow-lg active:scale-90">+</button>
+            <div class="flex gap-2">
+                <input id="pazar-manual-input" type="text" placeholder="Ose shkruaj emrin vetë..." class="flex-1 p-3 rounded-xl text-xs outline-none bg-slate-50 dark:bg-slate-700">
+                <button onclick="shtoNePazar()" class="bg-blue-600 text-white px-6 rounded-xl font-black shadow-lg active:scale-90">+</button>
+            </div>
         </div>
         <div id="pazar-lista" class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto"></div>
     </div>
@@ -104,9 +105,9 @@
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
     <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10 text-center relative">
-        <div class="text-[10px] font-black uppercase text-blue-500 mb-1">Arka e Pagesës</div>
+        <div class="text-[10px] font-black uppercase text-blue-500 mb-1 tracking-tighter">Totali në Shportë</div>
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
-        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800/50 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-medium text-slate-500 italic">Zgjidh produktet...</div>
+        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800/50 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-medium text-slate-500 italic">Shporta është bosh...</div>
         <input type="file" accept="image/*" capture="environment" id="skaneri" class="hidden" onchange="procesoSkanimin(event)">
         <div class="flex gap-2 mt-4">
             <button onclick="vibro(); document.getElementById('skaneri').click()" class="bg-slate-800 text-white px-4 rounded-2xl text-lg">📷</button>
@@ -121,7 +122,7 @@
 <div id="modal-manual" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-[60]">
     <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center border-t-4 border-blue-600 shadow-2xl">
         <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500 italic">Shuma</h3>
-        <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl font-bold text-3xl text-center border-2 border-blue-100 outline-none text-blue-600" inputmode="numeric" placeholder="0">
+        <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl font-bold text-3xl text-center border-2 border-blue-100 outline-none text-blue-600" inputmode="numeric" placeholder="Vendos çmimin">
         <button onclick="konfirmoManual()" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all">SHTO NË SHPORTË</button>
     </div>
 </div>
@@ -138,7 +139,7 @@
 <script>
     google.charts.load('current', {'packages':['corechart']});
     const URL = "https://script.google.com/macros/s/AKfycbyq_0VquRxRNciMafdyYwTst0n4Pv7y8ecE4FebqB21bUxSVkQ8DuggA9hE__O_rLJZ/exec"; 
-    let uAktual = "", allData = {}, katAktuale = "", isDark = false, shportaObj = {}, listaRaportit = [];
+    let uAktual = "", allData = {}, katAktuale = "", isDark = false, shportaObj = {}, listaRaportit = [], produktiManualIAktual = "";
     let pazarData = JSON.parse(localStorage.getItem("pazar_list")) || [];
 
     function vibro() { if (navigator.vibrate) navigator.vibrate(45); }
@@ -156,21 +157,29 @@
         mbushPazarSelect();
     };
 
-    // PAZARI LOGIC
     function mbushPazarSelect() {
         const sel = document.getElementById("pazar-select");
-        allData.nenkats.forEach(n => {
-            sel.innerHTML += `<option value='${JSON.stringify(n)}'>${n.emri}</option>`;
-        });
+        allData.nenkats.forEach(n => { sel.innerHTML += `<option value='${JSON.stringify(n)}'>${n.emri}</option>`; });
     }
+
     function shtoNePazar() {
-        const val = document.getElementById("pazar-select").value;
-        if(!val) return;
-        const item = JSON.parse(val);
-        pazarData.push({txt: item.emri, cmimi: item.cmimi, done: false});
+        const manualName = document.getElementById("pazar-manual-input").value;
+        const selectVal = document.getElementById("pazar-select").value;
+        
+        if (manualName.trim() !== "") {
+            pazarData.push({txt: manualName, cmimi: 0, done: false});
+            document.getElementById("pazar-manual-input").value = "";
+        } else if (selectVal) {
+            const item = JSON.parse(selectVal);
+            pazarData.push({txt: item.emri, cmimi: item.cmimi, done: false});
+        } else {
+            return;
+        }
+        
         localStorage.setItem("pazar_list", JSON.stringify(pazarData));
         shfaqPazarin(); vibro();
     }
+
     function shfaqPazarin() {
         let h = "";
         pazarData.forEach((item, i) => {
@@ -178,6 +187,7 @@
         });
         document.getElementById("pazar-lista").innerHTML = h;
     }
+
     function blejNgaPazari(index) {
         if(pazarData[index].done) return;
         const item = pazarData[index];
@@ -186,15 +196,15 @@
         localStorage.setItem("pazar_list", JSON.stringify(pazarData));
         shfaqPazarin();
     }
+
     function pastroPazarin() {
         pazarData = pazarData.filter(i => !i.done);
         localStorage.setItem("pazar_list", JSON.stringify(pazarData));
         shfaqPazarin();
     }
 
-    // LOGIN & DATA
     document.getElementById("btn-login").onclick = async () => {
-        vibro(); const btn = document.getElementById("btn-login"); btn.innerText = "Po lidhem..."; btn.disabled = true;
+        vibro(); const btn = document.getElementById("btn-login"); btn.innerText = "LIDHJA..."; btn.disabled = true;
         const u = document.getElementById("user-select").value, p = document.getElementById("pass").value;
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "login", user: u, pass: p }) });
         const d = await r.json();
@@ -214,8 +224,7 @@
         mbetjaEl.innerText = d.mbetja.toLocaleString() + " L";
         let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
         let perq = limitTot > 0 ? (d.dalje / limitTot) * 100 : 0;
-        if(perq >= 80) { mbetjaEl.classList.add("limit-warning"); } 
-        else { mbetjaEl.classList.remove("limit-warning"); }
+        if(perq >= 80) mbetjaEl.classList.add("limit-warning"); else mbetjaEl.classList.remove("limit-warning");
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
         document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
         let sortedKats = Object.entries(d.grafiku).sort((a,b) => b[1]-a[1]).slice(0, 3);
@@ -241,7 +250,6 @@
         document.getElementById("lista-histori").innerHTML = h || "<p class='text-center text-[10px] text-slate-500'>Bosh.</p>";
     }
 
-    // KURSIMET
     function initKursimet() {
         document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im";
         perditesoKasaforten();
@@ -264,7 +272,6 @@
     }
     function ruajEmrinKursimit() { localStorage.setItem("obj_emri", document.getElementById("obj-emri").value); }
 
-    // CORE APP FUNCTIONS
     function shfaqKategoriteKryesore() {
         let h = "";
         allData.kats.forEach(k => {
@@ -273,6 +280,7 @@
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
+
     function shfaqNenkategorite(prindi) {
         let h = `<button onclick="shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[10px] font-black text-blue-600 uppercase italic">⬅ KTHEHU MBREPRASH</button>`;
         allData.nenkats.filter(n => n.prindi == prindi).forEach(n => {
@@ -282,57 +290,67 @@
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
+
     function shtoNeShporte(emri, cmimi, isDirect) {
         vibro(); if(isDirect) katAktuale = emri;
-        if (cmimi === 0) {
+        if (parseFloat(cmimi) === 0) {
             produktiManualIAktual = emri; 
             document.getElementById("manual-titulli").innerText = emri;
-            document.getElementById("manual-input").value = ""; // PASTRIM AUTOMATIK
+            document.getElementById("manual-input").value = ""; 
             document.getElementById("modal-manual").classList.remove("hidden");
-            setTimeout(() => document.getElementById("manual-input").focus(), 300);
+            
+            // KURSORI AUTOMATIK ME VONESË TË VOGËL PËR TË QENË I SIGURTË
+            setTimeout(() => {
+                const inp = document.getElementById("manual-input");
+                inp.focus();
+                inp.click(); 
+            }, 300);
         } else {
             if (!shportaObj[emri]) shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) }; 
             else shportaObj[emri].sasia += 1;
             llogaritTotalin();
         }
     }
+
     function llogaritTotalin() {
         let t = 0, l = [];
         for (let e in shportaObj) { t += (shportaObj[e].sasia * shportaObj[e].cmimi); l.push(shportaObj[e].sasia > 1 ? `${e} x${shportaObj[e].sasia}` : e); }
         document.getElementById("shuma").value = t; document.getElementById("shporta-list").innerText = l.join(", ");
     }
+
     async function ruajShpenzim() {
         vibro(); const s = document.getElementById("shuma").value, sh = document.getElementById("shporta-list").innerText;
         if(!s) return alert("Zgjidh produkte!");
-        const btn = document.getElementById("btn-ruaj"); btn.innerText = "PAGESA PO KRYHET..."; btn.disabled = true;
+        const btn = document.getElementById("btn-ruaj"); btn.innerText = "PAGESA..."; btn.disabled = true;
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: sh }) });
         btn.innerText = "PAGUAJ ✅"; btn.disabled = false; pastroShporten(); merrRaportin();
     }
-    function pastroShporten() { shportaObj = {}; document.getElementById("shuma").value = ""; document.getElementById("shporta-list").innerText = "Zgjidh produktet..."; }
+
+    function pastroShporten() { shportaObj = {}; document.getElementById("shuma").value = ""; document.getElementById("shporta-list").innerText = "Shporta është bosh..."; }
+
     function konfirmoManual() {
         const v = parseFloat(document.getElementById("manual-input").value); if(!v) return;
-        if (!shportaObj[produktiManualIAktual]) {
-            shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: v };
-        } else {
-            shportaObj[produktiManualIAktual].sasia += 1;
-            shportaObj[produktiManualIAktual].cmimi = v;
-        }
+        if (!shportaObj[produktiManualIAktual]) shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: v };
+        else { shportaObj[produktiManualIAktual].sasia += 1; shportaObj[produktiManualIAktual].cmimi = v; }
         document.getElementById("modal-manual").classList.add("hidden"); 
-        document.getElementById("manual-input").value = ""; // RESET PER PRODUKTIN TJETER
+        document.getElementById("manual-input").value = ""; 
         llogaritTotalin();
     }
+
     function shfaqFondet() { document.getElementById("modal-fond").classList.toggle("hidden"); }
     async function ruajFond() {
         const b = document.getElementById("f-burimi").value, s = document.getElementById("f-shuma").value;
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto_fond", user: uAktual, burimi: b, shuma: s }) });
         shfaqFondet(); merrRaportin();
     }
+
     function shkarkoPDF() {
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
         doc.text("Raporti Financiar", 14, 20);
         doc.autoTable({ head: [['Data', 'Kategoria', 'Shuma']], body: listaRaportit.map(i => [i.d, i.k, i.s + " L"]), startY: 30 });
         doc.save("Raporti.pdf");
     }
+
     function procesoSkanimin(e) { alert("Fotoja u mor me sukses!"); vibro(); }
 </script>
 </body>
