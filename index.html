@@ -14,26 +14,33 @@
         .pad:active { transform: scale(0.92); background: #eff6ff; border-color: #3b82f6; }
         .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
         input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); }
+        
+        /* Animacion për logon */
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        .logo-pulse { animation: pulse-soft 3s infinite ease-in-out; }
     </style>
 </head>
 <body class="p-4 pb-20">
 
-<button onclick="vibro(); toggleDark()" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg hover:scale-110 transition-transform">🌙</button>
+<button onclick="vibro(); toggleDark()" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
 
-<div id="login-ui" class="max-w-xs mx-auto mt-20 box text-center animate-fade-in shadow-2xl border border-blue-100/50">
-    <div class="flex justify-center mb-5">
-        <div class="bg-blue-50 dark:bg-blue-950 p-5 rounded-full shadow-inner border border-blue-100/50">
-            <svg class="w-14 h-14 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<div id="login-ui" class="max-w-xs mx-auto mt-16 box text-center shadow-2xl border border-blue-100/50">
+    <div class="flex justify-center mb-6">
+        <div class="bg-blue-600/10 dark:bg-blue-600/20 p-8 rounded-full logo-pulse">
+            <svg class="w-20 h-20 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6m-9-6v3m3-3v3m3-3v3"></path>
             </svg>
         </div>
     </div>
     
-    <h2 class="text-3xl font-black mb-1 uppercase text-slate-800 dark:text-slate-100 font-sans tracking-tighter">Financa<span class="text-blue-600">-</span>Family</h2>
-    <p class="text-[10px] text-slate-500 mb-8 uppercase font-bold tracking-widest italic">Kontrolli i buxhetit tuaj</p>
+    <h2 class="text-3xl font-black mb-1 uppercase text-slate-800 dark:text-slate-100 tracking-tighter">Financa<span class="text-blue-600">-</span>Family</h2>
+    <p class="text-[10px] text-slate-500 mb-10 uppercase font-bold tracking-[0.2em] italic">Management Panel</p>
     
-    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none text-center text-sm shadow-sm border-2 border-blue-50/50 focus:border-blue-300 transition-colors"></select>
-    <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-8 rounded-2xl text-center font-bold outline-none text-xl border-2 border-blue-50/50 focus:border-blue-300 transition-colors" inputmode="numeric">
+    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none text-center text-sm border-2 border-blue-50/50"></select>
+    <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-8 rounded-2xl text-center font-bold outline-none text-xl border-2 border-blue-50/50" inputmode="numeric">
     
     <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg text-sm uppercase tracking-widest active:scale-95 transition-all">
         Hyni në Panel
@@ -50,26 +57,21 @@
     </div>
 
     <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl relative text-center">
-        <div class="text-center">
-            <p class="text-slate-400 text-[10px] uppercase font-black mb-1 tracking-widest">Mbetja Totale</p>
-            <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-4">0 L</h1>
-            
-            <div id="piechart" style="width: 100%; height: 180px;"></div>
-            
-            <div class="mt-4 px-2">
-                <div class="flex justify-between text-[9px] font-black uppercase mb-1 text-slate-400">
-                    <span>Limit Mujor</span>
-                    <span id="txt-limit">0 / 0 L</span>
-                </div>
-                <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                    <div id="bar-limit" class="bg-blue-500 h-full w-0 transition-all duration-500"></div>
-                </div>
+        <p class="text-slate-400 text-[10px] uppercase font-black mb-1 tracking-widest">Mbetja Totale</p>
+        <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-4">0 L</h1>
+        <div id="piechart" style="width: 100%; height: 180px;"></div>
+        <div class="mt-4 px-2">
+            <div class="flex justify-between text-[9px] font-black uppercase mb-1 text-slate-400">
+                <span>Limit Mujor</span>
+                <span id="txt-limit">0 / 0 L</span>
             </div>
-
-            <button onclick="vibro(); shfaqFondet()" class="mt-6 bg-blue-600/20 border border-blue-500/30 px-5 py-2 rounded-full text-[10px] font-black uppercase text-blue-300">
-                + SHTO PARA
-            </button>
+            <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                <div id="bar-limit" class="bg-blue-500 h-full w-0 transition-all duration-500"></div>
+            </div>
         </div>
+        <button onclick="vibro(); shfaqFondet()" class="mt-6 bg-blue-600/20 border border-blue-500/30 px-5 py-2 rounded-full text-[10px] font-black uppercase text-blue-300">
+            + SHTO PARA
+        </button>
     </div>
 
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
@@ -77,21 +79,16 @@
     <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10 text-center">
         <div class="text-[10px] font-black uppercase text-blue-500 mb-1 italic">Arka / Pagesa</div>
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
-        
-        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800/50 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-medium text-center text-slate-500">
+        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800/50 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-medium text-slate-500">
             Zgjidh produktet...
         </div>
-
         <div class="flex gap-2 mt-4">
             <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-md active:bg-green-600">
                 PAGUAJ ✅
             </button>
-            <button onclick="vibro(); pastroShporten()" class="bg-red-50 dark:bg-red-900/20 px-6 rounded-2xl border border-red-100 text-red-500 font-bold">
-                🗑️
-            </button>
+            <button onclick="vibro(); pastroShporten()" class="bg-red-50 dark:bg-red-900/20 px-6 rounded-2xl border border-red-100 text-red-500 font-bold">🗑️</button>
         </div>
     </div>
-
     <div id="lista-histori" class="space-y-3 pb-10"></div>
 </div>
 
@@ -99,7 +96,7 @@
     <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl border-t-4 border-blue-600">
         <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500 italic">Shuma</h3>
         <input id="manual-input" type="number" placeholder="Lekë" class="w-full p-4 mb-4 rounded-2xl outline-none font-bold text-2xl text-center border-2 border-blue-100" inputmode="numeric">
-        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black shadow-lg">SHTO NË ARRKË</button>
+        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black shadow-lg">SHTO NË SHPORTË</button>
     </div>
 </div>
 
@@ -134,29 +131,22 @@
         const selM = document.getElementById("sel-muaji");
         const selV = document.getElementById("sel-viti");
         const sot = new Date();
-        const vitiAktual = sot.getFullYear();
-
         muajt.forEach((m, i) => { selM.innerHTML += `<option value="${i+1}" ${sot.getMonth()==i?'selected':''}>${m}</option>`; });
-        for(let v = 2025; v <= 2030; v++) { selV.innerHTML += `<option value="${v}" ${vitiAktual==v?'selected':''}>${v}</option>`; }
+        for(let v = 2025; v <= 2030; v++) { selV.innerHTML += `<option value="${v}" ${sot.getFullYear()==v?'selected':''}>${v}</option>`; }
         
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "get_data" }) });
         allData = await r.json();
         allData.users.forEach(u => { document.getElementById("user-select").innerHTML += `<option value="${u}">${u}</option>`; });
     };
 
-    // FUNKSIONI I LOGIN-IT I PËRDITËSUAR ME "PO LIDHEM..."
     document.getElementById("btn-login").onclick = async () => {
         vibro();
         const btn = document.getElementById("btn-login");
         btn.innerText = "Po lidhem...";
         btn.disabled = true;
-        btn.classList.remove('bg-blue-600');
-        btn.classList.add('bg-slate-500');
-
         const u = document.getElementById("user-select").value, p = document.getElementById("pass").value;
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "login", user: u, pass: p }) });
         const d = await r.json();
-        
         if(d.status == "ok") { 
             uAktual = u; 
             document.getElementById("login-ui").classList.add("hidden"); 
@@ -165,11 +155,8 @@
             merrRaportin(); 
         } else {
             alert("PIN i gabuar!");
-            // Kthejmë butonin në gjendjen fillestare nëse dështon
             btn.innerText = "Hyni në Panel";
             btn.disabled = false;
-            btn.classList.add('bg-blue-600');
-            btn.classList.remove('bg-slate-500');
         }
     };
 
@@ -178,7 +165,7 @@
         let h = "";
         allData.kats.forEach(k => {
             let func = k.kaNen == "Po" ? `shfaqNenkategorite('${k.emri}')` : `shtoNeShporte('${k.emri}', 0, true)`;
-            h += `<div class="pad shadow-sm" onclick="vibro(); ${func}"><span class="text-[10px] font-black uppercase text-slate-700 dark:text-slate-100">${k.emri}</span></div>`;
+            h += `<div class="pad shadow-sm" onclick="vibro(); ${func}"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
@@ -188,7 +175,7 @@
         let h = `<button onclick="vibro(); shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[10px] font-black text-blue-600 uppercase italic">⬅ KTHEHU PAS</button>`;
         allData.nenkats.filter(n => n.prindi == prindi).forEach(n => {
             h += `<div class="pad border-dashed" onclick="shtoNeShporte('${n.emri}', ${n.cmimi}, false)">
-                <span class="text-[10px] font-bold text-slate-800 dark:text-slate-100">${n.emri}</span><br>
+                <span class="text-[10px] font-bold">${n.emri}</span><br>
                 <b class="text-blue-500 text-[9px]">${n.cmimi > 0 ? n.cmimi + ' L' : 'SHTO VETË'}</b>
             </div>`;
         });
@@ -266,22 +253,16 @@
     async function merrRaportin() {
         const m = document.getElementById("sel-muaji").value;
         const v = document.getElementById("sel-viti").value; 
-        
-        document.getElementById("lista-histori").innerHTML = "<p class='text-center text-[10px] text-slate-400'>Duke ngarkuar të dhënat e "+v+"...</p>";
-
+        document.getElementById("lista-histori").innerHTML = "<p class='text-center text-[10px] text-slate-400'>Duke u lidhur...</p>";
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v }) });
         const d = await r.json();
-        
         document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
-        
         let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
         let perq = limitTot > 0 ? (d.dalje / limitTot) * 100 : 0;
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
         document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
-
         let chartData = [['K', 'L']];
         for(let k in d.grafiku) chartData.push([k, d.grafiku[k]]);
-        
         if(chartData.length > 1) {
             let data = google.visualization.arrayToDataTable(chartData);
             new google.visualization.PieChart(document.getElementById('piechart')).draw(data, {
@@ -292,21 +273,16 @@
                 pieHole: 0.5
             });
         } else {
-            document.getElementById('piechart').innerHTML = "<div class='flex items-center justify-center h-full text-[10px] text-slate-500'>Nuk ka të dhëna për këtë periudhë</div>";
+            document.getElementById('piechart').innerHTML = "<div class='flex items-center justify-center h-full text-[10px] text-slate-500'>Bosh</div>";
         }
-        
         let h = "";
-        if(d.lista.length === 0) {
-            h = "<p class='text-center text-[10px] text-slate-500 mt-4 italic'>Asnjë lëvizje e gjetur.</p>";
-        } else {
-            d.lista.forEach(i => {
-                h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm">
-                    <div class="text-left"><b class="text-[10px] uppercase text-slate-800 dark:text-slate-100">${i.k}</b><br><small class="text-slate-500 text-[8px] italic">${i.u} • ${i.d}</small></div>
-                    <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
-                </div>`;
-            });
-        }
-        document.getElementById("lista-histori").innerHTML = h;
+        d.lista.forEach(i => {
+            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm mb-2">
+                <div class="text-left"><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-500 text-[8px] italic">${i.u} • ${i.d}</small></div>
+                <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
+            </div>`;
+        });
+        document.getElementById("lista-histori").innerHTML = h || "<p class='text-center text-[10px] text-slate-500'>Asgjë.</p>";
     }
 </script>
 </body>
