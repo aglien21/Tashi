@@ -32,7 +32,7 @@
         </div>
     </div>
     <h2 class="text-2xl font-black mb-1 uppercase tracking-tighter text-blue-600">Financa-Family</h2>
-    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold tracking-widest italic">Versioni 4.3</p>
+    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold tracking-widest italic">Versioni 4.4 - Fix</p>
     <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none"></select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl text-center font-bold outline-none" inputmode="numeric">
     <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYNI NË PANEL</button>
@@ -46,7 +46,7 @@
 
     <div class="box mb-4 bg-gradient-to-r from-indigo-600 to-blue-700 text-white border-none shadow-xl">
         <div class="flex justify-between items-center mb-2">
-            <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-blue-200 outline-none w-1/2" onchange="ruajEmrin()">
+            <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-blue-200 outline-none w-1/2" onchange="ruajEmrin()" placeholder="Qëllimi i kursimit">
             <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md">0%</span>
         </div>
         <div class="w-full bg-black/20 rounded-full h-2 mb-3">
@@ -57,8 +57,9 @@
                 <span id="obj-vlerat">0 / 0 L</span>
             </div>
             <div class="flex gap-2">
-                <button onclick="mbyllMuajinDheKurse()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl uppercase">Ruaj Mbetjen 💰</button>
-                <button onclick="resetKursimet()" class="bg-red-500/20 text-[9px] font-black px-3 py-2 rounded-xl uppercase border border-red-500/30">Reset 🗑️</button>
+                <button onclick="mbyllMuajinDheKurse()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl uppercase">Kurse 💰</button>
+                <button onclick="ndryshoQellimin()" class="bg-white/10 text-[9px] font-black px-3 py-2 rounded-xl uppercase border border-white/20">🎯</button>
+                <button onclick="resetKursimet()" class="bg-red-500/20 text-[9px] font-black px-3 py-2 rounded-xl uppercase border border-red-500/30">Reset</button>
             </div>
         </div>
     </div>
@@ -101,7 +102,7 @@
     <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
         <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500 italic">Shuma</h3>
         <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl text-center font-bold text-2xl border-2 border-blue-100 outline-none" inputmode="numeric">
-        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black uppercase">Shto ne Shporte</button>
+        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black uppercase">Shto</button>
     </div>
 </div>
 
@@ -120,9 +121,11 @@
         allData = await r.json();
         allData.users.forEach(u => { document.getElementById("user-select").innerHTML += `<option value="${u}">${u}</option>`; });
         
+        // NGARKIMI I TE DHENAVE TE RUAJTURA
         kursimetMBLEDHURA = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0;
         targetKursimi = parseFloat(localStorage.getItem("obj_vlera")) || 0;
         document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im";
+        
         perditesoKasaforten();
     };
 
@@ -138,6 +141,45 @@
         } else { alert("PIN i gabuar!"); btn.innerText = "HYNI NË PANEL"; }
     };
 
+    function perditesoKasaforten() {
+        // Kontrollon nese targeti eshte i caktuar, nese jo, nuk te pyet vetvetiu por pret butonin
+        if(targetKursimi > 0) {
+            const perq = Math.min((kursimetMBLEDHURA / targetKursimi) * 100, 100);
+            document.getElementById("obj-bar").style.width = perq + "%";
+            document.getElementById("obj-perq").innerText = Math.floor(perq) + "%";
+            document.getElementById("obj-vlerat").innerText = `${kursimetMBLEDHURA.toLocaleString()} / ${targetKursimi.toLocaleString()} L`;
+        } else {
+            document.getElementById("obj-vlerat").innerText = `${kursimetMBLEDHURA.toLocaleString()} / CAKTO SYNIMIN`;
+        }
+    }
+
+    function ndryshoQellimin() {
+        const t = prompt("Sa është shuma që dëshiron të arrish në total?", targetKursimi);
+        if(t !== null && t !== "") {
+            targetKursimi = parseFloat(t);
+            localStorage.setItem("obj_vlera", targetKursimi);
+            perditesoKasaforten();
+        }
+    }
+
+    function mbyllMuajinDheKurse() {
+        if (mbetjaAktuale <= 0) return alert("S'ka mbetje pozitive këtë muaj!");
+        if (confirm(`A dëshiron të shtosh ${mbetjaAktuale.toLocaleString()} L te kursimet e mbledhura?`)) {
+            kursimetMBLEDHURA += mbetjaAktuale;
+            localStorage.setItem("kursime_mbledhura", kursimetMBLEDHURA);
+            perditesoKasaforten();
+            alert("U ruajt!");
+        }
+    }
+
+    function resetKursimet() {
+        if(confirm("Kjo do fshijë TOTALISHT kursimet e mbledhura! Je i sigurt?")) {
+            kursimetMBLEDHURA = 0;
+            localStorage.setItem("kursime_mbledhura", 0);
+            perditesoKasaforten();
+        }
+    }
+
     function shfaqKategoriteKryesore() {
         let h = "";
         allData.kats.forEach(k => {
@@ -148,20 +190,18 @@
 
     function shtoNeShporte(emri, cmimi, isDirect) {
         if(isDirect) katAktuale = emri;
-        if (cmimi === 0) {
-            produktiManualIAktual = emri;
-            document.getElementById("manual-titulli").innerText = emri;
-            document.getElementById("modal-manual").classList.remove("hidden");
-        } else {
-            if (!shportaObj[emri]) shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) };
-            else shportaObj[emri].sasia += 1;
-            llogaritTotalin();
-        }
+        produktiManualIAktual = emri;
+        document.getElementById("manual-titulli").innerText = emri;
+        document.getElementById("manual-input").value = "";
+        document.getElementById("modal-manual").classList.remove("hidden");
     }
 
     function konfirmoManual() {
         const vlera = parseFloat(document.getElementById("manual-input").value);
-        if (vlera) { shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: vlera }; llogaritTotalin(); }
+        if (vlera) { 
+            shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: vlera }; 
+            llogaritTotalin(); 
+        }
         document.getElementById("modal-manual").classList.add("hidden");
     }
 
@@ -169,7 +209,7 @@
         let total = 0, t = [];
         for (let k in shportaObj) {
             total += (shportaObj[k].sasia * shportaObj[k].cmimi);
-            t.push(shportaObj[k].sasia > 1 ? `${k} x${shportaObj[k].sasia}` : k);
+            t.push(k);
         }
         document.getElementById("shuma").value = total;
         document.getElementById("shporta-list").innerText = t.join(", ") || "Zgjidh produktet...";
@@ -183,26 +223,25 @@
 
     function skanoFatureRregullt(input) {
         if (!input.files[0]) return;
-        document.getElementById("shporta-list").innerText = "Duke kërkuar TOTAL-in... 🔍";
+        document.getElementById("shporta-list").innerText = "Skanimi...";
         setTimeout(() => {
-            const shuma = Math.floor(Math.random() * 1500) + 500;
+            const shuma = Math.floor(Math.random() * 1000) + 400;
             document.getElementById("shuma").value = shuma;
-            document.getElementById("shporta-list").innerHTML = `<b class="text-blue-600">GJETUR TOTALI: ${shuma} L</b>`;
+            document.getElementById("shporta-list").innerHTML = `<b class="text-blue-600">TOTALI: ${shuma} L</b>`;
             katAktuale = "Market"; 
-        }, 1500);
+        }, 1200);
     }
 
     async function merrRaportin() {
         const m = document.getElementById("sel-muaji").value, v = document.getElementById("sel-viti").value;
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v }) });
         raportiGlobal = await r.json();
-        
         mbetjaAktuale = raportiGlobal.mbetja;
         document.getElementById("r-mbetja").innerText = mbetjaAktuale.toLocaleString() + " L";
         
         let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
         document.getElementById("txt-limit").innerText = `${raportiGlobal.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
-        document.getElementById("bar-limit").style.width = Math.min((raportiGlobal.dalje / limitTot) * 100, 100) + "%";
+        document.getElementById("bar-limit").style.width = Math.min((raportiGlobal.dalje / (limitTot || 1)) * 100, 100) + "%";
 
         perditesoKasaforten();
         
@@ -223,44 +262,16 @@
                 <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
             </div>`;
         });
-        document.getElementById("lista-histori").innerHTML = h || "<p class='text-center text-slate-500 text-xs'>Bosh.</p>";
+        document.getElementById("lista-histori").innerHTML = h || "Bosh.";
     }
 
     async function ruajShpenzim() {
-        const s = document.getElementById("shuma").value, sh = document.getElementById("shporta-list").innerText;
+        const s = document.getElementById("shuma").value;
         if(!s || !katAktuale) return alert("Zgjidh kategorine!");
         const btn = document.getElementById("btn-ruaj"); btn.innerText = "Ruajtja...";
-        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: sh }) });
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: document.getElementById("shporta-list").innerText }) });
         btn.innerText = "PAGUAJ ✅";
         pastroShporten(); merrRaportin();
-    }
-
-    function mbyllMuajinDheKurse() {
-        if (mbetjaAktuale <= 0) return alert("S'ka mbetje!");
-        if (confirm(`Ruaj ${mbetjaAktuale} L?`)) {
-            kursimetMBLEDHURA += mbetjaAktuale;
-            localStorage.setItem("kursime_mbledhura", kursimetMBLEDHURA);
-            perditesoKasaforten();
-        }
-    }
-
-    function resetKursimet() {
-        if(confirm("Dëshiron të fshish të gjitha kursimet e mbledhura?")) {
-            kursimetMBLEDHURA = 0;
-            localStorage.setItem("kursime_mbledhura", 0);
-            perditesoKasaforten();
-        }
-    }
-
-    function perditesoKasaforten() {
-        if(targetKursimi === 0) {
-            const t = prompt("Cili është synimi i kursimit (L)?");
-            if(t) { targetKursimi = parseFloat(t); localStorage.setItem("obj_vlera", targetKursimi); }
-        }
-        const perq = Math.min((kursimetMBLEDHURA / targetKursimi) * 100, 100);
-        document.getElementById("obj-bar").style.width = perq + "%";
-        document.getElementById("obj-perq").innerText = Math.floor(perq) + "%";
-        document.getElementById("obj-vlerat").innerText = `${kursimetMBLEDHURA.toLocaleString()} / ${targetKursimi.toLocaleString()} L`;
     }
 
     function shkarkoPDF() {
