@@ -14,8 +14,6 @@
         .pad:active { transform: scale(0.92); background: #eff6ff; border-color: #3b82f6; }
         .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
         input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); }
-        .animate-pop { animation: pop 0.2s ease-out; }
-        @keyframes pop { 0% { transform: scale(0.9); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body class="p-4 pb-20">
@@ -23,49 +21,46 @@
 <button onclick="vibro(); toggleDark()" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
 
 <div id="login-ui" class="max-w-xs mx-auto mt-20 box text-center">
-    <h2 class="text-xl font-black mb-6 uppercase italic text-blue-600">Ian Finance</h2>
+    <h2 class="text-xl font-black mb-6 uppercase italic text-blue-600 font-serif text-[24px]">Ian Finance</h2>
     <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none"></select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl text-center font-bold outline-none" inputmode="numeric">
-    <button id="btn-login" onclick="vibro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg active:bg-blue-700">HYR</button>
+    <button id="btn-login" onclick="vibro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYR</button>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden">
     <div class="flex justify-between items-center mb-4 text-[12px] font-bold">
-        <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none"></select>
-        <span class="text-blue-500 uppercase font-black">Pro Manager 🚀</span>
+        <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-blue-500"></select>
+        <span class="text-slate-400 uppercase tracking-widest text-[9px]">Aplikacioni i Dyqanit 🛒</span>
     </div>
 
-    <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl relative overflow-hidden">
-        <div class="relative z-10 text-center">
+    <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl relative">
+        <div class="text-center">
             <p class="text-slate-400 text-[10px] uppercase font-black mb-1 tracking-widest">Mbetja Totale</p>
             <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-4">0 L</h1>
-            
-            <div id="piechart" class="mb-4" style="width: 100%; height: 200px;"></div>
-            
-            <button onclick="vibro(); shfaqFondet()" class="bg-blue-600/20 border border-blue-500/40 px-6 py-2 rounded-full text-[10px] font-black uppercase text-blue-300 active:scale-95 transition-all">
-                + SHTO FOND
+            <div id="piechart" style="width: 100%; height: 180px;"></div>
+            <button onclick="vibro(); shfaqFondet()" class="mt-2 bg-blue-600/20 border border-blue-500/30 px-5 py-2 rounded-full text-[10px] font-black uppercase text-blue-300 active:scale-90">
+                + SHTO PARA
             </button>
-        </div>
-    </div>
-
-    <div class="mb-6 bg-white dark:bg-slate-800 p-4 rounded-[22px] shadow-sm border border-var(--border)">
-        <div class="flex justify-between text-[10px] font-black uppercase mb-2">
-            <span class="text-slate-400">Limiti Mujor</span>
-            <span id="txt-limit" class="text-blue-500">0 / 0 L</span>
-        </div>
-        <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
-            <div id="bar-limit" class="bg-blue-600 h-full w-0 transition-all duration-500"></div>
         </div>
     </div>
 
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
-    <div class="box mb-6 border-2 border-blue-600/30 shadow-lg animate-pop">
-        <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-500 bg-transparent border-none w-full text-center outline-none" inputmode="numeric">
-        <div id="shporta-vizuale" class="text-[11px] text-slate-500 mt-2 text-center italic min-h-[20px]">Zgjidh diçka...</div>
+    <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10">
+        <div class="text-[10px] font-black uppercase text-blue-500 mb-1 text-center italic">Totali për të paguar</div>
+        <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" inputmode="numeric">
+        
+        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800/50 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-medium text-center text-slate-500">
+            Zgjidh produktet...
+        </div>
+
         <div class="flex gap-2 mt-4">
-            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase italic tracking-widest active:bg-green-500 transition-all shadow-md">Ruaj ✅</button>
-            <button onclick="vibro(); pastroShporten()" class="bg-slate-100 dark:bg-slate-800 px-6 rounded-2xl border border-slate-200 dark:border-slate-700">🗑️</button>
+            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase italic tracking-widest active:bg-green-600 shadow-md">
+                PAGUAJ (RUAJ) ✅
+            </button>
+            <button onclick="vibro(); pastroShporten()" class="bg-red-50 dark:bg-red-900/20 px-6 rounded-2xl border border-red-100 dark:border-red-900/30 text-red-500">
+                🗑️
+            </button>
         </div>
     </div>
 
@@ -73,13 +68,12 @@
 </div>
 
 <div id="modal-fond" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-50">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl border border-blue-500/20">
-        <h3 class="text-sm font-black mb-4 uppercase text-blue-500 italic italic">Arkëtim i Ri</h3>
-        <input id="f-burimi" placeholder="Burimi (Psh: Rroga)" class="w-full p-4 mb-2 rounded-2xl outline-none text-sm">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 shadow-2xl">
+        <input id="f-burimi" placeholder="Burimi (Psh: Paga)" class="w-full p-4 mb-2 rounded-2xl outline-none text-sm text-center">
         <input id="f-shuma" type="number" placeholder="Shuma L" class="w-full p-4 mb-4 rounded-2xl outline-none font-bold text-lg text-center">
         <div class="flex gap-2">
-            <button onclick="ruajFond()" class="flex-1 p-4 bg-green-600 text-white rounded-xl font-black text-xs">SHTO</button>
-            <button onclick="shfaqFondet()" class="flex-1 p-4 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-bold">ANULLO</button>
+            <button onclick="ruajFond()" class="flex-1 p-4 bg-green-600 text-white rounded-xl font-black text-[10px]">SHTO</button>
+            <button onclick="shfaqFondet()" class="flex-1 p-4 bg-slate-100 dark:bg-slate-700 rounded-xl font-bold text-[10px]">MBYLL</button>
         </div>
     </div>
 </div>
@@ -88,7 +82,7 @@
     google.charts.load('current', {'packages':['corechart']});
     const URL = "https://script.google.com/macros/s/AKfycbyq_0VquRxRNciMafdyYwTst0n4Pv7y8ecE4FebqB21bUxSVkQ8DuggA9hE__O_rLJZ/exec"; 
     let uAktual = "", allData = {}, katAktuale = "", isDark = false;
-    let shporta = {}; // Objekti per te mbajtur { "Buke": {q: 2, p: 100} }
+    let shportaObj = {}; 
 
     function vibro() { if (navigator.vibrate) navigator.vibrate(45); }
 
@@ -128,11 +122,11 @@
 
     function shfaqNenkategorite(prindi) {
         katAktuale = prindi; 
-        let h = `<button onclick="vibro(); shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[10px] font-black text-blue-500 uppercase italic">⬅ MBPRAPA</button>`;
+        let h = `<button onclick="vibro(); shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[10px] font-black text-blue-600 uppercase italic tracking-tighter">⬅ KTHEHU PAS</button>`;
         allData.nenkats.filter(n => n.prindi == prindi).forEach(n => {
             h += `<div class="pad border-dashed" onclick="shtoNeShporte('${n.emri}', ${n.cmimi}, false)">
                 <span class="text-[10px] font-bold">${n.emri}</span><br>
-                <b class="text-blue-500 text-[9px]">${n.cmimi > 0 ? n.cmimi + ' L' : 'VENDO ÇMIM'}</b>
+                <b class="text-blue-500 text-[9px]">${n.cmimi > 0 ? n.cmimi + ' L' : 'SHTO VETË'}</b>
             </div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
@@ -142,53 +136,58 @@
         vibro();
         if(isDirect) katAktuale = emri;
         
-        if (!shporta[emri]) {
-            shporta[emri] = { sasia: 1, cmimi: cmimi };
+        if (!shportaObj[emri]) {
+            shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) || 0 };
         } else {
-            shporta[emri].sasia += 1;
+            shportaObj[emri].sasia += 1;
         }
 
+        // Nese produkti nuk ka cmim fiks, lejo perdoruesin ta shkruaje
         if(cmimi === 0) {
-            document.getElementById("shuma").focus();
-            document.getElementById("shuma").oninput = function() {
-                shporta[emri].cmimi = parseFloat(this.value) || 0;
-                perditesoPamjenShportes();
+            const inputShuma = document.getElementById("shuma");
+            inputShuma.value = ""; 
+            inputShuma.focus();
+            inputShuma.oninput = function() {
+                shportaObj[emri].cmimi = parseFloat(this.value) || 0;
+                llogaritTotalin();
             };
+        } else {
+            llogaritTotalin();
         }
-        
-        perditesoPamjenShportes();
     }
 
-    function perditesoPamjenShportes() {
+    function llogaritTotalin() {
         let total = 0;
-        let listaTekst = [];
-        for (let emri in shporta) {
-            let item = shporta[emri];
+        let treguesi = [];
+        for (let emri in shportaObj) {
+            let item = shportaObj[emri];
             total += (item.sasia * item.cmimi);
-            listaTekst.push(item.sasia > 1 ? `${emri} x${item.sasia}` : emri);
+            treguesi.push(item.sasia > 1 ? `${emri} x${item.sasia}` : emri);
         }
         document.getElementById("shuma").value = total > 0 ? total : "";
-        document.getElementById("shporta-vizuale").innerText = listaTekst.join(", ");
+        document.getElementById("shporta-list").innerText = treguesi.join(", ");
     }
 
     function pastroShporten() { 
-        shporta = {}; 
+        shportaObj = {}; 
         document.getElementById("shuma").value = ""; 
-        document.getElementById("shporta-vizuale").innerText = "Zgjidh diçka..."; 
+        document.getElementById("shporta-list").innerText = "Zgjidh produktet..."; 
     }
 
     async function ruajShpenzim() {
         vibro();
         const s = document.getElementById("shuma").value;
-        const sh = document.getElementById("shporta-vizuale").innerText;
-        if(!s || !katAktuale) return alert("Zgjidh kategorinë!");
+        const sh = document.getElementById("shporta-list").innerText;
+        if(!s || !katAktuale) return alert("Zgjidh të paktën një produkt!");
         
         const btn = document.getElementById("btn-ruaj");
-        btn.innerText = "Duke u ruajtur...";
+        btn.innerText = "DUKE PAGUAR...";
+        btn.disabled = true;
         
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: sh }) });
         
-        btn.innerText = "Ruaj ✅";
+        btn.innerText = "PAGUAJ (RUAJ) ✅";
+        btn.disabled = false;
         pastroShporten(); 
         merrRaportin();
     }
@@ -206,16 +205,8 @@
         const m = document.getElementById("sel-muaji").value, v = new Date().getFullYear();
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v }) });
         const d = await r.json();
-        
         document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
         
-        // LIMITI MUJOR (Progres Bar)
-        let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
-        let perq = limitTot > 0 ? (d.dalje / limitTot) * 100 : 0;
-        document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
-        document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
-
-        // GRAFIKU (Zmadhuar për gishtat)
         let chartData = [['K', 'L']];
         for(let k in d.grafiku) chartData.push([k, d.grafiku[k]]);
         if(chartData.length > 1) {
@@ -223,21 +214,16 @@
             new google.visualization.PieChart(document.getElementById('piechart')).draw(data, {
                 backgroundColor: 'transparent',
                 colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899'],
-                legend: { 
-                    textStyle: { color: isDark ? '#f8fafc' : '#cbd5e1', fontSize: 11, fontWeight: 'bold' },
-                    position: 'right',
-                    alignment: 'center'
-                },
-                chartArea: { width:'95%', height:'90%' },
-                pieHole: 0.5,
-                pieSliceBorderColor: "none"
+                legend: { textStyle: { color: isDark ? '#f8fafc' : '#cbd5e1', fontSize: 10, fontWeight: 'bold' }, position: 'right' },
+                chartArea: { width:'100%', height:'90%' },
+                pieHole: 0.5
             });
         }
         
         let h = "";
         d.lista.forEach(i => {
             h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm">
-                <div class="text-left"><b class="text-[11px] uppercase tracking-tight">${i.k}</b><br><small class="text-slate-500 text-[9px] italic">${i.u} • ${i.d}</small></div>
+                <div class="text-left"><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-500 text-[8px] italic">${i.u} • ${i.d}</small></div>
                 <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
             </div>`;
         });
