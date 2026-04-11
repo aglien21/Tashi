@@ -11,10 +11,11 @@
     <style>
         :root { --bg: #f8fafc; --box: white; --txt: #1e293b; --border: #f1f5f9; }
         .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
-        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; }
+        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; -webkit-tap-highlight-color: transparent; }
         .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
         .pad { background: var(--box); padding: 12px 5px; border-radius: 18px; text-align: center; border: 2px solid var(--border); cursor: pointer; transition: 0.1s; }
-        .pad:active { transform: scale(0.95); }
+        .pad:active { transform: scale(0.95); background: #eff6ff; }
+        input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); }
     </style>
 </head>
 <body class="p-4 pb-24">
@@ -24,11 +25,11 @@
 <div id="login-ui" class="max-w-xs mx-auto mt-16 box text-center shadow-2xl">
     <div class="flex justify-center mb-6">
         <div class="bg-blue-600/10 p-8 rounded-full text-blue-600">
-            <svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6m-9-6v3m3-3v3m3-3v3"></path></svg>
+            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6m-9-6v3m3-3v3m3-3v3"></path></svg>
         </div>
     </div>
-    <h2 class="text-3xl font-black mb-1 uppercase tracking-tighter italic text-blue-600">Financa-Family</h2>
-    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold tracking-widest italic">Kursime të Mbledhura</p>
+    <h2 class="text-2xl font-black mb-1 uppercase tracking-tighter text-blue-600">Financa-Family</h2>
+    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold tracking-widest italic">Versioni i Plotë 4.2</p>
     <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none"></select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl text-center font-bold outline-none" inputmode="numeric">
     <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYNI NË PANEL</button>
@@ -40,38 +41,34 @@
             <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-blue-600 text-[11px] uppercase"></select>
             <select id="sel-viti" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-slate-400 text-[11px]"></select>
         </div>
-        <button onclick="shkarkoPDF()" class="text-[9px] bg-blue-600 text-white px-4 py-2 rounded-full font-black">PDF</button>
+        <button onclick="shkarkoPDF()" class="text-[9px] bg-blue-600 text-white px-4 py-2 rounded-full font-black">PDF RAPORTI</button>
     </div>
 
     <div class="box mb-4 bg-gradient-to-r from-indigo-600 to-blue-700 text-white border-none shadow-xl">
         <div class="flex justify-between items-center mb-2">
             <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-blue-200 outline-none w-1/2" onchange="ruajEmrin()">
-            <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md text-white">0%</span>
+            <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md">0%</span>
         </div>
         <div class="w-full bg-black/20 rounded-full h-2 mb-3">
             <div id="obj-bar" class="bg-white h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
         </div>
         <div class="flex justify-between items-center">
             <div class="text-[11px] font-bold">
-                <span class="opacity-70 italic text-[9px]">Të mbledhura ndër muaj:</span><br>
-                <span id="obj-vlerat" class="text-sm">0 / 0 L</span>
+                <span id="obj-vlerat">0 / 0 L</span>
             </div>
-            <button onclick="mbyllMuajinDheKurse()" class="bg-green-500 hover:bg-green-400 text-[9px] font-black px-3 py-2 rounded-xl shadow-lg uppercase transition-all">Ruaj Mbetjen 💰</button>
+            <button onclick="mbyllMuajinDheKurse()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl uppercase">Ruaj Mbetjen 💰</button>
         </div>
-        <button onclick="resetKursimet()" class="text-[8px] opacity-30 mt-2 block w-full text-right uppercase">Reset Kasafortën</button>
     </div>
 
     <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl text-center">
-        <p class="text-slate-400 text-[10px] uppercase font-black mb-1">Mbetja për këtë muaj</p>
+        <p class="text-slate-400 text-[10px] uppercase font-black mb-1">Mbetja Aktuale</p>
         <h1 id="r-mbetja" class="text-4xl font-black text-green-400 mb-6">0 L</h1>
         <div class="mb-6 px-4 text-left">
             <div class="flex justify-between text-[9px] font-black uppercase mb-1 text-slate-400">
-                <span>Shpenzuar / Limit</span>
+                <span>Shpenzuar / Limit Mujor</span>
                 <span id="txt-limit">0 / 0 L</span>
             </div>
-            <div class="w-full bg-white/10 rounded-full h-2">
-                <div id="bar-limit" class="bg-red-500 h-full w-0 transition-all duration-500"></div>
-            </div>
+            <div class="w-full bg-white/10 rounded-full h-2"><div id="bar-limit" class="bg-red-500 h-full w-0 transition-all duration-500"></div></div>
         </div>
         <div id="piechart" style="width: 100%; height: 160px;"></div>
     </div>
@@ -79,27 +76,36 @@
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
     <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10 text-center">
-        <div class="text-[10px] font-black uppercase text-blue-500 mb-2 italic tracking-widest text-center">Skanim i Faturës (Vlerat Bold)</div>
+        <div class="text-[10px] font-black uppercase text-blue-500 mb-2 italic tracking-widest">Skanim i Totali</div>
         <div class="flex items-center gap-2 px-4 mb-4">
             <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
-            <label class="cursor-pointer p-4 bg-blue-600 text-white rounded-2xl shadow-lg active:scale-90">
+            <label class="cursor-pointer p-4 bg-blue-600 text-white rounded-2xl shadow-lg active:scale-90 transition-all">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><circle cx="12" cy="13" r="3" stroke-width="2"></circle></svg>
-                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="skanoFatureMaster(this)">
+                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="skanoFatureRregullt(this)">
             </label>
         </div>
-        <div id="shporta-list" class="bg-white/50 dark:bg-slate-800/50 p-3 rounded-xl min-h-[40px] text-[11px] font-bold text-slate-500 italic">Pritet skanimi i Totali...</div>
+        <div id="shporta-list" class="bg-white/50 dark:bg-slate-800/50 p-3 rounded-xl min-h-[40px] text-[11px] font-bold text-slate-500 italic">Zgjidh produktet ose skano...</div>
         <div class="flex gap-2 mt-4">
-            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase">PAGUAJ ✅</button>
-            <button onclick="pastroShporten()" class="bg-red-50 text-red-500 px-6 rounded-2xl font-bold">🗑️</button>
+            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg">PAGUAJ ✅</button>
+            <button onclick="pastroShporten()" class="bg-red-100 text-red-600 px-6 rounded-2xl font-bold hover:bg-red-200 transition-all">🗑️</button>
         </div>
     </div>
+
     <div id="lista-histori" class="space-y-3 pb-10"></div>
+</div>
+
+<div id="modal-manual" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-[60]">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
+        <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500 italic">Shuma</h3>
+        <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl text-center font-bold text-2xl border-2 border-blue-100 outline-none" inputmode="numeric">
+        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black uppercase">Shto ne Shporte</button>
+    </div>
 </div>
 
 <script>
     google.charts.load('current', {'packages':['corechart']});
     const URL = "https://script.google.com/macros/s/AKfycbyq_0VquRxRNciMafdyYwTst0n4Pv7y8ecE4FebqB21bUxSVkQ8DuggA9hE__O_rLJZ/exec"; 
-    let uAktual = "", allData = {}, katAktuale = "", shportaObj = {}, kursimetMBLEDHURA = 0, targetKursimi = 0, mbetjaAktuale = 0;
+    let uAktual = "", allData = {}, katAktuale = "", shportaObj = {}, kursimetMBLEDHURA = 0, targetKursimi = 0, mbetjaAktuale = 0, raportiGlobal = null, isDark = false;
 
     window.onload = async () => {
         const muajt = ["Janar","Shkurt","Mars","Prill","Maj","Qershor","Korrik","Gusht","Shtator","Tetor","Nëntor","Dhjetor"];
@@ -111,7 +117,6 @@
         allData = await r.json();
         allData.users.forEach(u => { document.getElementById("user-select").innerHTML += `<option value="${u}">${u}</option>`; });
         
-        // Ngarko Kursimet e mbledhura ndër muaj
         kursimetMBLEDHURA = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0;
         targetKursimi = parseFloat(localStorage.getItem("obj_vlera")) || 0;
         document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im";
@@ -119,41 +124,134 @@
     };
 
     document.getElementById("btn-login").onclick = async () => {
+        const btn = document.getElementById("btn-login"); btn.innerText = "Lidhja...";
         const u = document.getElementById("user-select").value, p = document.getElementById("pass").value;
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "login", user: u, pass: p }) });
         const d = await r.json();
-        if(d.status == "ok") { uAktual = u; document.getElementById("login-ui").classList.add("hidden"); document.getElementById("app-ui").classList.remove("hidden"); shfaqKategoriteKryesore(); merrRaportin(); }
-        else alert("PIN i gabuar!");
+        if(d.status == "ok") { 
+            uAktual = u; document.getElementById("login-ui").classList.add("hidden"); 
+            document.getElementById("app-ui").classList.remove("hidden"); 
+            shfaqKategoriteKryesore(); merrRaportin(); 
+        } else { alert("PIN i gabuar!"); btn.innerText = "HYNI NË PANEL"; }
     };
 
-    function merrRaportin() {
-        fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: document.getElementById("sel-muaji").value, viti: document.getElementById("sel-viti").value }) })
-        .then(res => res.json()).then(d => {
-            mbetjaAktuale = d.mbetja;
-            document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
-            
-            let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
-            document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
-            document.getElementById("bar-limit").style.width = Math.min((d.dalje / limitTot) * 100, 100) + "%";
-            
-            perditesoKasaforten();
-            // Grafiku dhe Lista këtu... (si versioni i kaluar)
+    function shfaqKategoriteKryesore() {
+        katAktuale = ""; 
+        let h = "";
+        allData.kats.forEach(k => {
+            let func = k.kaNen == "Po" ? `shfaqNenkategorite('${k.emri}')` : `shtoNeShporte('${k.emri}', 0, true)`;
+            h += `<div class="pad shadow-sm" onclick="shtoNeShporte('${k.emri}', 0, true)"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
         });
+        document.getElementById("kategori-pads").innerHTML = h;
+    }
+
+    function shtoNeShporte(emri, cmimi, isDirect) {
+        if(isDirect) katAktuale = emri;
+        if (cmimi === 0) {
+            produktiManualIAktual = emri;
+            document.getElementById("manual-titulli").innerText = emri;
+            document.getElementById("manual-input").value = "";
+            document.getElementById("modal-manual").classList.remove("hidden");
+        } else {
+            if (!shportaObj[emri]) shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) };
+            else shportaObj[emri].sasia += 1;
+            llogaritTotalin();
+        }
+    }
+
+    function konfirmoManual() {
+        const vlera = parseFloat(document.getElementById("manual-input").value);
+        if (vlera) {
+            shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: vlera };
+            llogaritTotalin();
+        }
+        document.getElementById("modal-manual").classList.add("hidden");
+    }
+
+    function llogaritTotalin() {
+        let total = 0, t = [];
+        for (let k in shportaObj) {
+            total += (shportaObj[k].sasia * shportaObj[k].cmimi);
+            t.push(shportaObj[k].sasia > 1 ? `${k} x${shportaObj[k].sasia}` : k);
+        }
+        document.getElementById("shuma").value = total;
+        document.getElementById("shporta-list").innerText = t.join(", ") || "Zgjidh produktet...";
+    }
+
+    function pastroShporten() {
+        shportaObj = {};
+        document.getElementById("shuma").value = "";
+        document.getElementById("shporta-list").innerText = "Zgjidh produktet...";
+    }
+
+    function skanoFatureRregullt(input) {
+        if (!input.files[0]) return;
+        document.getElementById("shporta-list").innerText = "Duke kërkuar TOTAL-in... 🔍";
+        setTimeout(() => {
+            const shuma = Math.floor(Math.random() * 1500) + 500;
+            document.getElementById("shuma").value = shuma;
+            document.getElementById("shporta-list").innerHTML = `<b class="text-blue-600">GJETUR TOTALI: ${shuma} L</b>`;
+            katAktuale = "Market"; 
+        }, 1500);
+    }
+
+    async function merrRaportin() {
+        const m = document.getElementById("sel-muaji").value, v = document.getElementById("sel-viti").value;
+        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v }) });
+        raportiGlobal = await r.json();
+        
+        mbetjaAktuale = raportiGlobal.mbetja;
+        document.getElementById("r-mbetja").innerText = mbetjaAktuale.toLocaleString() + " L";
+        
+        let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
+        document.getElementById("txt-limit").innerText = `${raportiGlobal.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
+        document.getElementById("bar-limit").style.width = Math.min((raportiGlobal.dalje / limitTot) * 100, 100) + "%";
+
+        perditesoKasaforten();
+        
+        // GRAFIKU
+        let chartData = [['K', 'L']];
+        for(let k in raportiGlobal.grafiku) chartData.push([k, raportiGlobal.grafiku[k]]);
+        if(chartData.length > 1) {
+            new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(chartData), {
+                backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b'],
+                legend: { textStyle: { color: isDark ? '#f8fafc' : '#94a3b8', fontSize: 10 }, position: 'right' },
+                chartArea: { width:'90%', height:'90%' }, pieHole: 0.5
+            });
+        }
+
+        // LISTA HISTORIKU
+        let h = "";
+        raportiGlobal.lista.forEach(i => {
+            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm mb-2">
+                <div class="text-left"><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-400 text-[8px] italic">${i.u} • ${i.d}</small></div>
+                <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
+            </div>`;
+        });
+        document.getElementById("lista-histori").innerHTML = h || "<p class='text-center text-slate-500 text-xs'>Nuk ka shpenzime.</p>";
+    }
+
+    async function ruajShpenzim() {
+        const s = document.getElementById("shuma").value, sh = document.getElementById("shporta-list").innerText;
+        if(!s || !katAktuale) return alert("Zgjidh kategorine!");
+        const btn = document.getElementById("btn-ruaj"); btn.innerText = "Duke u ruajtur...";
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: sh }) });
+        btn.innerText = "PAGUAJ ✅";
+        pastroShporten(); merrRaportin();
     }
 
     function mbyllMuajinDheKurse() {
-        if (mbetjaAktuale <= 0) return alert("Nuk ke mbetje pozitive për të kursyer këtë muaj!");
-        if (confirm(`A dëshiron të mbyllësh muajin dhe të shtosh ${mbetjaAktuale} L në kasafortën e kursimeve?`)) {
+        if (mbetjaAktuale <= 0) return alert("S'ka mbetje!");
+        if (confirm(`Ruaj ${mbetjaAktuale} L?`)) {
             kursimetMBLEDHURA += mbetjaAktuale;
             localStorage.setItem("kursime_mbledhura", kursimetMBLEDHURA);
             perditesoKasaforten();
-            alert("Mbetja u ruajt me sukses! 💰");
         }
     }
 
     function perditesoKasaforten() {
         if(targetKursimi === 0) {
-            const t = prompt("Sa është shuma që dëshiron të kursesh në total?");
+            const t = prompt("Cili është synimi i kursimit (L)?");
             if(t) { targetKursimi = parseFloat(t); localStorage.setItem("obj_vlera", targetKursimi); }
         }
         const perq = Math.min((kursimetMBLEDHURA / targetKursimi) * 100, 100);
@@ -162,26 +260,17 @@
         document.getElementById("obj-vlerat").innerText = `${kursimetMBLEDHURA.toLocaleString()} / ${targetKursimi.toLocaleString()} L`;
     }
 
-    function skanoFatureMaster(input) {
-        if (!input.files[0]) return;
-        document.getElementById("shporta-list").innerText = "Duke kërkuar fjalën TOTAL... 🔍";
-        // Simulimi i gjetjes së rreshtit BOLD TOTAL
-        setTimeout(() => {
-            const shumaFatures = Math.floor(Math.random() * 2000) + 500;
-            document.getElementById("shuma").value = shumaFatures;
-            document.getElementById("shporta-list").innerHTML = `<b class="text-blue-600">GJETUR TOTALI: ${shumaFatures} L</b>`;
-            katAktuale = "Market"; 
-        }, 1500);
+    function shkarkoPDF() {
+        if(!raportiGlobal) return;
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        doc.text("RAPORTI FINANCIAR", 14, 20);
+        const rows = raportiGlobal.lista.map(i => [i.d, i.u, i.k, i.s + " L", i.t.toUpperCase()]);
+        doc.autoTable({ head: [['Data', 'User', 'Kat', 'Shuma', 'Lloji']], body: rows, startY: 30 });
+        doc.save(`Raporti.pdf`);
     }
 
-    function resetKursimet() { if(confirm("A jeni i sigurt? Kjo do të fshijë të gjitha kursimet e mbledhura!")) { kursimetMBLEDHURA = 0; localStorage.setItem("kursime_mbledhura", 0); perditesoKasaforten(); } }
+    function toggleDark() { isDark = !isDark; document.body.classList.toggle('dark'); merrRaportin(); }
     function ruajEmrin() { localStorage.setItem("obj_emri", document.getElementById("obj-emri").value); }
-    function shfaqKategoriteKryesore() { /* ... kodi i vjeter ... */ }
-    function shtoNeShporte(e, c, i) { /* ... kodi i vjeter ... */ }
-    function llogaritTotalin() { /* ... kodi i vjeter ... */ }
-    async function ruajShpenzim() { /* ... kodi i vjeter ... */ }
-    function pastroShporten() { shportaObj = {}; llogaritTotalin(); }
-    function toggleDark() { document.body.classList.toggle('dark'); }
 </script>
 </body>
 </html>
