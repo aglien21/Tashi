@@ -3,68 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance PRO</title>
+    <title>Finance PRO Ian</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <style>
         :root { --bg: #f8fafc; --box: white; --txt: #1e293b; --border: #f1f5f9; }
         .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
         body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; -webkit-tap-highlight-color: transparent; }
-        .pad { background: var(--box); padding: 15px 5px; border-radius: 20px; text-align: center; border: 2px solid var(--border); transition: 0.1s; }
-        .pad:active { transform: scale(0.95); background: #eff6ff; }
+        .pad { background: var(--box); padding: 15px 5px; border-radius: 20px; text-align: center; border: 2px solid var(--border); transition: 0.1s; cursor: pointer; }
+        .pad:active { transform: scale(0.92); background: #eff6ff; border-color: #3b82f6; }
         .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
         input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); }
+        .animate-pop { animation: pop 0.2s ease-out; }
+        @keyframes pop { 0% { transform: scale(0.9); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body class="p-4 pb-20">
 
-<button onclick="vibro(); toggleDark()" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-md">🌙</button>
+<button onclick="vibro(); toggleDark()" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
 
 <div id="login-ui" class="max-w-xs mx-auto mt-20 box text-center">
-    <h2 class="text-xl font-black mb-6 uppercase italic text-blue-600">FAMILY Finance</h2>
+    <h2 class="text-xl font-black mb-6 uppercase italic text-blue-600">Ian Finance</h2>
     <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none"></select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl text-center font-bold outline-none" inputmode="numeric">
-    <button id="btn-login" onclick="vibro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black">HYR</button>
+    <button id="btn-login" onclick="vibro()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg active:bg-blue-700">HYR</button>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden">
     <div class="flex justify-between items-center mb-4 text-[12px] font-bold">
         <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none"></select>
-        <span class="text-slate-400 uppercase tracking-widest text-[10px]">Dashboard</span>
+        <span class="text-blue-500 uppercase font-black">Pro Manager 🚀</span>
     </div>
 
-    <div class="p-6 bg-slate-900 text-white rounded-[30px] mb-4 shadow-xl text-center">
-        <p class="text-slate-400 text-[10px] uppercase font-bold mb-1">Mbetja këtë muaj</p>
-        <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-2">0 L</h1>
-        <div id="piechart" style="width: 100%; height: 160px;"></div>
-        
-        <button onclick="vibro(); shfaqFondet()" class="mt-2 px-6 py-2 bg-blue-600/20 border border-blue-500/30 rounded-full text-[10px] font-black uppercase tracking-tighter text-blue-300 hover:bg-blue-600/40 transition-all">
-            + Shto Fond (Hyrje)
-        </button>
+    <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl relative overflow-hidden">
+        <div class="relative z-10 text-center">
+            <p class="text-slate-400 text-[10px] uppercase font-black mb-1 tracking-widest">Mbetja Totale</p>
+            <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-4">0 L</h1>
+            
+            <div id="piechart" class="mb-4" style="width: 100%; height: 200px;"></div>
+            
+            <button onclick="vibro(); shfaqFondet()" class="bg-blue-600/20 border border-blue-500/40 px-6 py-2 rounded-full text-[10px] font-black uppercase text-blue-300 active:scale-95 transition-all">
+                + SHTO FOND
+            </button>
+        </div>
+    </div>
+
+    <div class="mb-6 bg-white dark:bg-slate-800 p-4 rounded-[22px] shadow-sm border border-var(--border)">
+        <div class="flex justify-between text-[10px] font-black uppercase mb-2">
+            <span class="text-slate-400">Limiti Mujor</span>
+            <span id="txt-limit" class="text-blue-500">0 / 0 L</span>
+        </div>
+        <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+            <div id="bar-limit" class="bg-blue-600 h-full w-0 transition-all duration-500"></div>
+        </div>
     </div>
 
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
-    <div class="box mb-6 border-2 border-blue-600/20 shadow-sm">
+    <div class="box mb-6 border-2 border-blue-600/30 shadow-lg animate-pop">
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-500 bg-transparent border-none w-full text-center outline-none" inputmode="numeric">
-        <input id="shenime" placeholder="Shënim për blerjen..." class="text-[10px] text-slate-500 mt-2 bg-transparent border-none w-full text-center outline-none">
+        <div id="shporta-vizuale" class="text-[11px] text-slate-500 mt-2 text-center italic min-h-[20px]">Zgjidh diçka...</div>
         <div class="flex gap-2 mt-4">
-            <button onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase italic tracking-widest active:bg-green-600 transition-colors">Ruaj ✅</button>
-            <button onclick="vibro(); pastroShporten()" class="bg-slate-100 dark:bg-slate-800 px-6 rounded-2xl">🗑️</button>
+            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase italic tracking-widest active:bg-green-500 transition-all shadow-md">Ruaj ✅</button>
+            <button onclick="vibro(); pastroShporten()" class="bg-slate-100 dark:bg-slate-800 px-6 rounded-2xl border border-slate-200 dark:border-slate-700">🗑️</button>
         </div>
     </div>
 
     <div id="lista-histori" class="space-y-3 pb-10"></div>
 </div>
 
-<div id="modal-fond" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center p-6 z-50 animate-fade-in">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
-        <h3 class="text-sm font-black mb-4 uppercase italic">Shto para në llogari</h3>
-        <input id="f-burimi" placeholder="Burimi (psh. Paga)" class="w-full p-4 mb-2 rounded-2xl outline-none text-sm">
-        <input id="f-shuma" type="number" placeholder="Shuma L" class="w-full p-4 mb-4 rounded-2xl outline-none font-bold text-lg">
+<div id="modal-fond" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-50">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl border border-blue-500/20">
+        <h3 class="text-sm font-black mb-4 uppercase text-blue-500 italic italic">Arkëtim i Ri</h3>
+        <input id="f-burimi" placeholder="Burimi (Psh: Rroga)" class="w-full p-4 mb-2 rounded-2xl outline-none text-sm">
+        <input id="f-shuma" type="number" placeholder="Shuma L" class="w-full p-4 mb-4 rounded-2xl outline-none font-bold text-lg text-center">
         <div class="flex gap-2">
-            <button onclick="ruajFond()" class="flex-1 p-4 bg-green-600 text-white rounded-xl font-black text-xs uppercase">SHTO</button>
-            <button onclick="shfaqFondet()" class="flex-1 p-4 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-bold">Mbyll</button>
+            <button onclick="ruajFond()" class="flex-1 p-4 bg-green-600 text-white rounded-xl font-black text-xs">SHTO</button>
+            <button onclick="shfaqFondet()" class="flex-1 p-4 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-bold">ANULLO</button>
         </div>
     </div>
 </div>
@@ -73,8 +88,9 @@
     google.charts.load('current', {'packages':['corechart']});
     const URL = "https://script.google.com/macros/s/AKfycbyq_0VquRxRNciMafdyYwTst0n4Pv7y8ecE4FebqB21bUxSVkQ8DuggA9hE__O_rLJZ/exec"; 
     let uAktual = "", allData = {}, katAktuale = "", isDark = false;
+    let shporta = {}; // Objekti per te mbajtur { "Buke": {q: 2, p: 100} }
 
-    function vibro() { if (navigator.vibrate) navigator.vibrate(40); }
+    function vibro() { if (navigator.vibrate) navigator.vibrate(45); }
 
     function toggleDark() {
         isDark = !isDark;
@@ -105,49 +121,76 @@
         let h = "";
         allData.kats.forEach(k => {
             let func = k.kaNen == "Po" ? `shfaqNenkategorite('${k.emri}')` : `shtoNeShporte('${k.emri}', 0, true)`;
-            h += `<div class="pad" onclick="vibro(); ${func}"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
+            h += `<div class="pad shadow-sm" onclick="vibro(); ${func}"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
     function shfaqNenkategorite(prindi) {
         katAktuale = prindi; 
-        let h = `<button onclick="vibro(); shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[9px] font-black text-blue-500 uppercase italic">⬅ Kthehu te kategoritë</button>`;
+        let h = `<button onclick="vibro(); shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[10px] font-black text-blue-500 uppercase italic">⬅ MBPRAPA</button>`;
         allData.nenkats.filter(n => n.prindi == prindi).forEach(n => {
-            h += `<div class="pad" style="border-style:dashed" onclick="shtoNeShporte('${n.emri}', ${n.cmimi}, false)">
+            h += `<div class="pad border-dashed" onclick="shtoNeShporte('${n.emri}', ${n.cmimi}, false)">
                 <span class="text-[10px] font-bold">${n.emri}</span><br>
-                <b class="text-blue-500 text-[9px]">${n.cmimi > 0 ? n.cmimi + ' L' : 'SHTO ÇMIM'}</b>
+                <b class="text-blue-500 text-[9px]">${n.cmimi > 0 ? n.cmimi + ' L' : 'VENDO ÇMIM'}</b>
             </div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    function shtoNeShporte(e, c, isDirect) {
+    function shtoNeShporte(emri, cmimi, isDirect) {
         vibro();
-        if(isDirect) katAktuale = e; 
-        let sInput = document.getElementById("shuma");
-        let currentS = parseFloat(sInput.value) || 0;
+        if(isDirect) katAktuale = emri;
         
-        if(c > 0) {
-            sInput.value = currentS + c;
+        if (!shporta[emri]) {
+            shporta[emri] = { sasia: 1, cmimi: cmimi };
         } else {
-            // Nese nuk ka cmim, hap tastieren te shuma direkt
-            sInput.focus();
-            sInput.value = ""; 
+            shporta[emri].sasia += 1;
+        }
+
+        if(cmimi === 0) {
+            document.getElementById("shuma").focus();
+            document.getElementById("shuma").oninput = function() {
+                shporta[emri].cmimi = parseFloat(this.value) || 0;
+                perditesoPamjenShportes();
+            };
         }
         
-        let note = document.getElementById("shenime").value;
-        document.getElementById("shenime").value = note ? note + ", " + e : e;
+        perditesoPamjenShportes();
     }
 
-    function pastroShporten() { document.getElementById("shuma").value = ""; document.getElementById("shenime").value = ""; }
+    function perditesoPamjenShportes() {
+        let total = 0;
+        let listaTekst = [];
+        for (let emri in shporta) {
+            let item = shporta[emri];
+            total += (item.sasia * item.cmimi);
+            listaTekst.push(item.sasia > 1 ? `${emri} x${item.sasia}` : emri);
+        }
+        document.getElementById("shuma").value = total > 0 ? total : "";
+        document.getElementById("shporta-vizuale").innerText = listaTekst.join(", ");
+    }
+
+    function pastroShporten() { 
+        shporta = {}; 
+        document.getElementById("shuma").value = ""; 
+        document.getElementById("shporta-vizuale").innerText = "Zgjidh diçka..."; 
+    }
 
     async function ruajShpenzim() {
         vibro();
-        const s = document.getElementById("shuma").value, sh = document.getElementById("shenime").value;
+        const s = document.getElementById("shuma").value;
+        const sh = document.getElementById("shporta-vizuale").innerText;
         if(!s || !katAktuale) return alert("Zgjidh kategorinë!");
+        
+        const btn = document.getElementById("btn-ruaj");
+        btn.innerText = "Duke u ruajtur...";
+        
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: sh }) });
-        pastroShporten(); merrRaportin();
+        
+        btn.innerText = "Ruaj ✅";
+        pastroShporten(); 
+        merrRaportin();
     }
 
     function shfaqFondet() { document.getElementById("modal-fond").classList.toggle("hidden"); }
@@ -155,7 +198,6 @@
     async function ruajFond() {
         vibro();
         const b = document.getElementById("f-burimi").value, s = document.getElementById("f-shuma").value;
-        if(!s) return alert("Vendos shumen!");
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto_fond", user: uAktual, burimi: b, shuma: s }) });
         shfaqFondet(); merrRaportin();
     }
@@ -164,26 +206,39 @@
         const m = document.getElementById("sel-muaji").value, v = new Date().getFullYear();
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v }) });
         const d = await r.json();
+        
         document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
         
+        // LIMITI MUJOR (Progres Bar)
+        let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
+        let perq = limitTot > 0 ? (d.dalje / limitTot) * 100 : 0;
+        document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
+        document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
+
+        // GRAFIKU (Zmadhuar për gishtat)
         let chartData = [['K', 'L']];
         for(let k in d.grafiku) chartData.push([k, d.grafiku[k]]);
         if(chartData.length > 1) {
-            let dataTable = google.visualization.arrayToDataTable(chartData);
-            new google.visualization.PieChart(document.getElementById('piechart')).draw(dataTable, {
+            let data = google.visualization.arrayToDataTable(chartData);
+            new google.visualization.PieChart(document.getElementById('piechart')).draw(data, {
                 backgroundColor: 'transparent',
-                colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6'],
-                legend: {textStyle: {color: isDark ? '#f8fafc' : '#cbd5e1', fontSize: 8}, position: 'right'},
-                chartArea: {width:'100%', height:'100%'},
-                pieHole: 0.4
+                colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899'],
+                legend: { 
+                    textStyle: { color: isDark ? '#f8fafc' : '#cbd5e1', fontSize: 11, fontWeight: 'bold' },
+                    position: 'right',
+                    alignment: 'center'
+                },
+                chartArea: { width:'95%', height:'90%' },
+                pieHole: 0.5,
+                pieSliceBorderColor: "none"
             });
         }
         
         let h = "";
         d.lista.forEach(i => {
-            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'}">
-                <div class="text-left"><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-500 text-[8px] italic">${i.u} • ${i.d}</small></div>
-                <b class="text-sm font-black ${i.t=='hyrje'?'text-green-500':'text-red-500'}">${i.s.toLocaleString()} L</b>
+            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm">
+                <div class="text-left"><b class="text-[11px] uppercase tracking-tight">${i.k}</b><br><small class="text-slate-500 text-[9px] italic">${i.u} • ${i.d}</small></div>
+                <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
             </div>`;
         });
         document.getElementById("lista-histori").innerHTML = h;
