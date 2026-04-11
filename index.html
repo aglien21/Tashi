@@ -9,28 +9,30 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root { --bg: #f8fafc; --box: white; --txt: #1e293b; --border: #f1f5f9; }
+        :root { --bg: #f8fafc; --box: #ffffff; --txt: #1e293b; --border: #cbd5e1; }
         .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
-        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; -webkit-tap-highlight-color: transparent; }
-        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
-        .pad { background: var(--box); padding: 12px 5px; border-radius: 18px; text-align: center; border: 2px solid var(--border); cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; min-height: 60px; font-weight: 900; }
-        .pad:active { transform: scale(0.95); background: #eff6ff; }
+        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; }
+        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); color: var(--txt); }
+        /* Rregullimi i ngjyrave te butonave (Pads) */
+        .pad { background: var(--box); border: 2px solid var(--border); border-radius: 18px; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 65px; font-weight: 800; color: #2563eb; transition: 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-transform: uppercase; font-size: 11px; padding: 5px; }
+        .dark .pad { color: #60a5fa; }
+        .pad:active { transform: scale(0.95); background: #2563eb; color: white; }
         input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body class="p-4 pb-24 text-slate-800">
 
 <div class="fixed top-4 right-4 z-50 flex gap-2">
     <button onclick="shkarkoPDF()" class="p-3 rounded-full bg-blue-600 text-white shadow-lg text-[10px] font-black">PDF</button>
-    <button onclick="toggleDark()" class="p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
+    <button onclick="toggleDark()" class="p-3 rounded-full bg-slate-300 dark:bg-slate-700 shadow-lg">🌙</button>
 </div>
 
 <div id="login-ui" class="max-w-xs mx-auto mt-16 box text-center shadow-2xl">
     <h2 class="text-2xl font-black mb-1 uppercase text-blue-600">Financa-Family</h2>
-    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold italic text-center">Versioni 4.6 - Subcategory Fix</p>
+    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold italic">Versioni 4.8 - Column & Color Fix</p>
     <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none"></select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl text-center font-bold outline-none" inputmode="numeric">
-    <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYNI NË PANEL</button>
+    <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYNI</button>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden">
@@ -39,9 +41,9 @@
         <select id="sel-viti" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-slate-400 text-[11px]"></select>
     </div>
 
-    <div class="box mb-4 bg-gradient-to-r from-indigo-600 to-blue-700 text-white border-none shadow-xl">
+    <div class="box mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-none shadow-xl">
         <div class="flex justify-between items-center mb-2">
-            <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-blue-200 outline-none w-1/2" onchange="ruajEmrin()" placeholder="Qëllimi">
+            <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-blue-100 outline-none w-1/2" onchange="ruajEmrin()" placeholder="Emri i kursimit">
             <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md">0%</span>
         </div>
         <div class="w-full bg-black/20 rounded-full h-2 mb-3">
@@ -51,8 +53,8 @@
             <div class="text-[11px] font-bold"><span id="obj-vlerat">0 / 0 L</span></div>
             <div class="flex gap-2">
                 <button onclick="mbyllMuajinDheKurse()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl uppercase">Kurse 💰</button>
-                <button onclick="ndryshoQellimin()" class="bg-white/10 text-[9px] font-black px-3 py-2 rounded-xl border border-white/20">🎯</button>
-                <button onclick="resetKursimet()" class="bg-red-500/20 text-[9px] font-black px-3 py-2 rounded-xl border border-red-500/30 text-center">Reset</button>
+                <button onclick="ndryshoQellimin()" class="bg-white/20 text-[9px] font-black px-3 py-2 rounded-xl border border-white/30">🎯</button>
+                <button onclick="resetKursimet()" class="bg-red-500/30 text-[9px] font-black px-3 py-2 rounded-xl border border-red-500/40">Reset</button>
             </div>
         </div>
     </div>
@@ -64,23 +66,23 @@
     </div>
 
     <div class="flex justify-between items-center mb-2 px-1">
-        <h3 id="kat-title" class="text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Kategoritë</h3>
-        <button id="btn-back" onclick="shfaqKategoriteKryesore()" class="hidden text-[10px] font-black text-blue-600 uppercase">← Mbrapa</button>
+        <h3 id="kat-title" class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Zgjidh Kategorinë</h3>
+        <button id="btn-back" onclick="shfaqKategoriteKryesore()" class="hidden text-[10px] font-black text-blue-600 uppercase bg-blue-100 px-3 py-1 rounded-full">← Mbrapa</button>
     </div>
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
-    <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10">
+    <div class="box mb-6 border-2 border-blue-600/30 shadow-xl">
         <div class="flex items-center gap-2 px-4 mb-4">
             <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
-            <label class="cursor-pointer p-4 bg-blue-600 text-white rounded-2xl shadow-lg active:scale-90 transition-all text-center">
+            <label class="cursor-pointer p-4 bg-blue-600 text-white rounded-2xl shadow-lg active:scale-95 transition-all">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><circle cx="12" cy="13" r="3" stroke-width="2"></circle></svg>
                 <input type="file" accept="image/*" capture="environment" class="hidden" onchange="skanoFatureRregullt(this)">
             </label>
         </div>
-        <div id="shporta-list" class="bg-white/50 dark:bg-slate-800/50 p-3 rounded-xl min-h-[40px] text-[11px] font-bold text-slate-500 italic text-center">Shporta është bosh...</div>
-        <div class="flex gap-2 mt-4">
-            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg text-center">PAGUAJ ✅</button>
-            <button onclick="pastroShporten()" class="bg-red-100 text-red-600 px-6 rounded-2xl font-bold hover:bg-red-200 transition-all text-center">🗑️</button>
+        <div id="shporta-list" class="text-center text-[11px] font-bold text-slate-400 italic mb-4">Shporta bosh...</div>
+        <div class="flex gap-2">
+            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg">PAGUAJ ✅</button>
+            <button onclick="pastroShporten()" class="bg-red-50 text-red-600 px-6 rounded-2xl font-bold shadow-sm">🗑️</button>
         </div>
     </div>
 
@@ -89,9 +91,9 @@
 
 <div id="modal-manual" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-[60]">
     <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
-        <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500 italic">Shuma</h3>
-        <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl text-center font-bold text-2xl border-2 border-blue-100 outline-none" inputmode="numeric">
-        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black uppercase text-center">Shto</button>
+        <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500">Shuma</h3>
+        <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl text-center font-bold text-2xl border-2 border-blue-100 outline-none dark:text-white" inputmode="numeric">
+        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black uppercase">Shto</button>
     </div>
 </div>
 
@@ -129,15 +131,13 @@
 
     function shfaqKategoriteKryesore() {
         document.getElementById("btn-back").classList.add("hidden");
-        document.getElementById("kat-title").innerText = "Kategoritë";
+        document.getElementById("kat-title").innerText = "Zgjidh Kategorinë";
         let h = "";
         allData.kats.forEach(k => {
-            // Kontrollojme nese ka nenKategori (shikojme te dyja variantet e emrit te kolonave)
-            let kaNen = k.kaNen || k.nenKa || k.kaNenkategori;
-            let func = (kaNen === "Po" || kaNen === "po" || kaNen === true) 
-                       ? `shfaqNenkategorite('${k.emri}')` 
-                       : `shtoNeShporte('${k.emri}', '${k.cmimi}', true)`;
-            h += `<div class="pad shadow-sm bg-white dark:bg-slate-800" onclick="${func}"><span class="text-[10px] uppercase">${k.emri}</span></div>`;
+            // Kontrollojme nese ka nenkategori duke pare nese ky emer eshte "Prindi" i ndonje nenkategorie
+            let kaNen = allData.nens.some(n => n.Prindi === k.emri);
+            let func = kaNen ? `shfaqNenkategorite('${k.emri}')` : `shtoNeShporte('${k.emri}', '${k.cmimi}', true)`;
+            h += `<div class="pad shadow-sm" onclick="${func}"><span>${k.emri}</span></div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
@@ -147,9 +147,10 @@
         document.getElementById("btn-back").classList.remove("hidden");
         document.getElementById("kat-title").innerText = kat;
         let h = "";
-        let nens = allData.nens.filter(n => n.kat === kat);
+        // Filtrojme nenkategorite ku kolona Prindi perputhet me kategorine e klikuar
+        let nens = allData.nens.filter(n => n.Prindi === kat);
         nens.forEach(n => {
-            h += `<div class="pad shadow-sm bg-blue-50/50 dark:bg-slate-700" onclick="shtoNeShporte('${n.emri}', '${n.cmimi}', false)"><span class="text-[10px] uppercase">${n.emri}</span></div>`;
+            h += `<div class="pad shadow-sm border-blue-200 bg-blue-50/50" onclick="shtoNeShporte('${n.emri}', '${n.cmimi}', false)"><span>${n.emri}</span></div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
@@ -186,12 +187,12 @@
             t.push(shportaObj[k].sasia > 1 ? `${k} (x${shportaObj[k].sasia})` : k);
         }
         document.getElementById("shuma").value = total;
-        document.getElementById("shporta-list").innerText = t.join(", ") || "Shporta është bosh...";
+        document.getElementById("shporta-list").innerText = t.join(", ") || "Shporta bosh...";
     }
 
     function pastroShporten() {
         shportaObj = {}; document.getElementById("shuma").value = "";
-        document.getElementById("shporta-list").innerText = "Shporta është bosh...";
+        document.getElementById("shporta-list").innerText = "Shporta bosh...";
     }
 
     async function merrRaportin() {
@@ -207,19 +208,19 @@
         if(chartData.length > 1) {
             new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(chartData), {
                 backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b'],
-                legend: { textStyle: { color: isDark ? '#f8fafc' : '#94a3b8', fontSize: 10 }, position: 'right' },
+                legend: { textStyle: { color: isDark ? '#f8fafc' : '#1e293b', fontSize: 10 }, position: 'right' },
                 chartArea: { width:'90%', height:'90%' }, pieHole: 0.5
             });
         }
 
         let h = "";
         raportiGlobal.lista.forEach(i => {
-            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm mb-2 text-left">
+            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm mb-2">
                 <div><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-400 text-[8px] italic">${i.u} • ${i.d}</small></div>
                 <b class="text-sm font-black">${i.s.toLocaleString()} L</b>
             </div>`;
         });
-        document.getElementById("lista-histori").innerHTML = h || "Nuk ka të dhëna.";
+        document.getElementById("lista-histori").innerHTML = h || "Pa të dhëna.";
     }
 
     function perditesoKasaforten() {
@@ -246,7 +247,7 @@
     }
 
     function resetKursimet() {
-        if(confirm("Fshi kursimet e mbledhura?")) { kursimetMBLEDHURA = 0; localStorage.setItem("kursime_mbledhura", 0); perditesoKasaforten(); }
+        if(confirm("Fshi kursimet?")) { kursimetMBLEDHURA = 0; localStorage.setItem("kursime_mbledhura", 0); perditesoKasaforten(); }
     }
 
     async function ruajShpenzim() {
@@ -261,9 +262,9 @@
         if (!input.files[0]) return;
         document.getElementById("shporta-list").innerText = "Skanimi...";
         setTimeout(() => {
-            const shuma = Math.floor(Math.random() * 800) + 200;
+            const shuma = Math.floor(Math.random() * 500) + 300;
             document.getElementById("shuma").value = shuma;
-            document.getElementById("shporta-list").innerHTML = `<b class="text-blue-600">TOTALI: ${shuma} L</b>`;
+            document.getElementById("shporta-list").innerHTML = `<b>TOTALI: ${shuma} L</b>`;
             katAktuale = "Market"; 
         }, 1200);
     }
