@@ -6,6 +6,9 @@
     <title>Financa-Family</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         :root { --bg: #f8fafc; --box: white; --txt: #1e293b; --border: #f1f5f9; }
         .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
@@ -25,7 +28,10 @@
 </head>
 <body class="p-4 pb-20">
 
-<button onclick="vibro(); toggleDark()" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
+<div class="fixed top-4 right-4 z-50 flex gap-2">
+    <button onclick="vibro(); shkarkoPDF()" class="p-3 rounded-full bg-red-500 text-white shadow-lg text-[10px] font-black tracking-widest uppercase">PDF</button>
+    <button onclick="vibro(); toggleDark()" class="p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
+</div>
 
 <div id="login-ui" class="max-w-xs mx-auto mt-16 box text-center shadow-2xl border border-blue-100/50">
     <div class="flex justify-center mb-6">
@@ -74,21 +80,45 @@
         </button>
     </div>
 
+    <div class="box mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-none shadow-xl">
+        <div class="flex justify-between items-center mb-2">
+            <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-blue-100 outline-none w-1/2" onchange="ruajEmrinKursimit()" placeholder="Emri i kursimit">
+            <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md">0%</span>
+        </div>
+        <div class="w-full bg-black/20 rounded-full h-2 mb-3">
+            <div id="obj-bar" class="bg-white h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+        </div>
+        <div class="flex justify-between items-center">
+            <div class="text-[11px] font-bold"><span id="obj-vlerat">0 / 0 L</span></div>
+            <div class="flex gap-2">
+                <button onclick="vibro(); shtoKursim()" class="bg-green-500/80 text-[9px] font-black px-3 py-2 rounded-xl shadow-md">+ SHTO</button>
+                <button onclick="vibro(); ndryshoQellimin()" class="bg-white/20 text-[9px] font-black px-3 py-2 rounded-xl">🎯</button>
+            </div>
+        </div>
+    </div>
+
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
-    <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10 text-center">
+    <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10 text-center relative">
         <div class="text-[10px] font-black uppercase text-blue-500 mb-1 italic">Arka / Pagesa</div>
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
         <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800/50 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-medium text-slate-500">
             Zgjidh produktet...
         </div>
+        
+        <input type="file" accept="image/*" capture="environment" id="skaneri" class="hidden" onchange="procesoSkanimin(event)">
+        
         <div class="flex gap-2 mt-4">
+            <button onclick="vibro(); document.getElementById('skaneri').click()" class="bg-slate-800 dark:bg-slate-700 text-white px-4 rounded-2xl font-bold text-lg shadow-md active:scale-95">📷</button>
+            
             <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-md active:bg-green-600">
                 PAGUAJ ✅
             </button>
-            <button onclick="vibro(); pastroShporten()" class="bg-red-50 dark:bg-red-900/20 px-6 rounded-2xl border border-red-100 text-red-500 font-bold">🗑️</button>
+            
+            <button onclick="vibro(); pastroShporten()" class="bg-red-50 dark:bg-red-900/20 px-4 rounded-2xl border border-red-100 text-red-500 font-bold">🗑️</button>
         </div>
     </div>
+    
     <div id="lista-histori" class="space-y-3 pb-10"></div>
 </div>
 
@@ -117,6 +147,11 @@
     let uAktual = "", allData = {}, katAktuale = "", isDark = false;
     let shportaObj = {}; 
     let produktiManualIAktual = null;
+    
+    // Variablat e reja globale
+    let listaRaportit = [];
+    let kursimetMBLEDHURA = 0;
+    let targetKursimi = 0;
 
     function vibro() { if (navigator.vibrate) navigator.vibrate(45); }
 
@@ -127,6 +162,8 @@
     }
 
     window.onload = async () => {
+        initKursimet(); // Thërrasim funksionin e kursimeve në fillim
+        
         const muajt = ["Janar","Shkurt","Mars","Prill","Maj","Qershor","Korrik","Gusht","Shtator","Tetor","Nëntor","Dhjetor"];
         const selM = document.getElementById("sel-muaji");
         const selV = document.getElementById("sel-viti");
@@ -138,6 +175,79 @@
         allData = await r.json();
         allData.users.forEach(u => { document.getElementById("user-select").innerHTML += `<option value="${u}">${u}</option>`; });
     };
+
+    // --- LOGJIKA E KURSIMEVE ---
+    function initKursimet() {
+        kursimetMBLEDHURA = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0;
+        targetKursimi = parseFloat(localStorage.getItem("obj_vlera")) || 0;
+        document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im";
+        perditesoKasaforten();
+    }
+    function ruajEmrinKursimit() { 
+        localStorage.setItem("obj_emri", document.getElementById("obj-emri").value); 
+    }
+    function perditesoKasaforten() {
+        if(targetKursimi > 0) {
+            const perq = Math.min((kursimetMBLEDHURA / targetKursimi) * 100, 100);
+            document.getElementById("obj-bar").style.width = perq + "%";
+            document.getElementById("obj-perq").innerText = Math.floor(perq) + "%";
+            document.getElementById("obj-vlerat").innerText = `${kursimetMBLEDHURA.toLocaleString()} / ${targetKursimi.toLocaleString()} L`;
+        } else {
+            document.getElementById("obj-vlerat").innerText = `${kursimetMBLEDHURA.toLocaleString()} / CAKTO 🎯`;
+            document.getElementById("obj-perq").innerText = "0%";
+            document.getElementById("obj-bar").style.width = "0%";
+        }
+    }
+    function ndryshoQellimin() {
+        const t = prompt("Sa është shuma synim për kursimin (Lekë)?", targetKursimi);
+        if(t && !isNaN(t)) { 
+            targetKursimi = parseFloat(t); 
+            localStorage.setItem("obj_vlera", targetKursimi); 
+            perditesoKasaforten(); 
+        }
+    }
+    function shtoKursim() {
+        const v = prompt("Shto vlerë në kursime (Lekë):", "");
+        if(v && !isNaN(v)) { 
+            kursimetMBLEDHURA += parseFloat(v); 
+            localStorage.setItem("kursime_mbledhura", kursimetMBLEDHURA); 
+            perditesoKasaforten(); 
+        }
+    }
+
+    // --- LOGJIKA E PDF ---
+    function shkarkoPDF() {
+        if(!listaRaportit || listaRaportit.length === 0) return alert("Nuk ka të dhëna për të shkarkuar për këtë muaj!");
+        const { jsPDF } = window.jspdf; 
+        const doc = new jsPDF();
+        
+        doc.setFontSize(16);
+        doc.text("Raporti Financiar - Financa Family", 14, 20);
+        doc.setFontSize(10);
+        
+        const m = document.getElementById("sel-muaji").options[document.getElementById("sel-muaji").selectedIndex].text;
+        const v = document.getElementById("sel-viti").value;
+        doc.text(`Periudha: ${m} ${v}`, 14, 28);
+        
+        doc.autoTable({ 
+            head: [['Data', 'Përdoruesi', 'Kategoria', 'Shuma', 'Lloji']], 
+            body: listaRaportit.map(i => [i.d, i.u, i.k, i.s + " L", i.t.toUpperCase()]), 
+            startY: 35,
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246] }
+        });
+        
+        doc.save(`Raporti_Financiar_${m}_${v}.pdf`);
+    }
+
+    // --- LOGJIKA E SKANERIT ---
+    function procesoSkanimin(e) {
+        const file = e.target.files[0];
+        if(file) {
+            alert("Fotoja u shkrep me sukses! \n\n(Në të ardhmen kjo do të lexojë barkodin kur ta lidhim me një server API)");
+            vibro();
+        }
+    }
 
     document.getElementById("btn-login").onclick = async () => {
         vibro();
@@ -256,11 +366,16 @@
         document.getElementById("lista-histori").innerHTML = "<p class='text-center text-[10px] text-slate-400'>Duke u lidhur...</p>";
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v }) });
         const d = await r.json();
+        
+        // Ruajmë listën globale për PDF-në
+        listaRaportit = d.lista || [];
+        
         document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
         let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
         let perq = limitTot > 0 ? (d.dalje / limitTot) * 100 : 0;
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
         document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
+        
         let chartData = [['K', 'L']];
         for(let k in d.grafiku) chartData.push([k, d.grafiku[k]]);
         if(chartData.length > 1) {
@@ -275,8 +390,9 @@
         } else {
             document.getElementById('piechart').innerHTML = "<div class='flex items-center justify-center h-full text-[10px] text-slate-500'>Bosh</div>";
         }
+        
         let h = "";
-        d.lista.forEach(i => {
+        listaRaportit.forEach(i => {
             h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm mb-2">
                 <div class="text-left"><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-500 text-[8px] italic">${i.u} • ${i.d}</small></div>
                 <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
