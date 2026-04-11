@@ -20,7 +20,10 @@
 </head>
 <body class="p-4 pb-24">
 
-<button onclick="toggleDark()" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
+<div class="fixed top-4 right-4 z-50 flex gap-2">
+    <button onclick="shkarkoPDF()" class="p-3 rounded-full bg-blue-600 text-white shadow-lg text-[10px] font-black uppercase">PDF</button>
+    <button onclick="toggleDark()" class="p-3 rounded-full bg-slate-200 dark:bg-slate-700 shadow-lg">🌙</button>
+</div>
 
 <div id="login-ui" class="max-w-xs mx-auto mt-16 box text-center shadow-2xl">
     <div class="flex justify-center mb-6">
@@ -29,19 +32,16 @@
         </div>
     </div>
     <h2 class="text-2xl font-black mb-1 uppercase tracking-tighter text-blue-600">Financa-Family</h2>
-    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold tracking-widest italic">Versioni i Plotë 4.2</p>
+    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold tracking-widest italic">Versioni 4.3</p>
     <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none"></select>
     <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl text-center font-bold outline-none" inputmode="numeric">
     <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYNI NË PANEL</button>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden">
-    <div class="flex justify-between items-center mb-4">
-        <div class="flex gap-1">
-            <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-blue-600 text-[11px] uppercase"></select>
-            <select id="sel-viti" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-slate-400 text-[11px]"></select>
-        </div>
-        <button onclick="shkarkoPDF()" class="text-[9px] bg-blue-600 text-white px-4 py-2 rounded-full font-black">PDF RAPORTI</button>
+    <div class="flex justify-start items-center mb-4 gap-2">
+        <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-blue-600 text-[11px] uppercase"></select>
+        <select id="sel-viti" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-slate-400 text-[11px]"></select>
     </div>
 
     <div class="box mb-4 bg-gradient-to-r from-indigo-600 to-blue-700 text-white border-none shadow-xl">
@@ -56,7 +56,10 @@
             <div class="text-[11px] font-bold">
                 <span id="obj-vlerat">0 / 0 L</span>
             </div>
-            <button onclick="mbyllMuajinDheKurse()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl uppercase">Ruaj Mbetjen 💰</button>
+            <div class="flex gap-2">
+                <button onclick="mbyllMuajinDheKurse()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl uppercase">Ruaj Mbetjen 💰</button>
+                <button onclick="resetKursimet()" class="bg-red-500/20 text-[9px] font-black px-3 py-2 rounded-xl uppercase border border-red-500/30">Reset 🗑️</button>
+            </div>
         </div>
     </div>
 
@@ -76,7 +79,7 @@
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
     <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10 text-center">
-        <div class="text-[10px] font-black uppercase text-blue-500 mb-2 italic tracking-widest">Skanim i Totali</div>
+        <div class="text-[10px] font-black uppercase text-blue-500 mb-2 italic tracking-widest text-center">Skanim i Totali</div>
         <div class="flex items-center gap-2 px-4 mb-4">
             <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
             <label class="cursor-pointer p-4 bg-blue-600 text-white rounded-2xl shadow-lg active:scale-90 transition-all">
@@ -136,10 +139,8 @@
     };
 
     function shfaqKategoriteKryesore() {
-        katAktuale = ""; 
         let h = "";
         allData.kats.forEach(k => {
-            let func = k.kaNen == "Po" ? `shfaqNenkategorite('${k.emri}')` : `shtoNeShporte('${k.emri}', 0, true)`;
             h += `<div class="pad shadow-sm" onclick="shtoNeShporte('${k.emri}', 0, true)"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
@@ -150,7 +151,6 @@
         if (cmimi === 0) {
             produktiManualIAktual = emri;
             document.getElementById("manual-titulli").innerText = emri;
-            document.getElementById("manual-input").value = "";
             document.getElementById("modal-manual").classList.remove("hidden");
         } else {
             if (!shportaObj[emri]) shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) };
@@ -161,10 +161,7 @@
 
     function konfirmoManual() {
         const vlera = parseFloat(document.getElementById("manual-input").value);
-        if (vlera) {
-            shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: vlera };
-            llogaritTotalin();
-        }
+        if (vlera) { shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: vlera }; llogaritTotalin(); }
         document.getElementById("modal-manual").classList.add("hidden");
     }
 
@@ -209,7 +206,6 @@
 
         perditesoKasaforten();
         
-        // GRAFIKU
         let chartData = [['K', 'L']];
         for(let k in raportiGlobal.grafiku) chartData.push([k, raportiGlobal.grafiku[k]]);
         if(chartData.length > 1) {
@@ -220,21 +216,20 @@
             });
         }
 
-        // LISTA HISTORIKU
         let h = "";
         raportiGlobal.lista.forEach(i => {
-            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm mb-2">
-                <div class="text-left"><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-400 text-[8px] italic">${i.u} • ${i.d}</small></div>
+            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} shadow-sm mb-2 text-left">
+                <div><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-400 text-[8px] italic">${i.u} • ${i.d}</small></div>
                 <b class="text-sm ${i.t=='hyrje'?'text-green-500':'text-red-500'} font-black">${i.s.toLocaleString()} L</b>
             </div>`;
         });
-        document.getElementById("lista-histori").innerHTML = h || "<p class='text-center text-slate-500 text-xs'>Nuk ka shpenzime.</p>";
+        document.getElementById("lista-histori").innerHTML = h || "<p class='text-center text-slate-500 text-xs'>Bosh.</p>";
     }
 
     async function ruajShpenzim() {
         const s = document.getElementById("shuma").value, sh = document.getElementById("shporta-list").innerText;
         if(!s || !katAktuale) return alert("Zgjidh kategorine!");
-        const btn = document.getElementById("btn-ruaj"); btn.innerText = "Duke u ruajtur...";
+        const btn = document.getElementById("btn-ruaj"); btn.innerText = "Ruajtja...";
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: sh }) });
         btn.innerText = "PAGUAJ ✅";
         pastroShporten(); merrRaportin();
@@ -245,6 +240,14 @@
         if (confirm(`Ruaj ${mbetjaAktuale} L?`)) {
             kursimetMBLEDHURA += mbetjaAktuale;
             localStorage.setItem("kursime_mbledhura", kursimetMBLEDHURA);
+            perditesoKasaforten();
+        }
+    }
+
+    function resetKursimet() {
+        if(confirm("Dëshiron të fshish të gjitha kursimet e mbledhura?")) {
+            kursimetMBLEDHURA = 0;
+            localStorage.setItem("kursime_mbledhura", 0);
             perditesoKasaforten();
         }
     }
