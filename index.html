@@ -3,227 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa-Family MASTER</title>
+    <title>Financa Family V5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root { --bg: #f8fafc; --box: #ffffff; --txt: #0f172a; --border: #cbd5e1; }
-        .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
-        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; }
-        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); color: var(--txt); }
+        :root { --bg: #f1f5f9; --box: #ffffff; --txt: #000000; --border: #cbd5e1; }
+        .dark { --bg: #0f172a; --box: #1e293b; --txt: #ffffff; --border: #334155; }
+        body { background: var(--bg); color: var(--txt); font-family: sans-serif; transition: 0.3s; }
+        
+        /* Pads - Ngjyra te qarta per Day Mode */
         .pad { 
             background: var(--box); 
             border: 2px solid var(--border); 
-            border-radius: 18px; 
+            border-radius: 20px; 
+            padding: 20px; 
             text-align: center; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 70px; 
             font-weight: 900; 
-            color: #000000; 
-            transition: 0.1s; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+            color: #1e293b; /* Tekst i zi/gri i forte */
+            cursor: pointer; 
             text-transform: uppercase; 
-            font-size: 11px; 
-            padding: 8px;
+            font-size: 11px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-        .dark .pad { color: #ffffff; }
-        .pad:active { transform: scale(0.95); background: #3b82f6; color: white; }
-        input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); }
+        .dark .pad { color: #f8fafc; }
+        .pad:active { background: #3b82f6; color: white; transform: scale(0.95); }
+        
+        .box { background: var(--box); border-radius: 30px; border: 1px solid var(--border); padding: 20px; }
+        select, input { background: var(--box); color: var(--txt); border: 2px solid var(--border); border-radius: 15px; width: 100%; padding: 12px; font-weight: bold; }
+        .hidden { display: none; }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body class="p-4">
 
-<div class="fixed top-4 right-4 z-50 flex gap-2">
-    <button onclick="toggleDark()" class="p-3 rounded-full bg-slate-300 dark:bg-slate-700 shadow-lg">🌙</button>
-</div>
-
-<div id="login-ui" class="max-w-xs mx-auto mt-16 box text-center shadow-2xl">
-    <h2 class="text-2xl font-black mb-1 uppercase text-blue-600">Financa-Family</h2>
-    <p class="text-[10px] text-slate-400 mb-8 uppercase font-bold italic">Versioni 5.0 - User Login Fix</p>
-    <select id="user-select" class="w-full p-4 mb-3 rounded-2xl font-bold outline-none"></select>
-    <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-6 rounded-2xl text-center font-bold outline-none" inputmode="numeric">
-    <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYNI</button>
+<div id="login-ui" class="max-w-xs mx-auto mt-10 text-center">
+    <h1 class="text-3xl font-black text-blue-600 mb-8 tracking-tighter">FINANCA<br>FAMILY</h1>
+    <div class="box shadow-xl">
+        <select id="user-select" class="mb-4"></select>
+        <input id="pass" type="password" placeholder="PIN" class="text-center mb-6" inputmode="numeric">
+        <button onclick="login()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">HYNI</button>
+    </div>
+    <p id="loading-msg" class="mt-4 text-xs font-bold text-slate-400">Duke u lidhur...</p>
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden">
-    <div class="flex items-center mb-4 gap-2">
-        <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-blue-600 text-[11px] uppercase"></select>
-        <select id="sel-viti" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-slate-400 text-[11px]"></select>
+    <div class="p-8 bg-slate-900 rounded-[40px] text-center mb-6 shadow-2xl">
+        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Mbetja e muajit</p>
+        <h2 id="r-mbetja" class="text-4xl font-black text-green-400">0 L</h2>
     </div>
 
-    <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl text-center">
-        <p class="text-slate-400 text-[10px] uppercase font-black">Mbetja Aktuale</p>
-        <h1 id="r-mbetja" class="text-4xl font-black text-green-400 mb-6">0 L</h1>
-        <div id="piechart" style="width: 100%; height: 160px;"></div>
+    <div class="flex justify-between items-center mb-4 px-2">
+        <h3 id="kat-title" class="font-black uppercase text-[10px] text-slate-500">Kategoritë</h3>
+        <button id="btn-back" onclick="shfaqKats()" class="hidden text-[10px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">← MBRAPA</button>
     </div>
+    
+    <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-8"></div>
 
-    <div class="flex justify-between items-center mb-2 px-1">
-        <h3 id="kat-title" class="text-[10px] font-black uppercase text-slate-500 tracking-widest text-center">Kategoritë</h3>
-        <button id="btn-back" onclick="shfaqKategoriteKryesore()" class="hidden text-[10px] font-black text-blue-600 uppercase bg-blue-100 px-3 py-1 rounded-full">← Mbrapa</button>
-    </div>
-    <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
-
-    <div class="box mb-6 border-2 border-blue-600/30 shadow-xl">
-        <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none mb-4" readonly>
-        <div id="shporta-list" class="text-center text-[11px] font-bold text-slate-400 italic mb-4">Shporta bosh</div>
-        <div class="flex gap-2">
-            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg">PAGUAJ ✅</button>
-            <button onclick="pastroShporten()" class="bg-red-50 text-red-600 px-6 rounded-2xl font-bold">🗑️</button>
-        </div>
-    </div>
-
-    <div id="lista-histori" class="space-y-3 pb-10"></div>
-</div>
-
-<div id="modal-manual" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-[60]">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
-        <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500 italic">Shuma</h3>
-        <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl text-center font-bold text-2xl border-2 border-blue-100 outline-none" inputmode="numeric">
-        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black uppercase">Shto</button>
+    <div class="box border-2 border-blue-500/20 shadow-lg">
+        <input id="shuma" type="number" class="text-4xl text-center font-black border-none mb-2" placeholder="0 L" readonly>
+        <div id="shporta-info" class="text-center text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-tighter italic">Zgjidh diçka...</div>
+        <button onclick="ruaj()" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black shadow-lg active:bg-blue-700">PAGUAJ ✅</button>
     </div>
 </div>
 
 <script>
-    google.charts.load('current', {'packages':['corechart']});
-    const URL = "https://script.google.com/macros/s/AKfycbyq_0VquRxRNciMafdyYwTst0n4Pv7y8ecE4FebqB21bUxSVkQ8DuggA9hE__O_rLJZ/exec"; 
-    let uAktual = "", allData = {}, katAktuale = "", shportaObj = {}, isDark = false, produktiIAktual = "", raportiGlobal = null;
+    // URL-ja juaj aktuale
+    const URL = "https://script.google.com/macros/s/AKfycbyq_0VquRxRNciMafdyYwTst0n4Pv7y8ecE4FebqB21bUxSVkQ8DuggA9hE__O_rLJZ/exec";
+    let allData = { users: [], kats: [], nens: [] };
+    let uAktual = "", katAktuale = "", totali = 0;
 
     window.onload = async () => {
-        const muajt = ["Janar","Shkurt","Mars","Prill","Maj","Qershor","Korrik","Gusht","Shtator","Tetor","Nëntor","Dhjetor"];
-        const selM = document.getElementById("sel-muaji"), selV = document.getElementById("sel-viti"), sot = new Date();
-        muajt.forEach((m, i) => { selM.innerHTML += `<option value="${i+1}" ${sot.getMonth()==i?'selected':''}>${m}</option>`; });
-        for(let v = 2025; v <= 2030; v++) { selV.innerHTML += `<option value="${v}" ${sot.getFullYear()==v?'selected':''}>${v}</option>`; }
-        
         try {
             const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "get_data" }) });
-            allData = await r.json();
+            const d = await r.json();
             
-            // RREGULLIMI: Lexon kolonat Emri dhe Pin nga sheet "Perdoruesit"
-            if(allData.users && allData.users.length > 0) {
+            // Logjika "Smart" per te lexuar kolonat pavaresisht nese jane emra apo lista
+            allData.users = d.users || [];
+            allData.kats = d.kats || [];
+            allData.nens = d.nens || [];
+
+            if (allData.users.length > 0) {
+                let h = "";
                 allData.users.forEach(u => {
-                    if(u.Emri) document.getElementById("user-select").innerHTML += `<option value="${u.Emri}">${u.Emri}</option>`;
+                    let emri = u.Emri || u.emri || u[0]; // Provon te gjitha formatet
+                    if(emri && emri !== "Emri") h += `<option value="${emri}">${emri}</option>`;
                 });
+                document.getElementById("user-select").innerHTML = h;
+                document.getElementById("loading-msg").innerText = "Lidhja u krye.";
             }
-        } catch(e) { console.log("Error loading users:", e); }
+        } catch (e) {
+            document.getElementById("loading-msg").innerText = "Gabim në ngarkim!";
+        }
     };
 
-    document.getElementById("btn-login").onclick = async () => {
-        const u = document.getElementById("user-select").value;
-        const p = document.getElementById("pass").value;
-        
-        // Gjen perdoruesin ne listen e allData.users
-        const loginSakte = allData.users.find(usr => usr.Emri === u && String(usr.Pin) === p);
-        
-        if(loginSakte) { 
-            uAktual = u; 
-            document.getElementById("login-ui").classList.add("hidden"); 
-            document.getElementById("app-ui").classList.remove("hidden"); 
-            shfaqKategoriteKryesore(); 
-            merrRaportin(); 
+    function login() {
+        const sel = document.getElementById("user-select").value;
+        const pin = document.getElementById("pass").value;
+        const user = allData.users.find(u => {
+            let uEmri = u.Emri || u.emri || u[0];
+            let uPin = u.Pin || u.pin || u[1];
+            return uEmri === sel && String(uPin) === pin;
+        });
+
+        if (user) {
+            uAktual = sel;
+            document.getElementById("login-ui").classList.add("hidden");
+            document.getElementById("app-ui").classList.remove("hidden");
+            shfaqKats();
+            merrRaportin();
         } else alert("PIN i gabuar!");
-    };
+    }
 
-    function shfaqKategoriteKryesore() {
+    function shfaqKats() {
         document.getElementById("btn-back").classList.add("hidden");
         document.getElementById("kat-title").innerText = "Kategoritë";
         let h = "";
         allData.kats.forEach(k => {
-            let func = (k.ka_nenkategori === "Po" || k.ka_nenkategori === "po") 
-                       ? `shfaqNenkategorite('${k.emri}')` 
-                       : `shtoNeShporte('${k.emri}', '${k.limiti}', true)`;
-            h += `<div class="pad shadow-sm" onclick="${func}"><span>${k.emri}</span></div>`;
+            let emri = k.emri || k.Emri || k[0];
+            let kaNen = k.ka_nenkategori || k.ka_nen || k[1];
+            if(emri && emri !== "emri") {
+                let func = (kaNen == "Po" || kaNen == "po") ? `shfaqNens('${emri}')` : `shto('${emri}', '${k.limiti || k[2]}')`;
+                h += `<div class="pad" onclick="${func}">${emri}</div>`;
+            }
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    function shfaqNenkategorite(kat) {
-        katAktuale = kat;
+    function shfaqNens(prindi) {
         document.getElementById("btn-back").classList.remove("hidden");
-        document.getElementById("kat-title").innerText = kat;
+        document.getElementById("kat-title").innerText = prindi;
         let h = "";
-        let nens = allData.nens.filter(n => n.Prindi === kat);
-        nens.forEach(n => {
-            h += `<div class="pad border-blue-200 bg-blue-50/50" onclick="shtoNeShporte('${n.emri}', '${n.cmimi}', false)"><span>${n.emri}</span></div>`;
+        allData.nens.filter(n => (n.Prindi || n.prindi || n[0]) === prindi).forEach(n => {
+            let emri = n.emri || n.Emri || n[1];
+            let cmimi = n.cmimi || n.Cmimi || n[2];
+            h += `<div class="pad border-blue-200 bg-blue-50/30" onclick="shto('${emri}', '${cmimi}')">${emri}</div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    function shtoNeShporte(emri, cmimi, isDirect) {
-        if(isDirect) katAktuale = emri;
-        let pCmim = parseFloat(cmimi) || 0;
-        if (pCmim === 0) {
-            produktiIAktual = emri;
-            document.getElementById("manual-titulli").innerText = emri;
-            document.getElementById("manual-input").value = "";
-            document.getElementById("modal-manual").classList.remove("hidden");
-        } else {
-            if (!shportaObj[emri]) shportaObj[emri] = { sasia: 1, cmimi: pCmim };
-            else shportaObj[emri].sasia += 1;
-            llogaritTotalin();
-        }
-    }
-
-    function konfirmoManual() {
-        const vlera = parseFloat(document.getElementById("manual-input").value);
-        if (vlera) { shportaObj[produktiIAktual] = { sasia: 1, cmimi: vlera }; llogaritTotalin(); }
-        document.getElementById("modal-manual").classList.add("hidden");
-    }
-
-    function llogaritTotalin() {
-        let total = 0, t = [];
-        for (let k in shportaObj) {
-            total += (shportaObj[k].sasia * shportaObj[k].cmimi);
-            t.push(shportaObj[k].sasia > 1 ? `${k} (x${shportaObj[k].sasia})` : k);
-        }
-        document.getElementById("shuma").value = total;
-        document.getElementById("shporta-list").innerText = t.join(", ") || "Shporta bosh";
-    }
-
-    function pastroShporten() {
-        shportaObj = {}; document.getElementById("shuma").value = "";
-        document.getElementById("shporta-list").innerText = "Shporta bosh";
+    function shto(e, c) {
+        let v = parseFloat(c) || 0;
+        if (v === 0) v = parseFloat(prompt("Vendos çmimin për " + e)) || 0;
+        totali = v; katAktuale = e;
+        document.getElementById("shuma").value = totali;
+        document.getElementById("shporta-info").innerText = e + " - " + totali + " L";
     }
 
     async function merrRaportin() {
-        const m = document.getElementById("sel-muaji").value, v = document.getElementById("sel-viti").value;
-        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v }) });
-        raportiGlobal = await r.json();
-        document.getElementById("r-mbetja").innerText = raportiGlobal.mbetja.toLocaleString() + " L";
-        
-        let chartData = [['K', 'L']];
-        for(let k in raportiGlobal.grafiku) chartData.push([k, raportiGlobal.grafiku[k]]);
-        if(chartData.length > 1) {
-            new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(chartData), {
-                backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b'],
-                legend: { textStyle: { color: isDark ? '#f8fafc' : '#1e293b', fontSize: 10 }, position: 'right' },
-                chartArea: { width:'90%', height:'90%' }, pieHole: 0.5
-            });
-        }
-
-        let h = "";
-        raportiGlobal.lista.forEach(i => {
-            h += `<div class="box p-4 flex justify-between items-center ${i.t=='hyrje'?'border-l-4 border-green-500':'border-l-4 border-red-500'} mb-2">
-                <div><b class="text-[10px] uppercase">${i.k}</b><br><small class="text-slate-400 text-[8px]">${i.u} • ${i.d}</small></div>
-                <b class="text-sm font-black">${i.s.toLocaleString()} L</b>
-            </div>`;
-        });
-        document.getElementById("lista-histori").innerHTML = h || "Pa të dhëna";
+        const sot = new Date();
+        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: sot.getMonth()+1, viti: sot.getFullYear() }) });
+        const d = await r.json();
+        document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
     }
 
-    async function ruajShpenzim() {
-        const s = document.getElementById("shuma").value;
-        if(!s || !katAktuale) return alert("Zgjidh kategorinë!");
-        const btn = document.getElementById("btn-ruaj"); btn.innerText = "Ruajtja...";
-        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: document.getElementById("shporta-list").innerText }) });
-        btn.innerText = "PAGUAJ ✅"; pastroShporten(); merrRaportin();
+    async function ruaj() {
+        if (!totali) return alert("Zgjidh diçka!");
+        const btn = document.querySelector("button[onclick='ruaj()']");
+        btn.innerText = "Duke u ruajtur...";
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: totali }) });
+        alert("U ruajt!");
+        location.reload();
     }
-
-    function toggleDark() { isDark = !isDark; document.body.classList.toggle('dark'); merrRaportin(); }
 </script>
 </body>
 </html>
