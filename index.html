@@ -30,15 +30,27 @@
 <div id="app-ui" class="max-w-md mx-auto hidden">
     <div class="flex justify-between items-center mb-4 text-[12px] font-bold">
         <select id="sel-muaji" onchange="merrRaportin()" class="bg-transparent outline-none font-black text-blue-500"></select>
-        <span class="text-slate-400 uppercase tracking-widest text-[9px]">Aplikacioni i Dyqanit 🛒</span>
+        <span class="text-slate-400 uppercase tracking-widest text-[9px]">Sistemi Ian 🛒</span>
     </div>
 
     <div class="p-6 bg-slate-900 text-white rounded-[35px] mb-4 shadow-2xl relative">
         <div class="text-center">
             <p class="text-slate-400 text-[10px] uppercase font-black mb-1 tracking-widest">Mbetja Totale</p>
             <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-4">0 L</h1>
+            
             <div id="piechart" style="width: 100%; height: 180px;"></div>
-            <button onclick="vibro(); shfaqFondet()" class="mt-2 bg-blue-600/20 border border-blue-500/30 px-5 py-2 rounded-full text-[10px] font-black uppercase text-blue-300 active:scale-90">
+            
+            <div class="mt-4 px-2">
+                <div class="flex justify-between text-[9px] font-black uppercase mb-1 text-slate-400">
+                    <span>Limit Mujor</span>
+                    <span id="txt-limit">0 / 0 L</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                    <div id="bar-limit" class="bg-blue-500 h-full w-0 transition-all duration-500"></div>
+                </div>
+            </div>
+
+            <button onclick="vibro(); shfaqFondet()" class="mt-6 bg-blue-600/20 border border-blue-500/30 px-5 py-2 rounded-full text-[10px] font-black uppercase text-blue-300">
                 + SHTO PARA
             </button>
         </div>
@@ -47,18 +59,18 @@
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
     <div class="box mb-6 border-2 border-blue-600/30 shadow-xl bg-blue-50/10">
-        <div class="text-[10px] font-black uppercase text-blue-500 mb-1 text-center italic">Totali për të paguar</div>
-        <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" inputmode="numeric">
+        <div class="text-[10px] font-black uppercase text-blue-500 mb-1 text-center italic">Arka / Pagesa</div>
+        <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
         
         <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800/50 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-medium text-center text-slate-500">
             Zgjidh produktet...
         </div>
 
         <div class="flex gap-2 mt-4">
-            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase italic tracking-widest active:bg-green-600 shadow-md">
-                PAGUAJ (RUAJ) ✅
+            <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-md active:bg-green-600">
+                PAGUAJ ✅
             </button>
-            <button onclick="vibro(); pastroShporten()" class="bg-red-50 dark:bg-red-900/20 px-6 rounded-2xl border border-red-100 dark:border-red-900/30 text-red-500">
+            <button onclick="vibro(); pastroShporten()" class="bg-red-50 dark:bg-red-900/20 px-6 rounded-2xl border border-red-100 text-red-500 font-bold">
                 🗑️
             </button>
         </div>
@@ -67,9 +79,17 @@
     <div id="lista-histori" class="space-y-3 pb-10"></div>
 </div>
 
+<div id="modal-manual" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-[60]">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
+        <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-500">Shuma</h3>
+        <input id="manual-input" type="number" placeholder="Lekë" class="w-full p-4 mb-4 rounded-2xl outline-none font-bold text-2xl text-center border-2 border-blue-100" inputmode="numeric">
+        <button onclick="konfirmoManual()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black shadow-lg">SHTO NË ARRKË</button>
+    </div>
+</div>
+
 <div id="modal-fond" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-6 z-50">
     <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[30px] p-6 shadow-2xl">
-        <input id="f-burimi" placeholder="Burimi (Psh: Paga)" class="w-full p-4 mb-2 rounded-2xl outline-none text-sm text-center">
+        <input id="f-burimi" placeholder="Burimi" class="w-full p-4 mb-2 rounded-2xl outline-none text-center">
         <input id="f-shuma" type="number" placeholder="Shuma L" class="w-full p-4 mb-4 rounded-2xl outline-none font-bold text-lg text-center">
         <div class="flex gap-2">
             <button onclick="ruajFond()" class="flex-1 p-4 bg-green-600 text-white rounded-xl font-black text-[10px]">SHTO</button>
@@ -83,6 +103,7 @@
     const URL = "https://script.google.com/macros/s/AKfycbyq_0VquRxRNciMafdyYwTst0n4Pv7y8ecE4FebqB21bUxSVkQ8DuggA9hE__O_rLJZ/exec"; 
     let uAktual = "", allData = {}, katAktuale = "", isDark = false;
     let shportaObj = {}; 
+    let produktiManualIAktual = null;
 
     function vibro() { if (navigator.vibrate) navigator.vibrate(45); }
 
@@ -122,7 +143,7 @@
 
     function shfaqNenkategorite(prindi) {
         katAktuale = prindi; 
-        let h = `<button onclick="vibro(); shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[10px] font-black text-blue-600 uppercase italic tracking-tighter">⬅ KTHEHU PAS</button>`;
+        let h = `<button onclick="vibro(); shfaqKategoriteKryesore()" class="col-span-3 mb-2 py-2 text-[10px] font-black text-blue-600 uppercase italic">⬅ KTHEHU PAS</button>`;
         allData.nenkats.filter(n => n.prindi == prindi).forEach(n => {
             h += `<div class="pad border-dashed" onclick="shtoNeShporte('${n.emri}', ${n.cmimi}, false)">
                 <span class="text-[10px] font-bold">${n.emri}</span><br>
@@ -136,24 +157,34 @@
         vibro();
         if(isDirect) katAktuale = emri;
         
-        if (!shportaObj[emri]) {
-            shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) || 0 };
+        if (cmimi === 0) {
+            produktiManualIAktual = emri;
+            document.getElementById("manual-titulli").innerText = emri;
+            document.getElementById("manual-input").value = "";
+            document.getElementById("modal-manual").classList.remove("hidden");
+            document.getElementById("manual-input").focus();
         } else {
-            shportaObj[emri].sasia += 1;
-        }
-
-        // Nese produkti nuk ka cmim fiks, lejo perdoruesin ta shkruaje
-        if(cmimi === 0) {
-            const inputShuma = document.getElementById("shuma");
-            inputShuma.value = ""; 
-            inputShuma.focus();
-            inputShuma.oninput = function() {
-                shportaObj[emri].cmimi = parseFloat(this.value) || 0;
-                llogaritTotalin();
-            };
-        } else {
+            if (!shportaObj[emri]) {
+                shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) };
+            } else {
+                shportaObj[emri].sasia += 1;
+            }
             llogaritTotalin();
         }
+    }
+
+    function konfirmoManual() {
+        const vlera = parseFloat(document.getElementById("manual-input").value);
+        if (!vlera) return alert("Vendos çmimin!");
+        if (!shportaObj[produktiManualIAktual]) {
+            shportaObj[produktiManualIAktual] = { sasia: 1, cmimi: vlera };
+        } else {
+            shportaObj[produktiManualIAktual].sasia += 1;
+            shportaObj[produktiManualIAktual].cmimi = vlera; 
+        }
+        document.getElementById("modal-manual").classList.add("hidden");
+        llogaritTotalin();
+        vibro();
     }
 
     function llogaritTotalin() {
@@ -164,7 +195,7 @@
             total += (item.sasia * item.cmimi);
             treguesi.push(item.sasia > 1 ? `${emri} x${item.sasia}` : emri);
         }
-        document.getElementById("shuma").value = total > 0 ? total : "";
+        document.getElementById("shuma").value = total;
         document.getElementById("shporta-list").innerText = treguesi.join(", ");
     }
 
@@ -178,15 +209,12 @@
         vibro();
         const s = document.getElementById("shuma").value;
         const sh = document.getElementById("shporta-list").innerText;
-        if(!s || !katAktuale) return alert("Zgjidh të paktën një produkt!");
-        
+        if(!s || !katAktuale) return alert("Zgjidh produkte!");
         const btn = document.getElementById("btn-ruaj");
         btn.innerText = "DUKE PAGUAR...";
         btn.disabled = true;
-        
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: katAktuale, shuma: s, shenime: sh }) });
-        
-        btn.innerText = "PAGUAJ (RUAJ) ✅";
+        btn.innerText = "PAGUAJ ✅";
         btn.disabled = false;
         pastroShporten(); 
         merrRaportin();
@@ -207,6 +235,13 @@
         const d = await r.json();
         document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
         
+        // UPDATE PROGRES BAR
+        let limitTot = allData.kats.reduce((a, b) => a + parseFloat(b.limiti || 0), 0);
+        let perq = limitTot > 0 ? (d.dalje / limitTot) * 100 : 0;
+        document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${limitTot.toLocaleString()} L`;
+        document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
+
+        // UPDATE CHART
         let chartData = [['K', 'L']];
         for(let k in d.grafiku) chartData.push([k, d.grafiku[k]]);
         if(chartData.length > 1) {
@@ -214,7 +249,7 @@
             new google.visualization.PieChart(document.getElementById('piechart')).draw(data, {
                 backgroundColor: 'transparent',
                 colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899'],
-                legend: { textStyle: { color: isDark ? '#f8fafc' : '#cbd5e1', fontSize: 10, fontWeight: 'bold' }, position: 'right' },
+                legend: { textStyle: { color: isDark ? '#f8fafc' : '#cbd5e1', fontSize: 11, fontWeight: 'bold' }, position: 'right' },
                 chartArea: { width:'100%', height:'90%' },
                 pieHole: 0.5
             });
