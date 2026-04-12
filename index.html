@@ -9,26 +9,15 @@
     
     <style>
         :root { --bg: #f8fafc; --box: white; --txt: #0f172a; --border: #e2e8f0; }
-        .dark { --bg: #0f172a; --box: #1e293b; --txt: #ffffff; --border: #334155; }
         body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; }
-        
         .pad { background: var(--box); padding: 15px 5px; border-radius: 20px; text-align: center; border: 2px solid var(--border); cursor: pointer; }
         .pad:active { transform: scale(0.90); background: #dbeafe; }
-        
         .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
-        
         .white-text { color: #ffffff !important; }
-        .pazar-item { color: #ffffff !important; background: #2563eb !important; border: 2px solid #60a5fa !important; font-weight: 900; cursor: pointer;}
-        .pazar-item.done { text-decoration: line-through; opacity: 0.4; background: #475569 !important; border-color: #334155 !important;}
-        
-        button:active { transform: scale(0.95); }
-
-        /* Pulsimi i mbetjes kur kalon limitin */
+        .pazar-item { background: #2563eb !important; border: 2px solid #60a5fa !important; color: white; border-radius: 15px; padding: 10px; }
+        .pazar-item.done { opacity: 0.4; text-decoration: line-through; background: #475569 !important; }
         @keyframes pulse-red { 0%, 100% { color: #ef4444; transform: scale(1); } 50% { color: #fca5a5; transform: scale(1.05); } }
         .limit-warning { animation: pulse-red 1s infinite; font-weight: 900 !important; }
-        
-        /* Auto-focus stilizimi i inputit */
-        #manual-input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
     </style>
 </head>
 <body class="p-4 pb-20">
@@ -41,13 +30,12 @@
 </div>
 
 <div id="app-ui" class="max-w-md mx-auto hidden">
-    
-    <div class="p-6 bg-slate-900 rounded-[35px] mb-4 shadow-2xl text-center">
-        <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-2 transition-all">0 L</h1>
+    <div class="p-6 bg-slate-900 rounded-[35px] mb-4 shadow-2xl text-center text-white">
+        <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-2">0 L</h1>
         <div id="piechart" style="width: 100%; height: 160px;"></div>
-        <div class="mt-4 px-2">
-            <div class="flex justify-between text-[10px] font-black uppercase mb-1 white-text">
-                <span>Shpenzuar / Limit</span>
+        <div class="mt-4 px-2 text-left">
+            <div class="flex justify-between text-[10px] font-black uppercase mb-1">
+                <span>Progresi i Limitit</span>
                 <span id="txt-limit">0 / 0 L</span>
             </div>
             <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden">
@@ -57,15 +45,15 @@
     </div>
 
     <div class="box mb-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white border-none shadow-xl">
-        <div class="flex justify-between items-center mb-2">
+        <div class="flex justify-between items-center mb-2 italic">
             <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-white outline-none w-1/2" onchange="syncKursimToSheet()" placeholder="Emri i kursimit">
-            <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md white-text">0%</span>
+            <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md">0%</span>
         </div>
         <div class="w-full bg-black/20 rounded-full h-1.5 mb-3">
-            <div id="obj-bar" class="bg-white h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+            <div id="obj-bar" class="bg-white h-full rounded-full transition-all" style="width: 0%"></div>
         </div>
-        <div class="flex justify-between items-center">
-            <span id="obj-vlerat" class="text-[11px] font-black white-text">0 / 0 L</span>
+        <div class="flex justify-between items-center px-1">
+            <span id="obj-vlerat" class="text-[11px] font-black">0 / 0 L</span>
             <div class="flex gap-2">
                 <button onclick="shtoKursim()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl">+ SHTO</button>
                 <button onclick="ndryshoQellimin()" class="bg-white/20 text-[9px] font-black px-3 py-2 rounded-xl">🎯</button>
@@ -74,31 +62,36 @@
     </div>
 
     <div class="box mb-4 border-2 border-blue-400 bg-blue-50/5">
-        <h3 class="text-[10px] font-black uppercase text-blue-600 mb-3 italic">🛒 Lista e Pazarit</h3>
+        <h3 class="text-[10px] font-black uppercase text-blue-600 mb-3 italic tracking-widest">🛒 Lista e Pazarit</h3>
         <div class="flex gap-2 mb-3">
-            <input id="pazar-manual-input" type="text" placeholder="Shto artikull..." class="flex-1 p-3 rounded-xl text-xs outline-none bg-white border-blue-200">
-            <button onclick="shtoNePazar()" class="bg-blue-600 text-white px-6 rounded-xl font-black">SHTO</button>
+            <input id="pazar-manual-input" type="text" placeholder="Artikull i ri..." class="flex-1 p-3 rounded-xl text-xs outline-none bg-white border border-blue-100">
+            <button onclick="shtoNePazar()" class="bg-blue-600 text-white px-4 rounded-xl font-black text-xs">SHTO</button>
         </div>
-        <div id="pazar-lista" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mt-2"></div>
-        <button onclick="pastroPazarin()" class="w-full mt-3 text-[9px] font-bold text-red-500 uppercase">Pastro të blerat</button>
+        <div id="pazar-lista" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        <button onclick="pastroPazarin()" class="w-full mt-3 text-[9px] font-bold text-red-500 uppercase">Fshi të përfunduara</button>
     </div>
 
     <div id="kategori-pads" class="grid grid-cols-3 gap-3 mb-6"></div>
 
-    <div class="box mb-6 border-2 border-blue-600 shadow-xl text-center">
+    <div class="box mb-4 border-2 border-blue-600 shadow-xl text-center">
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
-        <div id="shporta-list" class="bg-slate-100 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-black text-slate-600">Zgjidh produktet...</div>
+        <div id="shporta-list" class="bg-slate-100 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-black text-slate-500">Shporta është bosh...</div>
         <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full mt-4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">PAGUAJ ✅</button>
+    </div>
+
+    <div class="box border-none bg-slate-50">
+        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-3 italic">Historiku i fundit</h3>
+        <div id="historiku-list" class="space-y-2 text-[11px]"></div>
     </div>
 </div>
 
 <div id="modal-manual" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[100]">
-    <div class="bg-white w-full max-w-xs rounded-[35px] p-6 text-center shadow-2xl">
+    <div class="bg-white w-full max-w-xs rounded-[35px] p-6 text-center">
         <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-600">Vendos Çmimin</h3>
-        <input id="manual-input" type="number" class="w-full p-5 mb-4 rounded-2xl font-black text-4xl text-center border-2 border-blue-200 outline-none text-blue-600" inputmode="decimal">
+        <input id="manual-input" type="number" class="w-full p-5 mb-4 rounded-2xl font-black text-4xl text-center border-2 border-blue-200 outline-none" inputmode="decimal">
         <div class="flex gap-2">
-            <button onclick="mbyllModal()" class="w-1/3 p-4 bg-slate-200 text-slate-600 rounded-2xl font-black">X</button>
-            <button onclick="mbyllModalDheShto()" class="w-2/3 p-4 bg-blue-600 text-white rounded-2xl font-black">SHTO</button>
+            <button onclick="mbyllModal()" class="w-1/4 p-4 bg-slate-100 rounded-2xl font-black text-slate-400 italic">X</button>
+            <button onclick="mbyllModalDheShto()" class="w-3/4 p-4 bg-blue-600 text-white rounded-2xl font-black">SHTO</button>
         </div>
     </div>
 </div>
@@ -112,71 +105,29 @@
 
     window.onload = async () => {
         initKursimet(); 
-        shfaqPazarin(); // Thërrasim funksionin për të mbushur pazarin nga fillimi
+        shfaqPazarin();
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "get_data" }) });
         allData = await r.json();
         allData.users.forEach(u => { document.getElementById("user-select").innerHTML += `<option value="${u}">${u}</option>`; });
     };
 
-    // --- KURSITMET ---
-    function initKursimet() {
-        document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im";
-        perditesoKasaforten();
-    }
-
-    function perditesoKasaforten() {
-        let mbledhur = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0;
-        let target = parseFloat(localStorage.getItem("obj_vlera")) || 0;
-        let p = target > 0 ? Math.min((mbledhur / target) * 100, 100) : 0;
-        document.getElementById("obj-bar").style.width = p + "%";
-        document.getElementById("obj-perq").innerText = Math.floor(p) + "%";
-        document.getElementById("obj-vlerat").innerText = `${mbledhur.toLocaleString()} / ${target.toLocaleString()} L`;
-    }
-
-    async function syncKursimToSheet() {
-        const emri = document.getElementById("obj-emri").value;
-        const mbledhur = localStorage.getItem("kursime_mbledhura") || 0;
-        const synimi = localStorage.getItem("obj_vlera") || 0;
-        localStorage.setItem("obj_emri", emri);
-        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "sync_kursim", user: uAktual, emri: emri, mbledhur: mbledhur, synimi: synimi }) });
-    }
-
-    function shtoKursim() {
-        let v = prompt("Sa lekë shtohen?");
-        if(v && !isNaN(v)) {
-            let mbledhur = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0;
-            localStorage.setItem("kursime_mbledhura", mbledhur + parseFloat(v));
-            perditesoKasaforten(); syncKursimToSheet(); 
-        }
-    }
-
-    function ndryshoQellimin() {
-        let t = prompt("Synimi i ri (lekë):");
-        if(t && !isNaN(t)) {
-            localStorage.setItem("obj_vlera", t);
-            perditesoKasaforten(); syncKursimToSheet(); 
-        }
-    }
-
-    // --- LOGIN ---
+    // LOGIN
     document.getElementById("btn-login").onclick = async () => {
         const u = document.getElementById("user-select").value, p = document.getElementById("pass").value;
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "login", user: u, pass: p }) });
         const d = await r.json();
         if(d.status == "ok") { 
-            uAktual = u; document.getElementById("login-ui").classList.add("hidden"); 
+            uAktual = u; 
+            document.getElementById("login-ui").classList.add("hidden"); 
             document.getElementById("app-ui").classList.remove("hidden"); 
             shfaqKategoriteKryesore(); merrRaportin(); 
-        } else {
-            alert("PIN i gabuar!");
-        }
+        } else { alert("PIN i gabuar!"); }
     };
 
-    // --- KATEGORITE & NENKATEGORITE ---
+    // KATEGORITE & NENKATEGORITE
     function shfaqKategoriteKryesore() {
         let h = "";
         allData.kats.forEach(k => {
-            // Kontrollojmë nëse ka nënkategori apo jo
             if(k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") {
                 h += `<div class="pad shadow-sm" onclick="shfaqNenkategorite('${k.emri}')"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
             } else {
@@ -187,161 +138,151 @@
     }
 
     function shfaqNenkategorite(prindi) {
-        let h = `<div class="pad shadow-sm bg-slate-200" onclick="shfaqKategoriteKryesore()"><span class="text-[10px] font-black uppercase text-blue-600">⬅️ Kthehu</span></div>`;
+        let h = `<div class="pad shadow-sm bg-slate-100" onclick="shfaqKategoriteKryesore()"><span class="text-[10px] font-black uppercase text-blue-600 font-bold italic">⬅️ MBREPRAS</span></div>`;
         allData.nenkats.forEach(n => {
             if(n.prindi == prindi) {
-                // Nëse nënkategoria e ka çmimin > 0 shtohet direkt, nëse jo hap tastierën
-                if(n.cmimi && parseFloat(n.cmimi) > 0) {
-                    h += `<div class="pad shadow-sm" onclick="shtoNeShporte('${n.emri}', ${n.cmimi})"><span class="text-[10px] font-black uppercase">${n.emri}</span></div>`;
-                } else {
-                    h += `<div class="pad shadow-sm" onclick="shfaqModalManual('${n.emri}')"><span class="text-[10px] font-black uppercase">${n.emri}</span></div>`;
-                }
+                h += `<div class="pad shadow-sm" onclick="shfaqModalManual('${n.emri}')"><span class="text-[10px] font-black uppercase">${n.emri}</span></div>`;
             }
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    // --- MODALI & TASTIERA ---
+    // MODALI & AUTOFOCUS
     function shfaqModalManual(titulli) {
         kategoriaAktuale = titulli;
         document.getElementById("manual-titulli").innerText = titulli;
-        const modal = document.getElementById("modal-manual");
-        const inputField = document.getElementById("manual-input");
-        
-        modal.classList.remove("hidden");
-        inputField.value = ""; 
-        
-        // FOKUSI DIREKT PA VONESË për telefonat!
-        inputField.focus(); 
+        document.getElementById("modal-manual").classList.remove("hidden");
+        document.getElementById("manual-input").value = "";
+        document.getElementById("manual-input").focus();
     }
 
-    function mbyllModal() {
-        document.getElementById("modal-manual").classList.add("hidden");
-    }
+    function mbyllModal() { document.getElementById("modal-manual").classList.add("hidden"); }
 
     function mbyllModalDheShto() {
-        let vlera = document.getElementById("manual-input").value;
-        if(vlera && !isNaN(vlera) && vlera > 0) {
-            shtoNeShporte(kategoriaAktuale, vlera);
-            mbyllModal();
-        }
+        let v = document.getElementById("manual-input").value;
+        if(v > 0) { shtoNeShporte(kategoriaAktuale, v); mbyllModal(); }
     }
 
-    // --- PAZARI ---
+    // PAZARI
     function shfaqPazarin() {
         let h = "";
         pazarData.forEach((p, i) => {
-            let classDone = p.done ? "done" : "";
-            h += `<div class="pad pazar-item shadow-sm ${classDone}" onclick="togglePazarItem(${i})"><span class="text-[11px]">${p.emri}</span></div>`;
+            h += `
+            <div class="flex items-center justify-between p-3 bg-white border border-blue-100 rounded-2xl shadow-sm ${p.done ? 'opacity-40 grayscale' : ''}">
+                <span class="text-xs font-bold text-slate-700 ${p.done ? 'line-through' : ''}">${p.emri}</span>
+                <div class="flex gap-2">
+                    <button onclick="togglePazarItem(${i})" class="p-2 bg-slate-100 rounded-lg text-xs">✅</button>
+                    <button onclick="pazarTeArka('${p.emri}', ${i})" class="p-2 bg-blue-600 text-white rounded-lg text-[9px] font-black uppercase">PAGUAJ</button>
+                </div>
+            </div>`;
         });
         document.getElementById("pazar-lista").innerHTML = h;
     }
 
+    function pazarTeArka(emri, index) {
+        shfaqModalManual(emri);
+        pazarData[index].done = true;
+        localStorage.setItem("pazar_list", JSON.stringify(pazarData));
+        shfaqPazarin();
+    }
+
     function shtoNePazar() {
-        let inp = document.getElementById("pazar-manual-input");
-        if(inp.value.trim() !== "") {
-            pazarData.push({emri: inp.value.trim(), done: false});
-            localStorage.setItem("pazar_list", JSON.stringify(pazarData));
-            inp.value = "";
-            shfaqPazarin();
-        }
+        let i = document.getElementById("pazar-manual-input");
+        if(i.value) { pazarData.push({emri: i.value, done: false}); localStorage.setItem("pazar_list", JSON.stringify(pazarData)); i.value = ""; shfaqPazarin(); }
     }
 
-    function togglePazarItem(index) {
-        pazarData[index].done = !pazarData[index].done;
-        localStorage.setItem("pazar_list", JSON.stringify(pazarData));
-        shfaqPazarin();
-    }
+    function togglePazarItem(i) { pazarData[i].done = !pazarData[i].done; localStorage.setItem("pazar_list", JSON.stringify(pazarData)); shfaqPazarin(); }
+    function pastroPazarin() { pazarData = pazarData.filter(p => !p.done); localStorage.setItem("pazar_list", JSON.stringify(pazarData)); shfaqPazarin(); }
 
-    function pastroPazarin() {
-        pazarData = pazarData.filter(p => p.done === false);
-        localStorage.setItem("pazar_list", JSON.stringify(pazarData));
-        shfaqPazarin();
-    }
-
-    // --- RAPORTI & SHPORTA ---
+    // RAPORTI DHE LIMITI DINAMIK
     async function merrRaportin() {
-        const sot = new Date();
-        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: sot.getMonth()+1, viti: sot.getFullYear(), user: uAktual }) });
+        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: new Date().getMonth()+1, viti: new Date().getFullYear(), user: uAktual }) });
         const d = await r.json();
         
+        // Llogaritja e limitit nga Sheets (Kolona C1 e Kategorive)
+        let totalLimit = 0;
+        allData.kats.forEach(k => { totalLimit += (parseFloat(k.limiti) || 0); });
+        if(totalLimit === 0) totalLimit = 50000; // Backup nëse nuk ka limit
+
         const mbetjaEl = document.getElementById("r-mbetja");
         mbetjaEl.innerText = d.mbetja.toLocaleString() + " L";
         
-        let limitiMuajit = 50000; 
-        let perqindjaHarxhuar = (d.dalje / limitiMuajit) * 100;
-        
-        if (perqindjaHarxhuar >= 80) mbetjaEl.classList.add("limit-warning");
+        let perq = (d.dalje / totalLimit) * 100;
+        if(perq >= 80) mbetjaEl.classList.add("limit-warning");
         else mbetjaEl.classList.remove("limit-warning");
         
-        document.getElementById("bar-limit").style.width = Math.min(perqindjaHarxhuar, 100) + "%";
-        document.getElementById("txt-limit").innerText = `${(d.dalje || 0).toLocaleString()} / ${limitiMuajit.toLocaleString()} L`;
+        document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
+        document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
 
-        if (d.kurs) {
+        // Historiku
+        let hHtml = "";
+        d.lista.slice(0, 10).forEach(x => {
+            hHtml += `<div class="flex justify-between border-b border-slate-100 pb-1">
+                <span><b class="text-blue-600">${x.d}</b> ${x.k}</span>
+                <span class="font-black ${x.t == 'hyrje' ? 'text-green-500' : 'text-red-400'}">${x.s} L</span>
+            </div>`;
+        });
+        document.getElementById("historiku-list").innerHTML = hHtml;
+
+        // Kursimet
+        if(d.kurs) {
             localStorage.setItem("kursime_mbledhura", d.kurs.mbledhur);
             localStorage.setItem("obj_vlera", d.kurs.synimi);
             localStorage.setItem("obj_emri", d.kurs.emri);
-            document.getElementById("obj-emri").value = d.kurs.emri;
             perditesoKasaforten();
         }
 
-        let chartData = [['K', 'L']];
-        for(let k in d.grafiku) chartData.push([k, d.grafiku[k]]);
-        if(chartData.length > 1) {
-            new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(chartData), {
-                backgroundColor: 'transparent', 
-                colors: ['#3b82f6', '#10b981', '#ef4444'],
-                legend: { textStyle: { color: '#ffffff', fontSize: 10, bold: true }, position: 'right' },
-                chartArea: { width:'100%', height:'90%' }, pieHole: 0.5
+        // Grafik
+        let gD = [['K', 'L']];
+        for(let k in d.grafiku) gD.push([k, d.grafiku[k]]);
+        if(gD.length > 1) {
+            new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(gD), {
+                backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6'],
+                legend: 'none', chartArea: {width:'90%', height:'90%'}, pieHole: 0.6
             });
         }
     }
 
-    function shtoNeShporte(emri, cmimi) {
-        if (!shportaObj[emri]) shportaObj[emri] = { sasia: 1, cmimi: parseFloat(cmimi) }; 
-        else shportaObj[emri].sasia += 1;
-        
-        let t = 0; 
-        let listaHtml = "";
-        for (let e in shportaObj) { 
-            t += (shportaObj[e].sasia * shportaObj[e].cmimi); 
-            listaHtml += `${e} x${shportaObj[e].sasia} (${shportaObj[e].cmimi} L)<br>`;
-        }
+    // ARKA
+    function shtoNeShporte(e, c) {
+        if(!shportaObj[e]) shportaObj[e] = {s: 1, c: parseFloat(c)};
+        else shportaObj[e].s += 1;
+        let t = 0, h = "";
+        for(let x in shportaObj) { t += (shportaObj[x].s * shportaObj[x].c); h += `${x} x${shportaObj[x].s}<br>`; }
         document.getElementById("shuma").value = t;
-        document.getElementById("shporta-list").innerHTML = listaHtml;
+        document.getElementById("shporta-list").innerHTML = h;
     }
 
     async function ruajShpenzim() {
-        const shuma = document.getElementById("shuma").value;
-        if (!shuma || shuma <= 0) return alert("Shto të paktën një produkt!");
-        
-        document.getElementById("btn-ruaj").innerText = "Duke dërguar...";
-        
-        let detaje = [];
-        let katKryesore = "";
-        for (let k in shportaObj) {
-            detaje.push(`${k} x${shportaObj[k].sasia} (${shportaObj[k].cmimi} L)`);
-            if(!katKryesore) katKryesore = k; // Kategoria e pare si referencë
-        }
-
-        await fetch(URL, { 
-            method: "POST", 
-            body: JSON.stringify({ 
-                action: "shto", 
-                user: uAktual, 
-                kat: katKryesore, 
-                shuma: shuma, 
-                shenime: detaje.join(", ") 
-            }) 
-        });
-
-        shportaObj = {};
-        document.getElementById("shuma").value = "";
-        document.getElementById("shporta-list").innerHTML = "Zgjidh produktet...";
+        let v = document.getElementById("shuma").value;
+        if(!v || v <= 0) return;
+        document.getElementById("btn-ruaj").innerText = "Duke u procesuar...";
+        let txt = []; for(let k in shportaObj) txt.push(`${k} (${shportaObj[k].c}L)`);
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0], shuma: v, shenime: txt.join(", ") }) });
+        shportaObj = {}; document.getElementById("shuma").value = ""; document.getElementById("shporta-list").innerHTML = "U krye! ✅";
         document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅";
-        shfaqKategoriteKryesore(); // Kthehemi te kategorite kryesore pas pageses
-        merrRaportin();
+        shfaqKategoriteKryesore(); merrRaportin();
     }
+
+    // KURSITMET (Te paprekura)
+    function initKursimet() { document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im"; perditesoKasaforten(); }
+    function perditesoKasaforten() {
+        let m = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0;
+        let t = parseFloat(localStorage.getItem("obj_vlera")) || 0;
+        let p = t > 0 ? Math.min((m/t)*100, 100) : 0;
+        document.getElementById("obj-bar").style.width = p + "%";
+        document.getElementById("obj-perq").innerText = Math.floor(p) + "%";
+        document.getElementById("obj-vlerat").innerText = `${m.toLocaleString()} / ${t.toLocaleString()} L`;
+    }
+    async function syncKursimToSheet() {
+        const e = document.getElementById("obj-emri").value;
+        const m = localStorage.getItem("kursime_mbledhura") || 0;
+        const s = localStorage.getItem("obj_vlera") || 0;
+        localStorage.setItem("obj_emri", e);
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "sync_kursim", user: uAktual, emri: e, mbledhur: m, synimi: s }) });
+    }
+    function shtoKursim() { let v = prompt("Sa lekë shtohen?"); if(v){ localStorage.setItem("kursime_mbledhura", (parseFloat(localStorage.getItem("kursime_mbledhura"))||0)+parseFloat(v)); perditesoKasaforten(); syncKursimToSheet(); }}
+    function ndryshoQellimin() { let t = prompt("Synimi i ri:"); if(t){ localStorage.setItem("obj_vlera", t); perditesoKasaforten(); syncKursimToSheet(); }}
 </script>
 </body>
 </html>
