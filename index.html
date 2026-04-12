@@ -132,8 +132,6 @@
 <script>
     google.charts.load('current', {'packages':['corechart']});
     const URL = "https://script.google.com/macros/s/AKfycbxpWGsjgWG6FI-_Cno5Ta5j8WRpAfPcW_tlJyi6x03lSsDK39OJy6T85w2HOyHQqnb4/exec"; 
-    const TELEGRAM_TOKEN = "8782069667:AAFB-obtVC7LNw3Tt86mxlvqUNnC58H1DwE";
-    const TELEGRAM_CHAT_ID = "5461448562";
 
     let uAktual = "", allData = {}, shportaObj = {}, historiData = [];
     let pazarData = JSON.parse(localStorage.getItem("pazar_list")) || [];
@@ -217,31 +215,16 @@
         let v = document.getElementById("shuma").value; if(!v || v <= 0) return;
         document.getElementById("btn-ruaj").innerText = "...";
         
-        // KRIJIMI I FATURËS SË DETAJUAR
         let fatureTekst = "";
         for (let x in shportaObj) {
             fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`;
         }
         
-        // 1. Dërgimi te Sheets
         await fetch(URL, { method: "POST", body: JSON.stringify({ 
             action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0], shuma: v, shenime: fatureTekst 
         }) });
 
-        // 2. Dërgimi te Telegram
-        dergoNeTelegram(`🛒 *Faturë e re:*\n👤 ${uAktual}\n---\n${fatureTekst}\n💰 *TOTALI: ${v} L*`);
-
         pastroShporten(); document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅"; merrRaportin(); shfaqKategoriteKryesore();
-    }
-
-    async function dergoNeTelegram(mesazhi) {
-        if(!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) return;
-        const apiURL = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-        await fetch(apiURL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesazhi, parse_mode: "Markdown" })
-        });
     }
 
     // RAPORTET & GRAFIKU
@@ -257,7 +240,6 @@
         let totalLimit = 0; allData.kats.forEach(k => totalLimit += (parseFloat(k.limiti) || 0));
         let perq = (d.dalje / totalLimit) * 100;
         
-        // RREGULLIMI 2: PULSE NE 80%
         if (perq >= 80) {
             mbetjaElem.classList.add("limit-warning-text");
             barElem.classList.add("limit-warning-bar");
@@ -287,7 +269,6 @@
         });
     }
 
-    // PDF ME TOTAL (RREGULLIMI 1)
     function shkarkoPDF() {
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
         let totaliMuajit = 0;
@@ -296,7 +277,6 @@
             return [x.d, x.k, x.s + " L"];
         });
         
-        // Shto totalin si rreshtin e fundit
         rreshtat.push([{content: 'TOTALI I MUAJIT:', colSpan: 2, styles: {halign: 'right', fontStyle: 'bold'}}, {content: totaliMuajit.toLocaleString() + " L", styles: {fontStyle: 'bold', fillColor: [220, 220, 220]}}]);
 
         doc.setFontSize(18); doc.text(`Raporti i Shpenzimeve - ${uAktual}`, 14, 20);
