@@ -337,22 +337,83 @@ document.getElementById("historiku-list").innerHTML = hHtml;
     }
 
     function shkarkoPDF() {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        let totaliMuajit = 0;
-        const rreshtat = historiData.map(x => {
-            let shtoVlere = (x.k === "Të Ardhura" || x.k === "Te Ardhura") ? parseFloat(x.s) : -parseFloat(x.s);
-            totaliMuajit += shtoVlere;
-            return [x.d, x.k, (shtoVlere > 0 ? "+" : "") + x.s + " L"];
-        });
-        
-        rreshtat.push([{content: 'BILANCI I MUAJIT:', colSpan: 2, styles: {halign: 'right', fontStyle: 'bold'}}, {content: totaliMuajit.toLocaleString() + " L", styles: {fontStyle: 'bold', fillColor: [220, 220, 220]}}]);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Titulli i Dokumentit
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text(`Raporti i Detajuar i Shpenzimeve`, 14, 20);
+    
+    // Informacionet e përgjithshme
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Përdoruesi: ${uAktual}`, 14, 28);
+    doc.text(`Data e gjenerimit: ${new Date().toLocaleString()}`, 14, 33);
+    doc.text(`Periudha: ${document.getElementById("muaji").options[document.getElementById("muaji").selectedIndex].text} ${document.getElementById("viti").value}`, 14, 38);
 
-        doc.setFontSize(18); doc.text(`Raporti i Shpenzimeve - ${uAktual}`, 14, 20);
-        doc.setFontSize(10); doc.text(`Gjeneruar më: ${new Date().toLocaleString()}`, 14, 28);
-        
-        doc.autoTable({ head: [['Data', 'Kategoria', 'Shuma']], body: rreshtat, startY: 35, theme: 'grid' });
-        doc.save(`Raporti_${uAktual}.pdf`);
-    }
+    let totaliHyrje = 0;
+    let totaliDalje = 0;
+
+    // Përgatitja e të dhënave për tabelën
+    const rreshtat = historiData.map(x => {
+        let isHyrje = (x.t === "hyrje");
+        if (isHyrje) totaliHyrje += Math.abs(x.s);
+        else totaliDalje += Math.abs(x.s);
+
+        // Pastrojmë shënimet (artikujt) nga karakteret e tepërta nëse ka
+        let artikujt = x.n ? x.n.trim() : "---";
+
+        return [
+            x.d,             // Data
+            x.k,             // Kategoria
+            artikujt,        // Artikujt e detajuar (Fatura)
+            (isHyrje ? "+" : "-") + Math.abs(x.s).toLocaleString() + " L" // Shuma
+        ];
+    });
+
+    // Krijimi i tabelës
+    doc.autoTable({
+        head: [['Data', 'Kategoria', 'Detajet e Faturës (Artikujt)', 'Shuma']],
+        body: rreshtat,
+        startY: 45,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+        columnStyles: {
+            2: { cellWidth: 80 }, // I japim më shumë hapësirë kolonës së detajeve
+            3: { halign: 'right', fontStyle: 'bold' }
+        },
+        didParseCell: function(data) {
+            // Ngjyrosim shumat (E gjelbër për hyrje, e kuqe për dalje)
+            if (data.section === 'body' && data.column.index === 3) {
+                if (data.cell.raw.includes('+')) {
+                    data.cell.styles.textColor = [39, 174, 96];
+                } else {
+                    data.cell.styles.textColor = [192, 57, 43];
+                }
+            }
+        }
+    });
+
+    // Shtimi i Bilancit Përmbledhës në fund të tabelës
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(`PËRMBLEDHJE E MUAJIT:`, 14, finalY);
+    
+    doc.setFontSize(10);
+    doc.text(`Totali i Hyrjeve: +${totaliHyrje.toLocaleString()} L`, 14, finalY + 7);
+    doc.text(`Totali i Shpenzimeve: -${totaliDalje.toLocaleString()} L`, 14, finalY + 12);
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    let mbetja = totaliHyrje - totaliDalje;
+    doc.text(`BILANCI FINAL: ${mbetja.toLocaleString()} L`, 14, finalY + 20);
+
+    // Ruajtja e skedarit
+    doc.save(`Fatura_Detajuar_${uAktual}_${new Date().getTime()}.pdf`);
+}
 
     // KURSIMET
     function initKursimet(kurs) {
