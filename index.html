@@ -147,7 +147,7 @@
 
 <script>
     google.charts.load('current', {'packages':['corechart']});
-    const URL = "https://script.google.com/macros/s/AKfycby1Ad0uKlcIhCsaqOodUmpCdABzNlrCxSoeQSHXauiN3epTrFbCRnAAGWjYPHqkwT4M/exec"; 
+    const URL = "https://script.google.com/macros/s/AKfycbzprX9mGairUfeXz1nyj4WTBqhUcrBShktIpv1LvQsV0wl9B-DZqbq-CuOlN1W_84zM/exec"; 
 
     let uAktual = "", allData = {}, shportaObj = {}, historiData = [];
     let pazarData = JSON.parse(localStorage.getItem("pazar_list")) || [];
@@ -295,15 +295,33 @@
         barElem.style.width = Math.min(perq, 100) + "%";
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
 
-        let hHtml = ""; d.lista.slice(0, 10).forEach(x => {
-            // Kontrollojme nese eshte hyrje per ngjyren
-            let isHyrje = (x.k === "Të Ardhura" || x.k === "Te Ardhura");
-            hHtml += `<div class="flex justify-between border-b dark:border-slate-700 pb-1">
-                        <span><b>${x.k}</b></span>
-                        <span class="${isHyrje ? 'text-green-500' : 'text-red-400'}">${isHyrje ? '+' : '-'}${x.s} L</span>
-                      </div>`;
-        });
-        document.getElementById("historiku-list").innerHTML = hHtml;
+        let hHtml = ""; 
+d.lista.slice(0, 15).forEach(x => {
+    let isHyrje = (x.t === "hyrje");
+    let vleraAfishuar = Math.abs(parseFloat(x.s));
+    
+    // RREGULLIMI I RI: Nëse ka artikuj në shënime, i kthejmë në format fature të vogël
+    let detajeVogla = "";
+    if (x.n && x.n.length > 2) {
+        // Zëvendësojmë thyerjet e rreshtave me <br> që të duken në aplikacion
+        detajeVogla = `<div class="text-[9px] text-slate-400 mt-1 italic leading-tight">${x.n.replace(/\n/g, "<br>")}</div>`;
+    }
+
+    hHtml += `
+        <div class="border-b dark:border-slate-700 py-3">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="font-black text-[10px] uppercase">${x.k}</span>
+                    <span class="text-[9px] text-slate-400 ml-2">${x.d}</span>
+                    ${detajeVogla}
+                </div>
+                <span class="${isHyrje ? 'text-green-500' : 'text-red-400'} font-bold text-sm">
+                    ${isHyrje ? '+' : '-'}${vleraAfishuar.toLocaleString()} L
+                </span>
+            </div>
+        </div>`;
+});
+document.getElementById("historiku-list").innerHTML = hHtml;
         
         initKursimet(d.kurs);
         shfaqGrafikun(d.grafiku);
