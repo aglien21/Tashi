@@ -59,6 +59,10 @@
         </div>
     </div>
 
+    <button onclick="hapModalFonde()" class="w-full mb-4 p-4 bg-green-600 text-white rounded-2xl font-black uppercase shadow-md flex justify-center items-center gap-2">
+        SHTO FONDE 💵
+    </button>
+
     <div class="box mb-4 bg-gradient-to-br from-indigo-700 to-blue-900 text-white border-none shadow-xl">
         <div class="flex justify-between items-center mb-2 italic">
             <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-white outline-none w-1/2" onchange="syncKursimToSheet()" placeholder="Emri i kursimit">
@@ -111,10 +115,22 @@
 <div id="modal-manual" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
     <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center">
         <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-600">Vendos Shumën</h3>
-        <input id="manual-input" type="number" class="w-full p-5 mb-4 rounded-2xl font-black text-4xl text-center border-2 border-blue-200 outline-none dark:bg-slate-900" inputmode="decimal">
+        <input id="manual-input" type="number" class="w-full p-5 mb-4 rounded-2xl font-black text-4xl text-center border-2 border-blue-200 outline-none dark:bg-slate-900 dark:text-white" inputmode="decimal">
         <div class="flex gap-2">
-            <button onclick="mbyllModal()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic">X</button>
+            <button onclick="mbyllModal()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white">X</button>
             <button onclick="mbyllModalDheShto()" class="w-3/4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">SHTO</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-fonde" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center">
+        <h3 class="text-sm font-black mb-4 uppercase text-green-600">Shto Fonde</h3>
+        <input id="fonde-shuma" type="number" placeholder="Shuma (L)" class="w-full p-5 mb-3 rounded-2xl font-black text-3xl text-center border-2 border-green-200 outline-none dark:bg-slate-900 dark:text-white" inputmode="decimal">
+        <input id="fonde-burimi" type="text" placeholder="Burimi (psh. Rroga)" class="w-full p-4 mb-4 rounded-2xl font-bold text-center border-2 border-slate-200 outline-none dark:bg-slate-900 dark:text-white dark:border-slate-700">
+        <div class="flex gap-2">
+            <button onclick="mbyllModalFonde()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white">X</button>
+            <button id="btn-ruaj-fonde" onclick="ruajFonde()" class="w-3/4 p-4 bg-green-600 text-white rounded-2xl font-black uppercase">SHTO</button>
         </div>
     </div>
 </div>
@@ -131,7 +147,7 @@
 
 <script>
     google.charts.load('current', {'packages':['corechart']});
-    const URL = "https://script.google.com/macros/s/AKfycbxpWGsjgWG6FI-_Cno5Ta5j8WRpAfPcW_tlJyi6x03lSsDK39OJy6T85w2HOyHQqnb4/exec"; 
+    const URL = "https://script.google.com/macros/s/AKfycbxkA2VERi_ZqKh2b4YVEMTOH88bKIBUgVzWjBgA_Vvp8pF3L8WiJZ0WqCsUV3QUFlE9/exec"; 
 
     let uAktual = "", allData = {}, shportaObj = {}, historiData = [];
     let pazarData = JSON.parse(localStorage.getItem("pazar_list")) || [];
@@ -227,6 +243,34 @@
         pastroShporten(); document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅"; merrRaportin(); shfaqKategoriteKryesore();
     }
 
+    // SHTO FONDE LLOGJIKA
+    function hapModalFonde() {
+        document.getElementById("fonde-shuma").value = "";
+        document.getElementById("fonde-burimi").value = "";
+        document.getElementById("modal-fonde").classList.remove("hidden");
+        setTimeout(() => document.getElementById("fonde-shuma").focus(), 200);
+    }
+
+    function mbyllModalFonde() { 
+        document.getElementById("modal-fonde").classList.add("hidden"); 
+    }
+
+    async function ruajFonde() {
+        let v = document.getElementById("fonde-shuma").value;
+        let b = document.getElementById("fonde-burimi").value || "Të ndryshme";
+        
+        if(!v || v <= 0) return;
+        document.getElementById("btn-ruaj-fonde").innerText = "...";
+        
+        await fetch(URL, { method: "POST", body: JSON.stringify({ 
+            action: "shto", user: uAktual, kat: "Të Ardhura", shuma: v, shenime: "Burimi: " + b 
+        }) });
+
+        mbyllModalFonde(); 
+        document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; 
+        merrRaportin();
+    }
+
     // RAPORTET & GRAFIKU
     async function merrRaportin() {
         const m = document.getElementById("muaji").value, v = document.getElementById("viti").value;
@@ -252,7 +296,12 @@
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
 
         let hHtml = ""; d.lista.slice(0, 10).forEach(x => {
-            hHtml += `<div class="flex justify-between border-b dark:border-slate-700 pb-1"><span><b>${x.k}</b></span><span class="text-red-400">-${x.s} L</span></div>`;
+            // Kontrollojme nese eshte hyrje per ngjyren
+            let isHyrje = (x.k === "Të Ardhura" || x.k === "Te Ardhura");
+            hHtml += `<div class="flex justify-between border-b dark:border-slate-700 pb-1">
+                        <span><b>${x.k}</b></span>
+                        <span class="${isHyrje ? 'text-green-500' : 'text-red-400'}">${isHyrje ? '+' : '-'}${x.s} L</span>
+                      </div>`;
         });
         document.getElementById("historiku-list").innerHTML = hHtml;
         
@@ -273,11 +322,12 @@
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
         let totaliMuajit = 0;
         const rreshtat = historiData.map(x => {
-            totaliMuajit += parseFloat(x.s);
-            return [x.d, x.k, x.s + " L"];
+            let shtoVlere = (x.k === "Të Ardhura" || x.k === "Te Ardhura") ? parseFloat(x.s) : -parseFloat(x.s);
+            totaliMuajit += shtoVlere;
+            return [x.d, x.k, (shtoVlere > 0 ? "+" : "") + x.s + " L"];
         });
         
-        rreshtat.push([{content: 'TOTALI I MUAJIT:', colSpan: 2, styles: {halign: 'right', fontStyle: 'bold'}}, {content: totaliMuajit.toLocaleString() + " L", styles: {fontStyle: 'bold', fillColor: [220, 220, 220]}}]);
+        rreshtat.push([{content: 'BILANCI I MUAJIT:', colSpan: 2, styles: {halign: 'right', fontStyle: 'bold'}}, {content: totaliMuajit.toLocaleString() + " L", styles: {fontStyle: 'bold', fillColor: [220, 220, 220]}}]);
 
         doc.setFontSize(18); doc.text(`Raporti i Shpenzimeve - ${uAktual}`, 14, 20);
         doc.setFontSize(10); doc.text(`Gjeneruar më: ${new Date().toLocaleString()}`, 14, 28);
