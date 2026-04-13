@@ -3,193 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa-Family HighRes</title>
+    <title>Financa-Family Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
-        :root { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; }
-        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; }
-        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid #334155; }
-        /* QR Reader Styles */
-        #qr-reader { border: 2px solid #3b82f6 !important; border-radius: 20px !important; overflow: hidden; }
-        #qr-reader__scan_region video { object-fit: cover !important; }
-        .loading-pulse { animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        :root { --bg: #f1f5f9; --box: white; --txt: #0f172a; --border: #e2e8f0; }
+        .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
+        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; }
+        .pad { background: var(--box); padding: 15px 5px; border-radius: 20px; text-align: center; border: 2px solid var(--border); cursor: pointer; }
+        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
+        
+        /* ANIMACIONET */
+        @keyframes pulse-red-text { 0%, 100% { color: #ef4444; } 50% { color: #fca5a5; } }
+        @keyframes pulse-red-bar { 0%, 100% { background-color: #3b82f6; } 50% { background-color: #ef4444; } }
+        
+        .limit-warning-text { animation: pulse-red-text 1s infinite; font-weight: 900; }
+        .limit-warning-bar { animation: pulse-red-bar 1s infinite !important; }
+        
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="p-4 pb-20">
+<body class="p-4 pb-24">
 
-<div id="app-ui" class="max-w-md mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="font-black italic text-blue-400">FINANCA-FAMILY PRO</h2>
-        <div id="status-tag" class="text-[10px] bg-slate-800 px-3 py-1 rounded-full border border-slate-700 uppercase">Gati</div>
+<div id="login-ui" class="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-6 text-center">
+    <div class="w-full max-w-xs">
+        <span class="text-7xl mb-4 flex justify-center gap-2">👨‍👩‍👧‍👦 💳</span>
+        <h2 class="text-white text-2xl font-black mb-8 italic uppercase">Financa-Family</h2>
+        <select id="user-select" class="w-full p-4 mb-3 rounded-2xl bg-white/10 text-white border border-white/20 outline-none text-center"></select>
+        <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-8 rounded-2xl text-center text-xl font-bold outline-none" inputmode="numeric">
+        <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black uppercase">Hyni</button>
+    </div>
+</div>
+
+<div id="app-ui" class="max-w-md mx-auto hidden">
+    <div class="flex justify-between items-center mb-4 gap-2">
+        <button onclick="toggleDark()" class="p-3 bg-slate-200 dark:bg-slate-800 rounded-2xl">🌙</button>
+        <div class="flex gap-1 flex-1">
+            <select id="muaji" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold outline-none flex-1 border border-slate-200 dark:border-slate-700"></select>
+            <select id="viti" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold outline-none flex-1 border border-slate-200 dark:border-slate-700"></select>
+        </div>
+        <button onclick="shkarkoPDF()" class="p-3 bg-blue-600 text-white rounded-2xl font-black text-[10px]">PDF 📄</button>
     </div>
 
-    <div class="box border-2 border-blue-500 shadow-2xl text-center mb-6">
-        <button onclick="startSkanimi()" id="btn-scan" class="w-full p-5 bg-blue-600 rounded-2xl font-black text-white shadow-lg mb-4 flex justify-center items-center gap-2">
-            <span>📸</span> SKANO FATURËN
-        </button>
-        
-        <div id="qr-reader" class="w-full bg-black mb-4 min-h-[250px]"></div>
-
-        <div id="loader-ai" class="hidden py-4">
-            <div class="loading-pulse text-blue-400 font-bold text-sm italic">🤖 DUKE LEXUAR 100 ARTIKUJT...</div>
-        </div>
-
-        <div class="relative bg-slate-900/50 py-4 rounded-2xl">
-            <input id="shuma" type="number" class="text-5xl font-black text-white bg-transparent w-full text-center outline-none" readonly placeholder="0">
-            <div class="text-blue-400 text-[10px] font-bold uppercase tracking-widest">Lekë Totale</div>
-        </div>
-    </div>
-
-    <div class="box mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-[10px] font-black uppercase text-slate-500 italic">Shporta Automatike</h3>
-            <button onclick="pastroShporten()" class="text-[10px] text-red-500 font-black">PASTRO 🗑️</button>
-        </div>
-        
-        <div id="shporta-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 text-[11px]">
-            <div class="text-center py-4 text-slate-600 italic">Skano faturën për të parë artikujt...</div>
+    <div class="p-6 bg-slate-900 rounded-[35px] mb-4 shadow-2xl text-center text-white">
+        <h1 id="r-mbetja" class="text-4xl font-black text-blue-400 mb-2">0 L</h1>
+        <div id="piechart" style="width: 100%; height: 180px;"></div>
+        <div class="mt-4 px-2 text-[10px] font-black uppercase">
+            <div class="flex justify-between mb-1"><span>Dalje / Limiti</span><span id="txt-limit">0 / 0 L</span></div>
+            <div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                <div id="bar-limit" class="bg-blue-500 h-full w-0 transition-all duration-1000"></div>
+            </div>
         </div>
     </div>
 
-    <button onclick="ruajNeSheet()" id="btn-save" class="w-full p-5 bg-green-600 rounded-2xl font-black text-white shadow-lg uppercase tracking-wider">
-        RUASH NË GOOGLE SHEETS ✅
+    <button onclick="hapModalFonde()" class="w-full mb-4 p-4 bg-green-600 text-white rounded-2xl font-black uppercase shadow-md flex justify-center items-center gap-2">
+        SHTO FONDE 💵
     </button>
+
+    <div class="box mb-4 bg-gradient-to-br from-indigo-700 to-blue-900 text-white border-none shadow-xl">
+        <div class="flex justify-between items-center mb-2 italic">
+            <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-white outline-none w-1/2" onchange="syncKursimToSheet()" placeholder="Emri i kursimit">
+            <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md">0%</span>
+        </div>
+        <div class="w-full bg-black/20 rounded-full h-1.5 mb-3">
+            <div id="obj-bar" class="bg-white h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+        </div>
+        <div class="flex justify-between items-center px-1">
+            <span id="obj-vlerat" class="text-[11px] font-black">0 / 0 L</span>
+            <div class="flex gap-2">
+                <button onclick="shtoKursim()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl">+ SHTO</button>
+                <button onclick="ndryshoQellimin()" class="bg-white/20 text-[9px] font-black px-3 py-2 rounded-xl">🎯</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="box mb-4 border-2 border-blue-400 bg-blue-50/5">
+        <h3 class="text-[10px] font-black uppercase text-blue-600 mb-3 flex justify-between"><span>🛒 Pazari</span> <button onclick="pastroPazarin()" class="text-red-500">Pastro</button></h3>
+        <div class="flex gap-2 mb-3">
+            <input id="pazar-manual-input" type="text" placeholder="Shto në pazar..." class="flex-1 p-3 rounded-xl text-xs outline-none bg-white dark:bg-slate-800 border-blue-200">
+            <button onclick="shtoNePazar()" class="bg-blue-600 text-white px-4 rounded-xl font-black text-xs">SHTO</button>
+        </div>
+        <button onclick="hapModalPazar()" class="w-full mb-3 p-3 bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase rounded-xl border border-dashed border-slate-300">Zgjidh nga Lista 🔍</button>
+        <div id="pazar-lista" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto"></div>
+    </div>
+
+    <div id="kategori-section" class="mb-6">
+        <div id="kthehu-btn" class="hidden mb-3">
+            <button onclick="shfaqKategoriteKryesore()" class="w-full p-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-black uppercase rounded-xl border border-slate-300 dark:border-slate-600 flex items-center justify-center gap-2">
+                <span>⬅️</span> KTHEHU TE KATEGORITË
+            </button>
+        </div>
+        <div id="kategori-pads" class="grid grid-cols-3 gap-3"></div>
+    </div>
+
+    <div class="box mb-6 border-2 border-blue-600 shadow-xl text-center relative">
+        <button onclick="pastroShporten()" class="absolute top-4 right-4 text-xl">🗑️</button>
+        <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
+        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-black text-slate-500 overflow-y-auto max-h-32 text-left">Zgjidhni artikujt...</div>
+        <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full mt-4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">PAGUAJ ✅</button>
+    </div>
+
+    <div class="box mb-4">
+        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-3 italic">Shpenzimet e fundit</h3>
+        <div id="historiku-list" class="space-y-2 text-[11px]"></div>
+    </div>
+</div>
+
+<div id="modal-manual" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center">
+        <h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-600">Vendos Shumën</h3>
+        <input id="manual-input" type="number" class="w-full p-5 mb-4 rounded-2xl font-black text-4xl text-center border-2 border-blue-200 outline-none dark:bg-slate-900 dark:text-white" inputmode="decimal">
+        <div class="flex gap-2">
+            <button onclick="mbyllModal()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white">X</button>
+            <button onclick="mbyllModalDheShto()" class="w-3/4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">SHTO</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-fonde" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center">
+        <h3 class="text-sm font-black mb-4 uppercase text-green-600">Shto Fonde</h3>
+        <input id="fonde-shuma" type="number" placeholder="Shuma (L)" class="w-full p-5 mb-3 rounded-2xl font-black text-3xl text-center border-2 border-green-200 outline-none dark:bg-slate-900 dark:text-white" inputmode="decimal">
+        <input id="fonde-burimi" type="text" placeholder="Burimi (psh. Rroga)" class="w-full p-4 mb-4 rounded-2xl font-bold text-center border-2 border-slate-200 outline-none dark:bg-slate-900 dark:text-white dark:border-slate-700">
+        <div class="flex gap-2">
+            <button onclick="mbyllModalFonde()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white">X</button>
+            <button id="btn-ruaj-fonde" onclick="ruajFonde()" class="w-3/4 p-4 bg-green-600 text-white rounded-2xl font-black uppercase">SHTO</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-pazar-kategori" class="fixed inset-0 bg-black/95 hidden flex flex-col items-center justify-center p-4 z-[400]">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[35px] p-6 text-center max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+            <h3 class="text-xs font-black uppercase text-blue-600">Shto në pazar</h3>
+            <button onclick="mbyllModalPazar()" class="text-red-500 font-black text-xl px-2">X</button>
+        </div>
+        <div id="pazar-kategori-lista" class="grid grid-cols-2 gap-3 overflow-y-auto pr-1"></div>
+    </div>
 </div>
 
 <script>
-    let shportaObj = [];
-    let html5QrCode = null;
+    google.charts.load('current', {'packages':['corechart']});
+    const URL = "https://script.google.com/macros/s/AKfycbzprX9mGairUfeXz1nyj4WTBqhUcrBShktIpv1LvQsV0wl9B-DZqbq-CuOlN1W_84zM/exec"; 
 
-    async function startSkanimi() {
-        if(html5QrCode) {
-            await html5QrCode.stop();
-            html5QrCode = null;
-            document.getElementById("qr-reader").innerHTML = "";
-            return;
-        }
+    let uAktual = "", allData = {}, shportaObj = {}, historiData = [];
+    let pazarData = JSON.parse(localStorage.getItem("pazar_list")) || [];
+    let kategoriaAktuale = ""; 
 
-        html5QrCode = new Html5Qrcode("qr-reader");
+    window.onload = async () => {
+        const m = document.getElementById("muaji"), v = document.getElementById("viti");
+        const muajt = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
+        muajt.forEach((emri, i) => { m.innerHTML += `<option value="${i+1}" ${i+1==new Date().getMonth()+1?'selected':''}>${emri}</option>`; });
+        for(let i=2025; i<=2027; i++) v.innerHTML += `<option value="${i}" ${i==2026?'selected':''}>${i}</option>`;
         
-        // KONFIGURIMI I REZOLUCIONIT TË LARTË
-        const config = { 
-            fps: 20, 
-            qrbox: { width: 250, height: 250 }, // Dritare më e madhe
-            aspectRatio: 1.0,
-            videoConstraints: {
-                facingMode: "environment",
-                width: { min: 1280, ideal: 1920, max: 2560 }, // FULL HD
-                height: { min: 720, ideal: 1080, max: 1440 },
-                focusMode: "continuous" // Fokus i vazhdueshëm
-            }
-        };
+        m.onchange = v.onchange = () => merrRaportin();
+        shfaqPazarin();
+        if(localStorage.getItem("dark-mode") === "true") document.body.classList.add("dark");
 
-        html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-            html5QrCode.stop().then(() => {
-                html5QrCode = null;
-                document.getElementById("qr-reader").innerHTML = "";
-                procesoFaturenAI(decodedText);
-            });
-        }).catch(err => alert("Kamera nuk u hap: " + err));
+        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "get_data" }) });
+        allData = await r.json();
+        allData.users.forEach(u => { document.getElementById("user-select").innerHTML += `<option value="${u}">${u}</option>`; });
+    };
+
+    function toggleDark() { 
+        let isDark = document.body.classList.toggle("dark"); 
+        localStorage.setItem("dark-mode", isDark); 
+        merrRaportin(); 
     }
 
-    async function procesoFaturenAI(link) {
-        document.getElementById("loader-ai").classList.remove("hidden");
-        document.getElementById("status-tag").innerText = "Analizim...";
-        
-        // Totali i shpejtë
-        const urlParams = new URLSearchParams(link.split('?')[1]);
-        const totali = urlParams.get('prc') || urlParams.get('tot');
-        document.getElementById("shuma").value = totali;
+    document.getElementById("btn-login").onclick = async () => {
+        const btn = document.getElementById("btn-login"); btn.innerText = "Lidhja..."; 
+        const u = document.getElementById("user-select").value, p = document.getElementById("pass").value;
+        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "login", user: u, pass: p }) });
+        const d = await r.json();
+        if(d.status == "ok") { 
+            uAktual = u; document.getElementById("login-ui").classList.add("hidden"); 
+            document.getElementById("app-ui").classList.remove("hidden"); 
+            shfaqKategoriteKryesore(); merrRaportin(); initKursimet();
+        } else { alert("PIN i gabuar!"); btn.innerText = "Hyni"; }
+    };
 
-        try {
-            // Përdorim AllOrigins për të kaluar CORS
-            const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(link);
-            const response = await fetch(proxyUrl);
-            const data = await response.json();
-            
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
-            
-            // Gjejmë artikujt (Kërkojmë në tabelat e faturës së tatimeve)
-            const rows = doc.querySelectorAll('tr'); 
-            shportaObj = [];
-
-            rows.forEach(r => {
-                const cells = r.querySelectorAll('td');
-                if(cells.length >= 3) {
-                    let emri = cells[0].innerText.trim();
-                    let cmimi = cells[cells.length - 1].innerText.trim().replace(/[^0-9.]/g, '');
-                    if(emri && !isNaN(cmimi) && cmimi > 0 && emri.length > 2) {
-                        shportaObj.push({ emri: emri, cmimi: parseFloat(cmimi) });
-                    }
-                }
-            });
-
-            shfaqShporten();
-        } catch (e) {
-            console.log("Artikujt nuk u lexuan dot automatikisht.");
-        } finally {
-            document.getElementById("loader-ai").classList.add("hidden");
-            document.getElementById("status-tag").innerText = "Mbaroi";
-        }
-    }
-
-    function shfaqShporten() {
-        const listaUI = document.getElementById("shporta-list");
-        if(shportaObj.length === 0) {
-            listaUI.innerHTML = '<div class="text-center py-4 text-orange-400 italic">Skanimi u bë, por artikujt duhet t\'i shihni te faqja e hapur.</div>';
-            return;
-        }
-
-        let html = "";
-        shportaObj.forEach(item => {
-            html += `
-                <div class="flex justify-between items-center border-b border-slate-700/50 py-2">
-                    <span class="font-medium truncate w-48">${item.emri}</span>
-                    <span class="font-black text-blue-400">${item.cmimi} L</span>
-                </div>`;
+    function shfaqKategoriteKryesore() {
+        document.getElementById("kthehu-btn").classList.add("hidden"); 
+        let h = "";
+        allData.kats.forEach(k => {
+            let func = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") ? `shfaqNenkategorite('${k.emri}')` : `shfaqModalManual('${k.emri}')`;
+            h += `<div class="pad shadow-sm" onclick="${func}"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
         });
-        listaUI.innerHTML = html;
+        document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    function pastroShporten() {
-        shportaObj = [];
-        document.getElementById("shuma").value = "";
-        document.getElementById("shporta-list").innerHTML = '<div class="text-center py-4 text-slate-600 italic">Shporta u pastrua.</div>';
+    function shfaqNenkategorite(prindi) {
+        document.getElementById("kthehu-btn").classList.remove("hidden"); 
+        let h = "";
+        allData.nenkats.forEach(n => {
+            if(n.prindi == prindi) {
+                if(n.cmimi > 0) h += `<div class="pad shadow-sm" onclick="shtoNeShporte('${n.emri}', ${n.cmimi})"><span class="text-[10px] font-black uppercase">${n.emri}<br><small>${n.cmimi}L</small></span></div>`;
+                else h += `<div class="pad shadow-sm" onclick="shfaqModalManual('${n.emri}')"><span class="text-[10px] font-black uppercase">${n.emri}</span></div>`;
+            }
+        });
+        document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    async function ruajNeSheet() {
-        const btn = document.getElementById("btn-save");
-        btn.innerText = "DUKE U RUAJTUR...";
-        
-        let detaje = shportaObj.map(i => i.emri + " (" + i.cmimi + "L)").join(", ");
-        
-        const shpenzimi = {
-            action: "shto",
-            user: "Ian",
-            kat: "Pazar",
-            shuma: document.getElementById("shuma").value,
-            shenime: detaje
-        };
+    // SHPORTA & ARKA
+    function shtoNeShporte(e, c) {
+        if (shportaObj[e]) { shportaObj[e].s += 1; } 
+        else { shportaObj[e] = {s: 1, c: parseFloat(c)}; }
+        perditesoArken();
+    }
 
-        // Ndrysho këtë me URL-në tënde të Google Script
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzprX9mGairUfeXz1nyj4WTBqhUcrBShktIpv1LvQsV0wl9B-DZqbq-CuOlN1W_84zM/exec";
-
-        try {
-            await fetch(SCRIPT_URL, { 
-                method: "POST", 
-                mode: "no-cors",
-                body: JSON.stringify(shpenzimi) 
-            });
-            alert("U ruajtën në tabelë!");
-            pastroShporten();
-        } catch (e) {
-            alert("Ruajtja dështoi!");
+    function perditesoArken() {
+        let t = 0, h = "";
+        for(let x in shportaObj) { 
+            t += (shportaObj[x].s * shportaObj[x].c); 
+            h += `<div class="flex justify-between border-b dark:border-slate-700 py-1 font-bold"><span>${x} x${shportaObj[x].s}</span><span>${(shportaObj[x].s * shportaObj[x].c)} L</span></div>`;
         }
-        btn.innerText = "RUASH NË GOOGLE SHEETS ✅";
+        document.getElementById("shuma").value = t;
+        document.getElementById("shporta-list").innerHTML = h || "Zgjidhni artikujt...";
     }
+
+    function pastroShporten() { shportaObj = {}; perditesoArken(); }
+
+    async function ruajShpenzim() {
+        let v = document.getElementById("shuma").value; if(!v || v <= 0) return;
+        document.getElementById("btn-ruaj").innerText = "...";
+        
+        let fatureTekst = "";
+        for (let x in shportaObj) {
+            fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`;
+        }
+        
+        await fetch(URL, { method: "POST", body: JSON.stringify({ 
+            action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0], shuma: v, shenime: fatureTekst 
+        }) });
+
+        pastroShporten(); document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅"; merrRaportin(); shfaqKategoriteKryesore();
+    }
+
+    // SHTO FONDE LLOGJIKA
+    function hapModalFonde() {
+        document.getElementById("fonde-shuma").value = "";
+        document.getElementById("fonde-burimi").value = "";
+        document.getElementById("modal-fonde").classList.remove("hidden");
+        setTimeout(() => document.getElementById("fonde-shuma").focus(), 200);
+    }
+
+    function mbyllModalFonde() { 
+        document.getElementById("modal-fonde").classList.add("hidden"); 
+    }
+
+    async function ruajFonde() {
+        let v = document.getElementById("fonde-shuma").value;
+        let b = document.getElementById("fonde-burimi").value || "Të ndryshme";
+        
+        if(!v || v <= 0) return;
+        document.getElementById("btn-ruaj-fonde").innerText = "...";
+        
+        await fetch(URL, { method: "POST", body: JSON.stringify({ 
+            action: "shto", user: uAktual, kat: "Të Ardhura", shuma: v, shenime: "Burimi: " + b 
+        }) });
+
+        mbyllModalFonde(); 
+        document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; 
+        merrRaportin();
+    }
+
+    // RAPORTET & GRAFIKU
+    async function merrRaportin() {
+        const m = document.getElementById("muaji").value, v = document.getElementById("viti").value;
+        const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v, user: uAktual }) });
+        const d = await r.json(); historiData = d.lista;
+        
+        const mbetjaElem = document.getElementById("r-mbetja");
+        const barElem = document.getElementById("bar-limit");
+        
+        mbetjaElem.innerText = d.mbetja.toLocaleString() + " L";
+        let totalLimit = 0; allData.kats.forEach(k => totalLimit += (parseFloat(k.limiti) || 0));
+        let perq = (d.dalje / totalLimit) * 100;
+        
+        if (perq >= 80) {
+            mbetjaElem.classList.add("limit-warning-text");
+            barElem.classList.add("limit-warning-bar");
+        } else {
+            mbetjaElem.classList.remove("limit-warning-text");
+            barElem.classList.remove("limit-warning-bar");
+        }
+
+        barElem.style.width = Math.min(perq, 100) + "%";
+        document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
+
+        let hHtml = ""; 
+d.lista.slice(0, 15).forEach(x => {
+    let isHyrje = (x.t === "hyrje");
+    let vleraAfishuar = Math.abs(parseFloat(x.s));
+    
+    // RREGULLIMI I RI: Nëse ka artikuj në shënime, i kthejmë në format fature të vogël
+    let detajeVogla = "";
+    if (x.n && x.n.length > 2) {
+        // Zëvendësojmë thyerjet e rreshtave me <br> që të duken në aplikacion
+        detajeVogla = `<div class="text-[9px] text-slate-400 mt-1 italic leading-tight">${x.n.replace(/\n/g, "<br>")}</div>`;
+    }
+
+    hHtml += `
+        <div class="border-b dark:border-slate-700 py-3">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="font-black text-[10px] uppercase">${x.k}</span>
+                    <span class="text-[9px] text-slate-400 ml-2">${x.d}</span>
+                    ${detajeVogla}
+                </div>
+                <span class="${isHyrje ? 'text-green-500' : 'text-red-400'} font-bold text-sm">
+                    ${isHyrje ? '+' : '-'}${vleraAfishuar.toLocaleString()} L
+                </span>
+            </div>
+        </div>`;
+});
+document.getElementById("historiku-list").innerHTML = hHtml;
+        
+        initKursimet(d.kurs);
+        shfaqGrafikun(d.grafiku);
+    }
+
+    function shfaqGrafikun(data) {
+        let gD = [['Kategoria', 'Lekë']]; for(let k in data) gD.push([k, data[k]]);
+        new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(gD), {
+            backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6'],
+            legend: { position: 'right', textStyle: { color: '#ffffff', fontSize: 10, bold: true } },
+            chartArea: {width:'100%', height:'100%'}, pieHole: 0.5, border: 'none'
+        });
+    }
+
+    function shkarkoPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Titulli i Dokumentit
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text(`Raporti i Detajuar i Shpenzimeve`, 14, 20);
+    
+    // Informacionet e përgjithshme
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Përdoruesi: ${uAktual}`, 14, 28);
+    doc.text(`Data e gjenerimit: ${new Date().toLocaleString()}`, 14, 33);
+    doc.text(`Periudha: ${document.getElementById("muaji").options[document.getElementById("muaji").selectedIndex].text} ${document.getElementById("viti").value}`, 14, 38);
+
+    let totaliHyrje = 0;
+    let totaliDalje = 0;
+
+    // Përgatitja e të dhënave për tabelën
+    const rreshtat = historiData.map(x => {
+        let isHyrje = (x.t === "hyrje");
+        if (isHyrje) totaliHyrje += Math.abs(x.s);
+        else totaliDalje += Math.abs(x.s);
+
+        // Pastrojmë shënimet (artikujt) nga karakteret e tepërta nëse ka
+        let artikujt = x.n ? x.n.trim() : "---";
+
+        return [
+            x.d,             // Data
+            x.k,             // Kategoria
+            artikujt,        // Artikujt e detajuar (Fatura)
+            (isHyrje ? "+" : "-") + Math.abs(x.s).toLocaleString() + " L" // Shuma
+        ];
+    });
+
+    // Krijimi i tabelës
+    doc.autoTable({
+        head: [['Data', 'Kategoria', 'Detajet e Faturës (Artikujt)', 'Shuma']],
+        body: rreshtat,
+        startY: 45,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+        columnStyles: {
+            2: { cellWidth: 80 }, // I japim më shumë hapësirë kolonës së detajeve
+            3: { halign: 'right', fontStyle: 'bold' }
+        },
+        didParseCell: function(data) {
+            // Ngjyrosim shumat (E gjelbër për hyrje, e kuqe për dalje)
+            if (data.section === 'body' && data.column.index === 3) {
+                if (data.cell.raw.includes('+')) {
+                    data.cell.styles.textColor = [39, 174, 96];
+                } else {
+                    data.cell.styles.textColor = [192, 57, 43];
+                }
+            }
+        }
+    });
+
+    // Shtimi i Bilancit Përmbledhës në fund të tabelës
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(`PËRMBLEDHJE E MUAJIT:`, 14, finalY);
+    
+    doc.setFontSize(10);
+    doc.text(`Totali i Hyrjeve: +${totaliHyrje.toLocaleString()} L`, 14, finalY + 7);
+    doc.text(`Totali i Shpenzimeve: -${totaliDalje.toLocaleString()} L`, 14, finalY + 12);
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    let mbetja = totaliHyrje - totaliDalje;
+    doc.text(`BILANCI FINAL: ${mbetja.toLocaleString()} L`, 14, finalY + 20);
+
+    // Ruajtja e skedarit
+    doc.save(`Fatura_Detajuar_${uAktual}_${new Date().getTime()}.pdf`);
+}
+
+    // KURSIMET
+    function initKursimet(kurs) {
+        if(kurs) {
+            localStorage.setItem("kursime_mbledhura", kurs.mbledhur);
+            localStorage.setItem("obj_vlera", kurs.synimi);
+            localStorage.setItem("obj_emri", kurs.emri);
+        }
+        document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im"; 
+        perditesoKasaforten();
+    }
+    function perditesoKasaforten() {
+        let m = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0, t = parseFloat(localStorage.getItem("obj_vlera")) || 0;
+        let p = t > 0 ? Math.min((m/t)*100, 100) : 0;
+        document.getElementById("obj-bar").style.width = p + "%";
+        document.getElementById("obj-perq").innerText = Math.floor(p) + "%";
+        document.getElementById("obj-vlerat").innerText = `${m.toLocaleString()} / ${t.toLocaleString()} L`;
+    }
+    async function syncKursimToSheet() {
+        const e = document.getElementById("obj-emri").value; localStorage.setItem("obj_emri", e);
+        await fetch(URL, { method: "POST", body: JSON.stringify({ 
+            action: "sync_kursim", user: uAktual, emri: e, mbledhur: localStorage.getItem("kursime_mbledhura"), synimi: localStorage.getItem("obj_vlera") 
+        }) });
+    }
+    function shtoKursim() { let v = prompt("Shto Lekë:"); if(v){ localStorage.setItem("kursime_mbledhura", (parseFloat(localStorage.getItem("kursime_mbledhura"))||0)+parseFloat(v)); perditesoKasaforten(); syncKursimToSheet(); }}
+    function ndryshoQellimin() { let t = prompt("Synimi i ri:"); if(t){ localStorage.setItem("obj_vlera", t); perditesoKasaforten(); syncKursimToSheet(); }}
+
+    // PAZARI
+    function shfaqPazarin() {
+        let h = ""; pazarData.forEach((p, i) => { h += `<div class="pad bg-blue-600 text-white text-[11px] font-black uppercase ${p.done ? 'opacity-30' : ''}" onclick="pazarTeArka('${p.emri}', ${i})">${p.emri}</div>`; });
+        document.getElementById("pazar-lista").innerHTML = h;
+    }
+    function shtoNePazar() { let i = document.getElementById("pazar-manual-input"); if(i.value) { pazarData.push({emri: i.value, done: false}); localStorage.setItem("pazar_list", JSON.stringify(pazarData)); i.value = ""; shfaqPazarin(); } }
+    function pastroPazarin() { pazarData = pazarData.filter(p => !p.done); localStorage.setItem("pazar_list", JSON.stringify(pazarData)); shfaqPazarin(); }
+    function hapModalPazar() { document.getElementById("modal-pazar-kategori").classList.remove("hidden"); shfaqKategoritePazar(); }
+    function mbyllModalPazar() { document.getElementById("modal-pazar-kategori").classList.add("hidden"); }
+    function shfaqKategoritePazar() {
+        let h = ""; allData.kats.forEach(k => {
+            let func = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") ? `shfaqNenPazar('${k.emri}')` : `shtoNePazarLista('${k.emri}')`;
+            h += `<div class="pad shadow-sm border-slate-200 dark:border-slate-700" onclick="${func}"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
+        });
+        document.getElementById("pazar-kategori-lista").innerHTML = h;
+    }
+    function shfaqNenPazar(prindi) {
+        let h = `<div class="pad shadow-sm bg-blue-100 dark:bg-slate-700 col-span-2 mb-2" onclick="shfaqKategoritePazar()"><span class="text-[10px] font-black uppercase">⬅️ Kthehu</span></div>`;
+        allData.nenkats.forEach(n => { if(n.prindi == prindi) { h += `<div class="pad shadow-sm border-blue-200" onclick="shtoNePazarLista('${n.emri}')"><span class="text-[10px] font-black uppercase">${n.emri}</span></div>`; } });
+        document.getElementById("pazar-kategori-lista").innerHTML = h;
+    }
+    function shtoNePazarLista(emri) { pazarData.push({emri: emri, done: false}); localStorage.setItem("pazar_list", JSON.stringify(pazarData)); shfaqPazarin(); mbyllModalPazar(); }
+    function pazarTeArka(emri, index) { let gjetur = allData.nenkats.find(n => n.emri.toLowerCase() === emri.toLowerCase()); if(gjetur && gjetur.cmimi > 0) { shtoNeShporte(gjetur.emri, gjetur.cmimi); } else { shfaqModalManual(emri); } pazarData[index].done = true; shfaqPazarin(); }
+
+    function shfaqModalManual(t) { kategoriaAktuale = t; document.getElementById("manual-titulli").innerText = t; document.getElementById("manual-input").value = ""; document.getElementById("modal-manual").classList.remove("hidden"); setTimeout(()=>document.getElementById("manual-input").focus(),200); }
+    function mbyllModal() { document.getElementById("modal-manual").classList.add("hidden"); }
+    function mbyllModalDheShto() { let v = document.getElementById("manual-input").value; if(v>0){ shtoNeShporte(kategoriaAktuale, v); mbyllModal(); } }
 </script>
 </body>
 </html>
