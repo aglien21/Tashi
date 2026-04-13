@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa-Family Pro</title>
+    <title>Financa-Family Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     
     <style>
         :root { --bg: #f1f5f9; --box: white; --txt: #0f172a; --border: #e2e8f0; }
         .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
         body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; }
-        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
+        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); position: relative; }
         .pad { background: var(--box); padding: 15px 5px; border-radius: 20px; text-align: center; border: 2px solid var(--border); cursor: pointer; }
-        
-        /* Modal Style për Faturën */
         #fatura-modal { transition: 0.4s ease-in-out; transform: translateY(100%); }
         #fatura-modal.active { transform: translateY(0); }
     </style>
@@ -38,6 +38,7 @@
             <select id="muaji" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold border dark:border-slate-700 flex-1"></select>
             <select id="viti" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold border dark:border-slate-700 flex-1"></select>
         </div>
+        <button onclick="shkarkoPDF()" class="p-3 bg-blue-600 text-white rounded-2xl font-black text-[10px]">PDF 📄</button>
     </div>
 
     <div class="p-6 bg-slate-900 rounded-[35px] mb-4 shadow-2xl text-center text-white">
@@ -69,16 +70,26 @@
     </div>
 
     <div id="kategori-section" class="mb-4">
-        <button id="btn-back-kat" onclick="shfaqKategoriteKryesore()" class="hidden w-full mb-2 p-2 bg-slate-200 dark:bg-slate-700 rounded-xl text-[10px] font-black uppercase">⬅️ Kthehu</button>
+        <button id="btn-back-kat" onclick="shfaqKategoriteKryesore()" class="hidden w-full mb-2 p-2 bg-slate-200 dark:bg-slate-700 rounded-xl text-[10px] font-black uppercase">⬅️ Kthehu te Kategoritë</button>
         <div id="kategori-pads" class="grid grid-cols-3 gap-3"></div>
     </div>
 
     <div class="box mb-6 border-2 border-purple-600 shadow-xl text-center">
-        <button onclick="startSkanimi()" class="w-full mb-3 p-4 bg-purple-600 text-white rounded-xl font-black uppercase shadow-lg">SKANO FATURËN 📸</button>
+        <div class="flex justify-between items-center mb-2 px-1">
+            <span class="text-[10px] font-black text-purple-600 uppercase italic">Arka & Skaneri</span>
+            <button onclick="pastroShporten()" class="text-red-500 text-[10px] font-black uppercase">🗑️ Fshi Gjithçka</button>
+        </div>
+        
+        <button onclick="startSkanimi()" class="w-full mb-3 p-4 bg-purple-600 text-white rounded-xl font-black uppercase shadow-lg">SKANO QR KODIN 📸</button>
         <div id="qr-reader" class="w-full rounded-[15px] overflow-hidden mb-3 bg-black"></div>
+        
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
-        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl mt-2 text-[10px] text-left">Shporta është bosh...</div>
-        <button onclick="ruajShpenzim()" class="w-full mt-4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">PAGUAJ ✅</button>
+        
+        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl mt-2 text-[10px] text-left max-h-40 overflow-y-auto min-h-[40px]">
+            Shporta është bosh...
+        </div>
+        
+        <button onclick="ruajShpenzim()" class="w-full mt-4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">RUASH SHPENZIMIN ✅</button>
     </div>
 
     <div class="box">
@@ -89,11 +100,11 @@
 
 <div id="fatura-modal" class="fixed inset-0 z-[600] bg-white dark:bg-slate-900 flex flex-col hidden">
     <div class="p-4 flex justify-between items-center border-b dark:border-slate-800">
-        <button onclick="mbyllFaturen()" class="p-3 bg-red-100 text-red-600 rounded-xl font-black">MBYLL ✖</button>
-        <span class="text-xs font-black uppercase">Detajet e Faturës</span>
-        <button id="btn-external" class="p-3 bg-blue-100 text-blue-600 rounded-xl font-black">HAP JASHTË ↗</button>
+        <button onclick="mbyllFaturen()" class="p-3 bg-red-100 text-red-600 rounded-xl font-black text-[10px]">MBYLL X</button>
+        <span class="text-xs font-black uppercase">Shiko Artikujt</span>
+        <button id="btn-external" class="p-3 bg-blue-100 text-blue-600 rounded-xl font-black text-[10px]">JASHTË ↗</button>
     </div>
-    <div class="flex-1 bg-slate-100 dark:bg-slate-800">
+    <div class="flex-1">
         <iframe id="fatura-frame" class="w-full h-full border-none"></iframe>
     </div>
 </div>
@@ -102,14 +113,17 @@
     <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center">
         <h3 id="manual-titulli" class="text-xs font-black mb-4 uppercase">Vendos Shumën</h3>
         <input id="manual-input" type="number" class="w-full p-4 mb-4 rounded-2xl font-black text-2xl text-center border-2 dark:bg-slate-900 dark:text-white" inputmode="decimal">
-        <button onclick="mbyllModalDheShto()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black">SHTO</button>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('modal-manual').classList.add('hidden')" class="p-4 bg-slate-100 rounded-xl flex-1">Anulo</button>
+            <button onclick="mbyllModalDheShto()" class="p-4 bg-blue-600 text-white rounded-xl flex-1 font-bold">SHTO</button>
+        </div>
     </div>
 </div>
 
 <script>
     const URL_SHEET = "https://script.google.com/macros/s/AKfycbzprX9mGairUfeXz1nyj4WTBqhUcrBShktIpv1LvQsV0wl9B-DZqbq-CuOlN1W_84zM/exec"; 
     let uAktual = "", allData = {}, shportaObj = {}, pazarData = JSON.parse(localStorage.getItem("pazar_list")) || [];
-    let kategoriaAktuale = "", html5QrCode = null;
+    let kategoriaAktuale = "", html5QrCode = null, historiData = [];
 
     window.onload = async () => {
         const m = document.getElementById("muaji"), v = document.getElementById("viti");
@@ -149,24 +163,20 @@
                 html5QrCode.stop().then(() => {
                     html5QrCode = null;
                     document.getElementById("qr-reader").innerHTML = "";
-                    shtoNeShporte("Faturë", v);
-                    shfaqFaturen(decodedText); // Hap modalin në vend të popup
+                    shtoNeShporte("Faturë QR", v);
+                    shfaqFaturen(decodedText);
                 });
             }
         });
     }
 
-    // MODAL I RI PËR FATURËN
     function shfaqFaturen(link) {
         const modal = document.getElementById("fatura-modal");
         const iframe = document.getElementById("fatura-frame");
-        const btnExt = document.getElementById("btn-external");
-        
         modal.classList.remove("hidden");
         setTimeout(() => modal.classList.add("active"), 10);
-        
         iframe.src = link;
-        btnExt.onclick = () => window.open(link, '_blank');
+        document.getElementById("btn-external").onclick = () => window.open(link, '_blank');
     }
 
     function mbyllFaturen() {
@@ -180,8 +190,8 @@
         document.getElementById("btn-back-kat").classList.add("hidden");
         let h = "";
         allData.kats.forEach(k => {
-            let func = (k.kaNen === true || k.kaNen === "Po") ? `shfaqNenkategorite('${k.emri}')` : `shfaqModalManual('${k.emri}')`;
-            h += `<div class="pad" onclick="${func}"><span class="text-[9px] font-black uppercase">${k.emri}</span></div>`;
+            let func = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") ? `shfaqNenkategorite('${k.emri}')` : `shfaqModalManual('${k.emri}')`;
+            h += `<div class="pad shadow-sm" onclick="${func}"><span class="text-[9px] font-black uppercase">${k.emri}</span></div>`;
         });
         document.getElementById("kategori-pads").innerHTML = h;
     }
@@ -191,7 +201,7 @@
         let h = "";
         allData.nenkats.forEach(n => {
             if(n.prindi == prindi) {
-                h += `<div class="pad" onclick="shtoNeShporte('${n.emri}', ${n.cmimi})"><span class="text-[9px] font-black uppercase">${n.emri}<br>${n.cmimi}L</span></div>`;
+                h += `<div class="pad shadow-sm border-blue-200" onclick="shtoNeShporte('${n.emri}', ${n.cmimi})"><span class="text-[9px] font-black uppercase">${n.emri}<br><small>${n.cmimi}L</small></span></div>`;
             }
         });
         document.getElementById("kategori-pads").innerHTML = h;
@@ -207,17 +217,19 @@
         let t = 0, h = "";
         for(let x in shportaObj) { 
             t += (shportaObj[x].s * shportaObj[x].c); 
-            h += `<div class="flex justify-between border-b py-1"><span>${x} x${shportaObj[x].s}</span><b>${(shportaObj[x].s * shportaObj[x].c)} L</b></div>`;
+            h += `<div class="flex justify-between border-b dark:border-slate-700 py-1 font-bold"><span>${x} x${shportaObj[x].s}</span><span>${(shportaObj[x].s * shportaObj[x].c)} L</span></div>`;
         }
         document.getElementById("shuma").value = t;
         document.getElementById("shporta-list").innerHTML = h || "Shporta është bosh...";
     }
 
+    function pastroShporten() { shportaObj = {}; perditesoArken(); }
+
     async function ruajShpenzim() {
         let v = document.getElementById("shuma").value; if(!v || v <= 0) return;
         let detaje = ""; for(let x in shportaObj) detaje += `${x} x${shportaObj[x].s}\n`;
         await fetch(URL_SHEET, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: "Pazar", shuma: v, shenime: detaje })});
-        shportaObj = {}; perditesoArken(); merrRaportin();
+        pastroShporten(); merrRaportin();
     }
 
     function shfaqPazarin() {
@@ -229,10 +241,10 @@
 
     async function merrRaportin() {
         const r = await fetch(URL_SHEET, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: document.getElementById("muaji").value, viti: document.getElementById("viti").value, user: uAktual }) });
-        const d = await r.json();
+        const d = await r.json(); historiData = d.lista;
         document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
         let hHtml = ""; d.lista.slice(0, 10).forEach(x => {
-            hHtml += `<div class="border-b py-2 flex justify-between"><span>${x.k}</span><b>${x.s} L</b></div>`;
+            hHtml += `<div class="border-b dark:border-slate-700 py-2 flex justify-between"><span>${x.k}</span><b>${x.s} L</b></div>`;
         });
         document.getElementById("historiku-list").innerHTML = hHtml;
         shfaqGrafikun(d.grafiku);
@@ -243,14 +255,36 @@
         google.charts.setOnLoadCallback(() => {
             let gD = [['Kat', 'L']]; for(let k in data) gD.push([k, data[k]]);
             new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(gD), {
-                backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444'],
+                backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b'],
                 legend: { position: 'none' }, chartArea: {width:'100%', height:'100%'}, pieHole: 0.5
             });
         });
     }
 
+    function initKursimet(kurs) {
+        if(kurs) {
+            let p = kurs.synimi > 0 ? (kurs.mbledhur/kurs.synimi)*100 : 0;
+            document.getElementById("obj-bar").style.width = p + "%";
+            document.getElementById("obj-perq").innerText = Math.floor(p) + "%";
+            document.getElementById("obj-vlerat").innerText = `${kurs.mbledhur.toLocaleString()} / ${kurs.synimi.toLocaleString()} L`;
+            document.getElementById("obj-emri").value = kurs.emri;
+        }
+    }
+
+    function shtoKursim() { let v = prompt("Shto Lekë:"); if(v) syncKursim("shto", v); }
+    async function syncKursim(a, v) { await fetch(URL_SHEET, { method: "POST", body: JSON.stringify({ action: "sync_kursim", user: uAktual, mbledhur: v })}); merrRaportin(); }
+
     function shfaqModalManual(t) { kategoriaAktuale = t; document.getElementById("manual-titulli").innerText = t; document.getElementById("modal-manual").classList.remove("hidden"); }
     function mbyllModalDheShto() { let v = document.getElementById("manual-input").value; if(v>0){ shtoNeShporte(kategoriaAktuale, v); document.getElementById("modal-manual").classList.add("hidden"); } }
+
+    function shkarkoPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(18); doc.text("Raporti i Shpenzimeve - Financa Family", 15, 20);
+        const rows = historiData.map(x => [x.d, x.k, x.s + " L"]);
+        doc.autoTable({ head: [['Data', 'Kategoria', 'Shuma']], body: rows, startY: 30 });
+        doc.save("Financa_Family_Raporti.pdf");
+    }
 </script>
 </body>
 </html>
