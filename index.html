@@ -3,56 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa-Family AI Scanner</title>
+    <title>Financa-Family HighRes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; }
         body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; }
         .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid #334155; }
+        /* QR Reader Styles */
+        #qr-reader { border: 2px solid #3b82f6 !important; border-radius: 20px !important; overflow: hidden; }
+        #qr-reader__scan_region video { object-fit: cover !important; }
         .loading-pulse { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 pb-20">
 
 <div id="app-ui" class="max-w-md mx-auto">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="font-black italic text-blue-400">FINANCA-FAMILY AI</h2>
-        <div id="status-tag" class="text-[10px] bg-slate-800 px-3 py-1 rounded-full border border-slate-700">Gati</div>
+        <h2 class="font-black italic text-blue-400">FINANCA-FAMILY PRO</h2>
+        <div id="status-tag" class="text-[10px] bg-slate-800 px-3 py-1 rounded-full border border-slate-700 uppercase">Gati</div>
     </div>
 
     <div class="box border-2 border-blue-500 shadow-2xl text-center mb-6">
-        <button onclick="startSkanimi()" id="btn-scan" class="w-full p-5 bg-blue-600 rounded-2xl font-black text-white shadow-lg mb-4">
-            SKANO FATURËN E MARKETIT 🛒
+        <button onclick="startSkanimi()" id="btn-scan" class="w-full p-5 bg-blue-600 rounded-2xl font-black text-white shadow-lg mb-4 flex justify-center items-center gap-2">
+            <span>📸</span> SKANO FATURËN
         </button>
         
-        <div id="qr-reader" class="w-full rounded-2xl overflow-hidden mb-4"></div>
+        <div id="qr-reader" class="w-full bg-black mb-4 min-h-[250px]"></div>
 
         <div id="loader-ai" class="hidden py-4">
-            <div class="loading-pulse text-blue-400 font-bold text-sm">🤖 AI DUKE LEXUAR ARTIKUJT...</div>
-            <div class="text-[9px] text-slate-500 italic mt-1">Ky proces mund të zgjasë 5-10 sekonda për faturat e gjata.</div>
+            <div class="loading-pulse text-blue-400 font-bold text-sm italic">🤖 DUKE LEXUAR 100 ARTIKUJT...</div>
         </div>
 
-        <div class="relative">
-            <input id="shuma" type="number" class="text-5xl font-black text-white bg-transparent w-full text-center outline-none mb-2" readonly placeholder="0">
-            <span class="text-blue-400 font-bold">LEKË TOTALE</span>
+        <div class="relative bg-slate-900/50 py-4 rounded-2xl">
+            <input id="shuma" type="number" class="text-5xl font-black text-white bg-transparent w-full text-center outline-none" readonly placeholder="0">
+            <div class="text-blue-400 text-[10px] font-bold uppercase tracking-widest">Lekë Totale</div>
         </div>
     </div>
 
     <div class="box mb-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xs font-black uppercase text-slate-400">Artikujt e gjetur automatikisht</h3>
-            <button onclick="pastroShporten()" class="text-[10px] text-red-400 font-bold">FSHI TË GJITHA</button>
+            <h3 class="text-[10px] font-black uppercase text-slate-500 italic">Shporta Automatike</h3>
+            <button onclick="pastroShporten()" class="text-[10px] text-red-500 font-black">PASTRO 🗑️</button>
         </div>
         
-        <div id="shporta-list" class="space-y-3 max-h-80 overflow-y-auto pr-2">
-            <div class="text-center py-8 text-slate-600 italic text-sm">Asnjë artikull akoma. Skano faturën e marketit.</div>
+        <div id="shporta-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 text-[11px]">
+            <div class="text-center py-4 text-slate-600 italic">Skano faturën për të parë artikujt...</div>
         </div>
     </div>
 
-    <button onclick="ruajNeSheet()" id="btn-save" class="w-full p-5 bg-green-600 rounded-2xl font-black text-white shadow-lg uppercase">
-        RUASH SHPENZIMIN ✅
+    <button onclick="ruajNeSheet()" id="btn-save" class="w-full p-5 bg-green-600 rounded-2xl font-black text-white shadow-lg uppercase tracking-wider">
+        RUASH NË GOOGLE SHEETS ✅
     </button>
 </div>
 
@@ -60,51 +62,65 @@
     let shportaObj = [];
     let html5QrCode = null;
 
-    function startSkanimi() {
-        if(html5QrCode) return;
+    async function startSkanimi() {
+        if(html5QrCode) {
+            await html5QrCode.stop();
+            html5QrCode = null;
+            document.getElementById("qr-reader").innerHTML = "";
+            return;
+        }
+
         html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
-        (decodedText) => {
+        
+        // KONFIGURIMI I REZOLUCIONIT TË LARTË
+        const config = { 
+            fps: 20, 
+            qrbox: { width: 250, height: 250 }, // Dritare më e madhe
+            aspectRatio: 1.0,
+            videoConstraints: {
+                facingMode: "environment",
+                width: { min: 1280, ideal: 1920, max: 2560 }, // FULL HD
+                height: { min: 720, ideal: 1080, max: 1440 },
+                focusMode: "continuous" // Fokus i vazhdueshëm
+            }
+        };
+
+        html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
             html5QrCode.stop().then(() => {
                 html5QrCode = null;
                 document.getElementById("qr-reader").innerHTML = "";
                 procesoFaturenAI(decodedText);
             });
-        });
+        }).catch(err => alert("Kamera nuk u hap: " + err));
     }
 
     async function procesoFaturenAI(link) {
         document.getElementById("loader-ai").classList.remove("hidden");
-        document.getElementById("status-tag").innerText = "Duke punuar...";
+        document.getElementById("status-tag").innerText = "Analizim...";
         
-        // Marrim Totalin nga URL (shpejt)
+        // Totali i shpejtë
         const urlParams = new URLSearchParams(link.split('?')[1]);
-        const totali = urlParams.get('prc');
+        const totali = urlParams.get('prc') || urlParams.get('tot');
         document.getElementById("shuma").value = totali;
 
         try {
-            // Përdorim Proxy për të marrë HTML-në e faturës
+            // Përdorim AllOrigins për të kaluar CORS
             const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(link);
             const response = await fetch(proxyUrl);
             const data = await response.json();
-            const htmlContent = data.contents;
-
-            // KRIJOJMË NJË PARSER PËR TË GJETUR ARTIKUJT TEK TABELA E TATIMEVE
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
             
-            // Tatimet zakonisht i mbajnë artikujt në tabela ose div-e me klasa specifike
-            // Kjo pjesë provon të gjejë rreshtat e faturës
-            const rreshtat = doc.querySelectorAll('tr'); 
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.contents, 'text/html');
+            
+            // Gjejmë artikujt (Kërkojmë në tabelat e faturës së tatimeve)
+            const rows = doc.querySelectorAll('tr'); 
             shportaObj = [];
 
-            rreshtat.forEach(r => {
-                const qeliza = r.querySelectorAll('td');
-                if(qeliza.length >= 3) {
-                    let emri = qeliza[0].innerText.trim();
-                    let cmimi = qeliza[qeliza.length - 1].innerText.trim().replace(/[^0-9.]/g, '');
-                    
-                    // Sigurohemi që nuk po marrim titujt e tabelës por artikuj realë
+            rows.forEach(r => {
+                const cells = r.querySelectorAll('td');
+                if(cells.length >= 3) {
+                    let emri = cells[0].innerText.trim();
+                    let cmimi = cells[cells.length - 1].innerText.trim().replace(/[^0-9.]/g, '');
                     if(emri && !isNaN(cmimi) && cmimi > 0 && emri.length > 2) {
                         shportaObj.push({ emri: emri, cmimi: parseFloat(cmimi) });
                     }
@@ -113,8 +129,7 @@
 
             shfaqShporten();
         } catch (e) {
-            alert("Skanimi i artikujve dështoi, por Totali u ruajt. Mund t'i shohësh te dritarja që do hapet.");
-            window.open(link, '_blank');
+            console.log("Artikujt nuk u lexuan dot automatikisht.");
         } finally {
             document.getElementById("loader-ai").classList.add("hidden");
             document.getElementById("status-tag").innerText = "Mbaroi";
@@ -124,18 +139,16 @@
     function shfaqShporten() {
         const listaUI = document.getElementById("shporta-list");
         if(shportaObj.length === 0) {
-            listaUI.innerHTML = '<div class="text-center py-8 text-slate-600 italic">Nuk u gjet asnjë artikull.</div>';
+            listaUI.innerHTML = '<div class="text-center py-4 text-orange-400 italic">Skanimi u bë, por artikujt duhet t\'i shihni te faqja e hapur.</div>';
             return;
         }
 
         let html = "";
         shportaObj.forEach(item => {
             html += `
-                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                    <div class="flex-1 pr-4">
-                        <div class="text-[11px] font-bold uppercase truncate w-40">${item.emri}</div>
-                    </div>
-                    <div class="text-blue-400 font-black text-xs">${item.cmimi.toLocaleString()} L</div>
+                <div class="flex justify-between items-center border-b border-slate-700/50 py-2">
+                    <span class="font-medium truncate w-48">${item.emri}</span>
+                    <span class="font-black text-blue-400">${item.cmimi} L</span>
                 </div>`;
         });
         listaUI.innerHTML = html;
@@ -144,36 +157,38 @@
     function pastroShporten() {
         shportaObj = [];
         document.getElementById("shuma").value = "";
-        shfaqShporten();
+        document.getElementById("shporta-list").innerHTML = '<div class="text-center py-4 text-slate-600 italic">Shporta u pastrua.</div>';
     }
 
     async function ruajNeSheet() {
         const btn = document.getElementById("btn-save");
         btn.innerText = "DUKE U RUAJTUR...";
         
-        let shenime = shportaObj.map(i => i.emri + ":" + i.cmimi).join("\n");
+        let detaje = shportaObj.map(i => i.emri + " (" + i.cmimi + "L)").join(", ");
         
-        // Ky është kodi që lidhet me Google Sheet-in tënd
-        const data = {
+        const shpenzimi = {
             action: "shto",
-            user: "Ian", // Mund ta bësh dinamike
+            user: "Ian",
             kat: "Pazar",
             shuma: document.getElementById("shuma").value,
-            shenime: shenime
+            shenime: detaje
         };
 
+        // Ndrysho këtë me URL-në tënde të Google Script
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzprX9mGairUfeXz1nyj4WTBqhUcrBShktIpv1LvQsV0wl9B-DZqbq-CuOlN1W_84zM/exec";
+
         try {
-            await fetch("LINKU_Y_I_GOOGLE_SCRIPT", { 
+            await fetch(SCRIPT_URL, { 
                 method: "POST", 
                 mode: "no-cors",
-                body: JSON.stringify(data) 
+                body: JSON.stringify(shpenzimi) 
             });
-            alert("U ruajtën të gjithë artikujt në Google Sheets!");
+            alert("U ruajtën në tabelë!");
             pastroShporten();
         } catch (e) {
-            alert("Gabim gjatë ruajtjes!");
+            alert("Ruajtja dështoi!");
         }
-        btn.innerText = "RUASH SHPENZIMIN ✅";
+        btn.innerText = "RUASH NË GOOGLE SHEETS ✅";
     }
 </script>
 </body>
