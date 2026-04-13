@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
     <style>
         :root { --bg: #f1f5f9; --box: white; --txt: #0f172a; --border: #e2e8f0; }
         .dark { --bg: #0f172a; --box: #1e293b; --txt: #f8fafc; --border: #334155; }
@@ -100,7 +102,12 @@
     </div>
 
     <div class="box mb-6 border-2 border-blue-600 shadow-xl text-center relative">
-        <button onclick="pastroShporten()" class="absolute top-4 right-4 text-xl">🗑️</button>
+        <button onclick="pastroShporten()" class="absolute top-4 right-4 text-xl z-10">🗑️</button>
+        
+        <button onclick="startSkanimi()" class="w-full mb-3 p-3 bg-purple-600 text-white rounded-xl font-black uppercase shadow-md flex justify-center items-center gap-2">
+            Skano Faturën 📸
+        </button>
+        <div id="qr-reader" class="w-full rounded-[15px] overflow-hidden mb-3"></div>
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
         <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-black text-slate-500 overflow-y-auto max-h-32 text-left">Zgjidhni artikujt...</div>
         <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full mt-4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">PAGUAJ ✅</button>
@@ -296,32 +303,30 @@
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
 
         let hHtml = ""; 
-d.lista.slice(0, 15).forEach(x => {
-    let isHyrje = (x.t === "hyrje");
-    let vleraAfishuar = Math.abs(parseFloat(x.s));
-    
-    // RREGULLIMI I RI: Nëse ka artikuj në shënime, i kthejmë në format fature të vogël
-    let detajeVogla = "";
-    if (x.n && x.n.length > 2) {
-        // Zëvendësojmë thyerjet e rreshtave me <br> që të duken në aplikacion
-        detajeVogla = `<div class="text-[9px] text-slate-400 mt-1 italic leading-tight">${x.n.replace(/\n/g, "<br>")}</div>`;
-    }
+        d.lista.slice(0, 15).forEach(x => {
+            let isHyrje = (x.t === "hyrje");
+            let vleraAfishuar = Math.abs(parseFloat(x.s));
+            
+            let detajeVogla = "";
+            if (x.n && x.n.length > 2) {
+                detajeVogla = `<div class="text-[9px] text-slate-400 mt-1 italic leading-tight">${x.n.replace(/\n/g, "<br>")}</div>`;
+            }
 
-    hHtml += `
-        <div class="border-b dark:border-slate-700 py-3">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="font-black text-[10px] uppercase">${x.k}</span>
-                    <span class="text-[9px] text-slate-400 ml-2">${x.d}</span>
-                    ${detajeVogla}
-                </div>
-                <span class="${isHyrje ? 'text-green-500' : 'text-red-400'} font-bold text-sm">
-                    ${isHyrje ? '+' : '-'}${vleraAfishuar.toLocaleString()} L
-                </span>
-            </div>
-        </div>`;
-});
-document.getElementById("historiku-list").innerHTML = hHtml;
+            hHtml += `
+                <div class="border-b dark:border-slate-700 py-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-black text-[10px] uppercase">${x.k}</span>
+                            <span class="text-[9px] text-slate-400 ml-2">${x.d}</span>
+                            ${detajeVogla}
+                        </div>
+                        <span class="${isHyrje ? 'text-green-500' : 'text-red-400'} font-bold text-sm">
+                            ${isHyrje ? '+' : '-'}${vleraAfishuar.toLocaleString()} L
+                        </span>
+                    </div>
+                </div>`;
+        });
+        document.getElementById("historiku-list").innerHTML = hHtml;
         
         initKursimet(d.kurs);
         shfaqGrafikun(d.grafiku);
@@ -337,83 +342,49 @@ document.getElementById("historiku-list").innerHTML = hHtml;
     }
 
     function shkarkoPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Titulli i Dokumentit
-    doc.setFontSize(18);
-    doc.setTextColor(40);
-    doc.text(`Raporti i Detajuar i Shpenzimeve`, 14, 20);
-    
-    // Informacionet e përgjithshme
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Përdoruesi: ${uAktual}`, 14, 28);
-    doc.text(`Data e gjenerimit: ${new Date().toLocaleString()}`, 14, 33);
-    doc.text(`Periudha: ${document.getElementById("muaji").options[document.getElementById("muaji").selectedIndex].text} ${document.getElementById("viti").value}`, 14, 38);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(18); doc.setTextColor(40);
+        doc.text(`Raporti i Detajuar i Shpenzimeve`, 14, 20);
+        doc.setFontSize(10); doc.setTextColor(100);
+        doc.text(`Përdoruesi: ${uAktual}`, 14, 28);
+        doc.text(`Data e gjenerimit: ${new Date().toLocaleString()}`, 14, 33);
+        doc.text(`Periudha: ${document.getElementById("muaji").options[document.getElementById("muaji").selectedIndex].text} ${document.getElementById("viti").value}`, 14, 38);
 
-    let totaliHyrje = 0;
-    let totaliDalje = 0;
+        let totaliHyrje = 0; let totaliDalje = 0;
 
-    // Përgatitja e të dhënave për tabelën
-    const rreshtat = historiData.map(x => {
-        let isHyrje = (x.t === "hyrje");
-        if (isHyrje) totaliHyrje += Math.abs(x.s);
-        else totaliDalje += Math.abs(x.s);
+        const rreshtat = historiData.map(x => {
+            let isHyrje = (x.t === "hyrje");
+            if (isHyrje) totaliHyrje += Math.abs(x.s); else totaliDalje += Math.abs(x.s);
+            let artikujt = x.n ? x.n.trim() : "---";
+            return [ x.d, x.k, artikujt, (isHyrje ? "+" : "-") + Math.abs(x.s).toLocaleString() + " L" ];
+        });
 
-        // Pastrojmë shënimet (artikujt) nga karakteret e tepërta nëse ka
-        let artikujt = x.n ? x.n.trim() : "---";
-
-        return [
-            x.d,             // Data
-            x.k,             // Kategoria
-            artikujt,        // Artikujt e detajuar (Fatura)
-            (isHyrje ? "+" : "-") + Math.abs(x.s).toLocaleString() + " L" // Shuma
-        ];
-    });
-
-    // Krijimi i tabelës
-    doc.autoTable({
-        head: [['Data', 'Kategoria', 'Detajet e Faturës (Artikujt)', 'Shuma']],
-        body: rreshtat,
-        startY: 45,
-        theme: 'grid',
-        styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
-        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
-        columnStyles: {
-            2: { cellWidth: 80 }, // I japim më shumë hapësirë kolonës së detajeve
-            3: { halign: 'right', fontStyle: 'bold' }
-        },
-        didParseCell: function(data) {
-            // Ngjyrosim shumat (E gjelbër për hyrje, e kuqe për dalje)
-            if (data.section === 'body' && data.column.index === 3) {
-                if (data.cell.raw.includes('+')) {
-                    data.cell.styles.textColor = [39, 174, 96];
-                } else {
-                    data.cell.styles.textColor = [192, 57, 43];
+        doc.autoTable({
+            head: [['Data', 'Kategoria', 'Detajet e Faturës (Artikujt)', 'Shuma']],
+            body: rreshtat, startY: 45, theme: 'grid', styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+            columnStyles: { 2: { cellWidth: 80 }, 3: { halign: 'right', fontStyle: 'bold' } },
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.column.index === 3) {
+                    if (data.cell.raw.includes('+')) { data.cell.styles.textColor = [39, 174, 96]; } 
+                    else { data.cell.styles.textColor = [192, 57, 43]; }
                 }
             }
-        }
-    });
+        });
 
-    // Shtimi i Bilancit Përmbledhës në fund të tabelës
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(11);
-    doc.setTextColor(0);
-    doc.text(`PËRMBLEDHJE E MUAJIT:`, 14, finalY);
-    
-    doc.setFontSize(10);
-    doc.text(`Totali i Hyrjeve: +${totaliHyrje.toLocaleString()} L`, 14, finalY + 7);
-    doc.text(`Totali i Shpenzimeve: -${totaliDalje.toLocaleString()} L`, 14, finalY + 12);
-    
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
-    let mbetja = totaliHyrje - totaliDalje;
-    doc.text(`BILANCI FINAL: ${mbetja.toLocaleString()} L`, 14, finalY + 20);
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(11); doc.setTextColor(0); doc.text(`PËRMBLEDHJE E MUAJIT:`, 14, finalY);
+        doc.setFontSize(10);
+        doc.text(`Totali i Hyrjeve: +${totaliHyrje.toLocaleString()} L`, 14, finalY + 7);
+        doc.text(`Totali i Shpenzimeve: -${totaliDalje.toLocaleString()} L`, 14, finalY + 12);
+        doc.setFontSize(12); doc.setFont(undefined, 'bold');
+        let mbetja = totaliHyrje - totaliDalje;
+        doc.text(`BILANCI FINAL: ${mbetja.toLocaleString()} L`, 14, finalY + 20);
 
-    // Ruajtja e skedarit
-    doc.save(`Fatura_Detajuar_${uAktual}_${new Date().getTime()}.pdf`);
-}
+        doc.save(`Fatura_Detajuar_${uAktual}_${new Date().getTime()}.pdf`);
+    }
 
     // KURSIMET
     function initKursimet(kurs) {
@@ -434,9 +405,7 @@ document.getElementById("historiku-list").innerHTML = hHtml;
     }
     async function syncKursimToSheet() {
         const e = document.getElementById("obj-emri").value; localStorage.setItem("obj_emri", e);
-        await fetch(URL, { method: "POST", body: JSON.stringify({ 
-            action: "sync_kursim", user: uAktual, emri: e, mbledhur: localStorage.getItem("kursime_mbledhura"), synimi: localStorage.getItem("obj_vlera") 
-        }) });
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "sync_kursim", user: uAktual, emri: e, mbledhur: localStorage.getItem("kursime_mbledhura"), synimi: localStorage.getItem("obj_vlera") }) });
     }
     function shtoKursim() { let v = prompt("Shto Lekë:"); if(v){ localStorage.setItem("kursime_mbledhura", (parseFloat(localStorage.getItem("kursime_mbledhura"))||0)+parseFloat(v)); perditesoKasaforten(); syncKursimToSheet(); }}
     function ndryshoQellimin() { let t = prompt("Synimi i ri:"); if(t){ localStorage.setItem("obj_vlera", t); perditesoKasaforten(); syncKursimToSheet(); }}
@@ -468,6 +437,54 @@ document.getElementById("historiku-list").innerHTML = hHtml;
     function shfaqModalManual(t) { kategoriaAktuale = t; document.getElementById("manual-titulli").innerText = t; document.getElementById("manual-input").value = ""; document.getElementById("modal-manual").classList.remove("hidden"); setTimeout(()=>document.getElementById("manual-input").focus(),200); }
     function mbyllModal() { document.getElementById("modal-manual").classList.add("hidden"); }
     function mbyllModalDheShto() { let v = document.getElementById("manual-input").value; if(v>0){ shtoNeShporte(kategoriaAktuale, v); mbyllModal(); } }
+
+    // =======================================================
+    // FUNKSIONI I RI PËR SKANIMIN E FATURËS
+    // =======================================================
+    let html5QrCode;
+    function startSkanimi() {
+        // Kontrollojmë nëse kamera është e hapur që ta mbyllim
+        if(html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById("qr-reader").innerHTML = "";
+                html5QrCode = null;
+            }).catch(err => console.log(err));
+            return;
+        }
+
+        html5QrCode = new Html5Qrcode("qr-reader");
+        html5QrCode.start(
+            { facingMode: "environment" }, // Kamera e pasme
+            {
+                fps: 10,    
+                qrbox: { width: 250, height: 250 }
+            },
+            (decodedText) => {
+                try {
+                    // Nxjerrim vlerën nga linku i Tatimeve (&tot=1250)
+                    const urlParams = new URLSearchParams(decodedText.split('?')[1]);
+                    const totali = urlParams.get('tot'); 
+                    
+                    if (totali) {
+                        // Ndalojmë kamerën sapo ta gjejë
+                        html5QrCode.stop().then(() => {
+                            document.getElementById("qr-reader").innerHTML = "";
+                            html5QrCode = null;
+                        });
+                        
+                        // E SHTOJMË DIREKT TE SHPORTA E APLIKACIONIT TËND!
+                        shtoNeShporte("Faturë e Skanuar", parseFloat(totali));
+                        alert("Fatura u lexua me sukses! Shuma: " + totali + " L");
+                    }
+                } catch (err) {
+                    console.log("Jo faturë e vlefshme.");
+                }
+            },
+            (errorMessage) => { /* Injoro gabimet kur nuk po fokuson mirë */ }
+        ).catch((err) => {
+            alert("Gabim! Sigurohu që i ke dhënë leje kamerës.");
+        });
+    }
 </script>
 </body>
 </html>
