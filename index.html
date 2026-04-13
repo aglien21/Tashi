@@ -18,7 +18,6 @@
         .pad { background: var(--box); padding: 15px 5px; border-radius: 20px; text-align: center; border: 2px solid var(--border); cursor: pointer; }
         .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
         
-        /* ANIMACIONET */
         @keyframes pulse-red-text { 0%, 100% { color: #ef4444; } 50% { color: #fca5a5; } }
         @keyframes pulse-red-bar { 0%, 100% { background-color: #3b82f6; } 50% { background-color: #ef4444; } }
         
@@ -108,6 +107,7 @@
             Skano Faturën 📸
         </button>
         <div id="qr-reader" class="w-full rounded-[15px] overflow-hidden mb-3"></div>
+
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
         <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-black text-slate-500 overflow-y-auto max-h-32 text-left">Zgjidhni artikujt...</div>
         <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full mt-4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase">PAGUAJ ✅</button>
@@ -159,6 +159,7 @@
     let uAktual = "", allData = {}, shportaObj = {}, historiData = [];
     let pazarData = JSON.parse(localStorage.getItem("pazar_list")) || [];
     let kategoriaAktuale = ""; 
+    let html5QrCode;
 
     window.onload = async () => {
         const m = document.getElementById("muaji"), v = document.getElementById("viti");
@@ -215,7 +216,6 @@
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    // SHPORTA & ARKA
     function shtoNeShporte(e, c) {
         if (shportaObj[e]) { shportaObj[e].s += 1; } 
         else { shportaObj[e] = {s: 1, c: parseFloat(c)}; }
@@ -237,20 +237,12 @@
     async function ruajShpenzim() {
         let v = document.getElementById("shuma").value; if(!v || v <= 0) return;
         document.getElementById("btn-ruaj").innerText = "...";
-        
         let fatureTekst = "";
-        for (let x in shportaObj) {
-            fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`;
-        }
-        
-        await fetch(URL, { method: "POST", body: JSON.stringify({ 
-            action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0], shuma: v, shenime: fatureTekst 
-        }) });
-
+        for (let x in shportaObj) { fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`; }
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0], shuma: v, shenime: fatureTekst }) });
         pastroShporten(); document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅"; merrRaportin(); shfaqKategoriteKryesore();
     }
 
-    // SHTO FONDE LLOGJIKA
     function hapModalFonde() {
         document.getElementById("fonde-shuma").value = "";
         document.getElementById("fonde-burimi").value = "";
@@ -258,32 +250,21 @@
         setTimeout(() => document.getElementById("fonde-shuma").focus(), 200);
     }
 
-    function mbyllModalFonde() { 
-        document.getElementById("modal-fonde").classList.add("hidden"); 
-    }
+    function mbyllModalFonde() { document.getElementById("modal-fonde").classList.add("hidden"); }
 
     async function ruajFonde() {
         let v = document.getElementById("fonde-shuma").value;
         let b = document.getElementById("fonde-burimi").value || "Të ndryshme";
-        
         if(!v || v <= 0) return;
         document.getElementById("btn-ruaj-fonde").innerText = "...";
-        
-        await fetch(URL, { method: "POST", body: JSON.stringify({ 
-            action: "shto", user: uAktual, kat: "Të Ardhura", shuma: v, shenime: "Burimi: " + b 
-        }) });
-
-        mbyllModalFonde(); 
-        document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; 
-        merrRaportin();
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: "Të Ardhura", shuma: v, shenime: "Burimi: " + b }) });
+        mbyllModalFonde(); document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; merrRaportin();
     }
 
-    // RAPORTET & GRAFIKU
     async function merrRaportin() {
         const m = document.getElementById("muaji").value, v = document.getElementById("viti").value;
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v, user: uAktual }) });
         const d = await r.json(); historiData = d.lista;
-        
         const mbetjaElem = document.getElementById("r-mbetja");
         const barElem = document.getElementById("bar-limit");
         
@@ -291,13 +272,8 @@
         let totalLimit = 0; allData.kats.forEach(k => totalLimit += (parseFloat(k.limiti) || 0));
         let perq = (d.dalje / totalLimit) * 100;
         
-        if (perq >= 80) {
-            mbetjaElem.classList.add("limit-warning-text");
-            barElem.classList.add("limit-warning-bar");
-        } else {
-            mbetjaElem.classList.remove("limit-warning-text");
-            barElem.classList.remove("limit-warning-bar");
-        }
+        if (perq >= 80) { mbetjaElem.classList.add("limit-warning-text"); barElem.classList.add("limit-warning-bar"); } 
+        else { mbetjaElem.classList.remove("limit-warning-text"); barElem.classList.remove("limit-warning-bar"); }
 
         barElem.style.width = Math.min(perq, 100) + "%";
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
@@ -305,31 +281,11 @@
         let hHtml = ""; 
         d.lista.slice(0, 15).forEach(x => {
             let isHyrje = (x.t === "hyrje");
-            let vleraAfishuar = Math.abs(parseFloat(x.s));
-            
-            let detajeVogla = "";
-            if (x.n && x.n.length > 2) {
-                detajeVogla = `<div class="text-[9px] text-slate-400 mt-1 italic leading-tight">${x.n.replace(/\n/g, "<br>")}</div>`;
-            }
-
-            hHtml += `
-                <div class="border-b dark:border-slate-700 py-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="font-black text-[10px] uppercase">${x.k}</span>
-                            <span class="text-[9px] text-slate-400 ml-2">${x.d}</span>
-                            ${detajeVogla}
-                        </div>
-                        <span class="${isHyrje ? 'text-green-500' : 'text-red-400'} font-bold text-sm">
-                            ${isHyrje ? '+' : '-'}${vleraAfishuar.toLocaleString()} L
-                        </span>
-                    </div>
-                </div>`;
+            let detajeVogla = (x.n && x.n.length > 2) ? `<div class="text-[9px] text-slate-400 mt-1 italic leading-tight">${x.n.replace(/\n/g, "<br>")}</div>` : "";
+            hHtml += `<div class="border-b dark:border-slate-700 py-3"><div class="flex justify-between items-start"><div><span class="font-black text-[10px] uppercase">${x.k}</span><span class="text-[9px] text-slate-400 ml-2">${x.d}</span>${detajeVogla}</div><span class="${isHyrje ? 'text-green-500' : 'text-red-400'} font-bold text-sm">${isHyrje ? '+' : '-'}${Math.abs(x.s).toLocaleString()} L</span></div></div>`;
         });
         document.getElementById("historiku-list").innerHTML = hHtml;
-        
-        initKursimet(d.kurs);
-        shfaqGrafikun(d.grafiku);
+        initKursimet(d.kurs); shfaqGrafikun(d.grafiku);
     }
 
     function shfaqGrafikun(data) {
@@ -342,57 +298,15 @@
     }
 
     function shkarkoPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        doc.setFontSize(18); doc.setTextColor(40);
-        doc.text(`Raporti i Detajuar i Shpenzimeve`, 14, 20);
-        doc.setFontSize(10); doc.setTextColor(100);
-        doc.text(`Përdoruesi: ${uAktual}`, 14, 28);
-        doc.text(`Data e gjenerimit: ${new Date().toLocaleString()}`, 14, 33);
-        doc.text(`Periudha: ${document.getElementById("muaji").options[document.getElementById("muaji").selectedIndex].text} ${document.getElementById("viti").value}`, 14, 38);
-
-        let totaliHyrje = 0; let totaliDalje = 0;
-
-        const rreshtat = historiData.map(x => {
-            let isHyrje = (x.t === "hyrje");
-            if (isHyrje) totaliHyrje += Math.abs(x.s); else totaliDalje += Math.abs(x.s);
-            let artikujt = x.n ? x.n.trim() : "---";
-            return [ x.d, x.k, artikujt, (isHyrje ? "+" : "-") + Math.abs(x.s).toLocaleString() + " L" ];
-        });
-
-        doc.autoTable({
-            head: [['Data', 'Kategoria', 'Detajet e Faturës (Artikujt)', 'Shuma']],
-            body: rreshtat, startY: 45, theme: 'grid', styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
-            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
-            columnStyles: { 2: { cellWidth: 80 }, 3: { halign: 'right', fontStyle: 'bold' } },
-            didParseCell: function(data) {
-                if (data.section === 'body' && data.column.index === 3) {
-                    if (data.cell.raw.includes('+')) { data.cell.styles.textColor = [39, 174, 96]; } 
-                    else { data.cell.styles.textColor = [192, 57, 43]; }
-                }
-            }
-        });
-
-        const finalY = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(11); doc.setTextColor(0); doc.text(`PËRMBLEDHJE E MUAJIT:`, 14, finalY);
-        doc.setFontSize(10);
-        doc.text(`Totali i Hyrjeve: +${totaliHyrje.toLocaleString()} L`, 14, finalY + 7);
-        doc.text(`Totali i Shpenzimeve: -${totaliDalje.toLocaleString()} L`, 14, finalY + 12);
-        doc.setFontSize(12); doc.setFont(undefined, 'bold');
-        let mbetja = totaliHyrje - totaliDalje;
-        doc.text(`BILANCI FINAL: ${mbetja.toLocaleString()} L`, 14, finalY + 20);
-
-        doc.save(`Fatura_Detajuar_${uAktual}_${new Date().getTime()}.pdf`);
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        doc.text(`Raporti i Shpenzimeve - ${uAktual}`, 14, 20);
+        const rreshtat = historiData.map(x => [x.d, x.k, x.n || "", (x.t === "hyrje" ? "+" : "-") + Math.abs(x.s).toLocaleString() + " L"]);
+        doc.autoTable({ head: [['Data', 'Kat', 'Detaje', 'Shuma']], body: rreshtat, startY: 30 });
+        doc.save(`Raporti_${uAktual}.pdf`);
     }
 
-    // KURSIMET
     function initKursimet(kurs) {
-        if(kurs) {
-            localStorage.setItem("kursime_mbledhura", kurs.mbledhur);
-            localStorage.setItem("obj_vlera", kurs.synimi);
-            localStorage.setItem("obj_emri", kurs.emri);
-        }
+        if(kurs) { localStorage.setItem("kursime_mbledhura", kurs.mbledhur); localStorage.setItem("obj_vlera", kurs.synimi); localStorage.setItem("obj_emri", kurs.emri); }
         document.getElementById("obj-emri").value = localStorage.getItem("obj_emri") || "Kursimi im"; 
         perditesoKasaforten();
     }
@@ -404,13 +318,12 @@
         document.getElementById("obj-vlerat").innerText = `${m.toLocaleString()} / ${t.toLocaleString()} L`;
     }
     async function syncKursimToSheet() {
-        const e = document.getElementById("obj-emri").value; localStorage.setItem("obj_emri", e);
+        const e = document.getElementById("obj-emri").value; 
         await fetch(URL, { method: "POST", body: JSON.stringify({ action: "sync_kursim", user: uAktual, emri: e, mbledhur: localStorage.getItem("kursime_mbledhura"), synimi: localStorage.getItem("obj_vlera") }) });
     }
     function shtoKursim() { let v = prompt("Shto Lekë:"); if(v){ localStorage.setItem("kursime_mbledhura", (parseFloat(localStorage.getItem("kursime_mbledhura"))||0)+parseFloat(v)); perditesoKasaforten(); syncKursimToSheet(); }}
     function ndryshoQellimin() { let t = prompt("Synimi i ri:"); if(t){ localStorage.setItem("obj_vlera", t); perditesoKasaforten(); syncKursimToSheet(); }}
 
-    // PAZARI
     function shfaqPazarin() {
         let h = ""; pazarData.forEach((p, i) => { h += `<div class="pad bg-blue-600 text-white text-[11px] font-black uppercase ${p.done ? 'opacity-30' : ''}" onclick="pazarTeArka('${p.emri}', ${i})">${p.emri}</div>`; });
         document.getElementById("pazar-lista").innerHTML = h;
@@ -438,52 +351,36 @@
     function mbyllModal() { document.getElementById("modal-manual").classList.add("hidden"); }
     function mbyllModalDheShto() { let v = document.getElementById("manual-input").value; if(v>0){ shtoNeShporte(kategoriaAktuale, v); mbyllModal(); } }
 
-    // =======================================================
-    // FUNKSIONI I RI PËR SKANIMIN E FATURËS
-    // =======================================================
-    let html5QrCode;
+    // ==========================================
+    // SKANIMI I FATURËS (VERSIONI FINAL)
+    // ==========================================
     function startSkanimi() {
-        // Kontrollojmë nëse kamera është e hapur që ta mbyllim
         if(html5QrCode) {
-            html5QrCode.stop().then(() => {
-                document.getElementById("qr-reader").innerHTML = "";
-                html5QrCode = null;
-            }).catch(err => console.log(err));
+            html5QrCode.stop().then(() => { document.getElementById("qr-reader").innerHTML = ""; html5QrCode = null; }).catch(err => console.log(err));
             return;
         }
-
         html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start(
-            { facingMode: "environment" }, // Kamera e pasme
-            {
-                fps: 10,    
-                qrbox: { width: 250, height: 250 }
-            },
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
             (decodedText) => {
                 try {
-                    // Nxjerrim vlerën nga linku i Tatimeve (&tot=1250)
-                    const urlParams = new URLSearchParams(decodedText.split('?')[1]);
-                    const totali = urlParams.get('tot'); 
+                    // Pastrojmë linkun nga karakteret si #/ që pengojnë leximin e parametrave
+                    let linkPaster = decodedText.replace('#/', '');
+                    const url = new URL(linkPaster);
+                    
+                    // Kërkojmë për 'prc' (si te fatura jote) ose 'tot' (faturat e tjera)
+                    let totali = url.searchParams.get("prc") || url.searchParams.get("tot");
                     
                     if (totali) {
-                        // Ndalojmë kamerën sapo ta gjejë
                         html5QrCode.stop().then(() => {
                             document.getElementById("qr-reader").innerHTML = "";
                             html5QrCode = null;
+                            shtoNeShporte("Faturë e Skanuar", parseFloat(totali));
+                            alert("Fatura u skanua: " + totali + " L");
                         });
-                        
-                        // E SHTOJMË DIREKT TE SHPORTA E APLIKACIONIT TËND!
-                        shtoNeShporte("Faturë e Skanuar", parseFloat(totali));
-                        alert("Fatura u lexua me sukses! Shuma: " + totali + " L");
                     }
-                } catch (err) {
-                    console.log("Jo faturë e vlefshme.");
-                }
-            },
-            (errorMessage) => { /* Injoro gabimet kur nuk po fokuson mirë */ }
-        ).catch((err) => {
-            alert("Gabim! Sigurohu që i ke dhënë leje kamerës.");
-        });
+                } catch (err) { console.log("Gabim gjatë leximit të linkut"); }
+            }
+        ).catch(err => alert("Kamera nuk u hap! Kontrollo lejet dhe HTTPS."));
     }
 </script>
 </body>
