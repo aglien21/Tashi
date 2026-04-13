@@ -106,7 +106,7 @@
         <button onclick="startSkanimi()" class="w-full mb-3 p-3 bg-purple-600 text-white rounded-xl font-black uppercase shadow-md flex justify-center items-center gap-2">
             Skano Faturën 📸
         </button>
-        <div id="qr-reader" class="w-full rounded-[15px] overflow-hidden mb-3"></div>
+        <div id="qr-reader" class="w-full rounded-[15px] overflow-hidden mb-3 bg-black"></div>
 
         <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none" readonly>
         <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl mt-2 min-h-[40px] text-[11px] font-black text-slate-500 overflow-y-auto max-h-32 text-left">Zgjidhni artikujt...</div>
@@ -243,24 +243,6 @@
         pastroShporten(); document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅"; merrRaportin(); shfaqKategoriteKryesore();
     }
 
-    function hapModalFonde() {
-        document.getElementById("fonde-shuma").value = "";
-        document.getElementById("fonde-burimi").value = "";
-        document.getElementById("modal-fonde").classList.remove("hidden");
-        setTimeout(() => document.getElementById("fonde-shuma").focus(), 200);
-    }
-
-    function mbyllModalFonde() { document.getElementById("modal-fonde").classList.add("hidden"); }
-
-    async function ruajFonde() {
-        let v = document.getElementById("fonde-shuma").value;
-        let b = document.getElementById("fonde-burimi").value || "Të ndryshme";
-        if(!v || v <= 0) return;
-        document.getElementById("btn-ruaj-fonde").innerText = "...";
-        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: "Të Ardhura", shuma: v, shenime: "Burimi: " + b }) });
-        mbyllModalFonde(); document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; merrRaportin();
-    }
-
     async function merrRaportin() {
         const m = document.getElementById("muaji").value, v = document.getElementById("viti").value;
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v, user: uAktual }) });
@@ -351,36 +333,70 @@
     function mbyllModal() { document.getElementById("modal-manual").classList.add("hidden"); }
     function mbyllModalDheShto() { let v = document.getElementById("manual-input").value; if(v>0){ shtoNeShporte(kategoriaAktuale, v); mbyllModal(); } }
 
+    function hapModalFonde() { document.getElementById("fonde-shuma").value = ""; document.getElementById("fonde-burimi").value = ""; document.getElementById("modal-fonde").classList.remove("hidden"); setTimeout(() => document.getElementById("fonde-shuma").focus(), 200); }
+    function mbyllModalFonde() { document.getElementById("modal-fonde").classList.add("hidden"); }
+    async function ruajFonde() {
+        let v = document.getElementById("fonde-shuma").value, b = document.getElementById("fonde-burimi").value || "Të ndryshme";
+        if(!v || v <= 0) return;
+        document.getElementById("btn-ruaj-fonde").innerText = "...";
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: "Të Ardhura", shuma: v, shenime: "Burimi: " + b }) });
+        mbyllModalFonde(); document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; merrRaportin();
+    }
+
     // ==========================================
-    // SKANIMI I FATURËS (VERSIONI FINAL)
+    // SKANIMI FINAL (FIXED FOCUS & QR-SIZE)
     // ==========================================
     function startSkanimi() {
         if(html5QrCode) {
-            html5QrCode.stop().then(() => { document.getElementById("qr-reader").innerHTML = ""; html5QrCode = null; }).catch(err => console.log(err));
+            html5QrCode.stop().then(() => { 
+                document.getElementById("qr-reader").innerHTML = ""; 
+                html5QrCode = null; 
+            }).catch(err => console.log(err));
             return;
         }
+
         html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+        
+        // Katrori u bë 180 (nga 250) që të mos afrohesh shumë me kamerën
+        const config = { 
+            fps: 20, 
+            qrbox: { width: 180, height: 180 }, 
+            aspectRatio: 1.0 
+        };
+
+        html5QrCode.start({ facingMode: "environment" }, config,
             (decodedText) => {
+                console.log("Lexuar:", decodedText);
                 try {
-                    // Pastrojmë linkun nga karakteret si #/ që pengojnë leximin e parametrave
-                    let linkPaster = decodedText.replace('#/', '');
-                    const url = new URL(linkPaster);
-                    
-                    // Kërkojmë për 'prc' (si te fatura jote) ose 'tot' (faturat e tjera)
-                    let totali = url.searchParams.get("prc") || url.searchParams.get("tot");
-                    
-                    if (totali) {
+                    // Pastrojmë linkun dhe kërkojmë vlerat
+                    let paster = decodedText.replace('#/', '');
+                    const url = new URL(paster);
+                    let v = url.searchParams.get("prc") || url.searchParams.get("tot");
+
+                    if (v) {
                         html5QrCode.stop().then(() => {
                             document.getElementById("qr-reader").innerHTML = "";
                             html5QrCode = null;
-                            shtoNeShporte("Faturë e Skanuar", parseFloat(totali));
-                            alert("Fatura u skanua: " + totali + " L");
+                            let sh = parseFloat(v);
+                            shtoNeShporte("Faturë e Skanuar", sh);
+                            if(navigator.vibrate) navigator.vibrate(100);
+                            alert("Sukses! Shuma: " + sh + " L");
                         });
                     }
-                } catch (err) { console.log("Gabim gjatë leximit të linkut"); }
+                } catch (e) {
+                    // Provë e dytë me regex nëse URL dështon
+                    let match = decodedText.match(/[&?](prc|tot)=([\d.]+)/);
+                    if (match && match[2]) {
+                        html5QrCode.stop().then(() => {
+                            document.getElementById("qr-reader").innerHTML = "";
+                            html5QrCode = null;
+                            shtoNeShporte("Faturë e Skanuar", parseFloat(match[2]));
+                            alert("U gjet shuma: " + match[2] + " L");
+                        });
+                    }
+                }
             }
-        ).catch(err => alert("Kamera nuk u hap! Kontrollo lejet dhe HTTPS."));
+        ).catch(err => alert("Kamera nuk u hap. Kontrollo HTTPS dhe lejet."));
     }
 </script>
 </body>
