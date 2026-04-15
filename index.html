@@ -104,7 +104,12 @@
             <button onclick="shtoNePazarManual()" class="bg-blue-600 text-white px-4 rounded-xl font-black text-xs shadow-md">SHTO</button>
         </div>
     </div>
+
     <div id="kategori-section" class="mb-6">
+        <div class="mb-3">
+            <input id="search-artikuj" type="text" placeholder="🔍 Kërko artikull për në shportë..." class="w-full p-3 rounded-xl text-xs font-bold outline-none bg-white dark:bg-slate-800 border-2 border-blue-100 dark:border-slate-700 text-slate-800 dark:text-white transition focus:border-blue-400" onkeyup="kerkoArtikull()">
+        </div>
+
         <div id="kthehu-btn" class="hidden mb-3">
             <button onclick="shfaqKategoriteKryesore()" class="w-full p-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-black uppercase rounded-xl border border-slate-300 dark:border-slate-600 flex items-center justify-center gap-2">
                 <span>⬅️</span> KTHEHU TE KATEGORITË
@@ -166,7 +171,7 @@
 
 <script>
     google.charts.load('current', {'packages':['corechart']});
-    const URL = "https://script.google.com/macros/s/AKfycbwD-BYY6LGfIRF0fyHOmMaaN0-OsUdk5sBChbvxt7MKgEVPldVzwuY4s4ZoRSF6iA/exec"; 
+    const URL = "https://script.google.com/macros/s/AKfycbyjLWnFvxQqEKSkKmWVpbV1i4p3OGesj7ptsmVwIv0w441NWGYqfJkpQEmrxDl0cU0c/exec"; 
 
     let uAktual = "", allData = {}, shportaObj = {}, historiData = [];
     let pazarData = [];
@@ -201,13 +206,53 @@
             uAktual = u; document.getElementById("login-ui").classList.add("hidden"); 
             document.getElementById("app-ui").classList.remove("hidden"); 
             shfaqKategoriteKryesore(); 
-            shfaqPazarKategoriteKryesore(); // <- Thirrje e re për kategoritë e Pazarit
+            shfaqPazarKategoriteKryesore();
             merrRaportin(); initKursimet(); fetchPazarCloud();
         } else { alert("PIN i gabuar!"); btn.innerText = "Hyni"; }
     };
 
+    // KËRKIMI I ARTIKUJVE KUDO QË JANË
+    function kerkoArtikull() {
+        let txt = document.getElementById("search-artikuj").value.toLowerCase().trim();
+        let pads = document.getElementById("kategori-pads");
+        
+        if(txt === "") {
+            shfaqKategoriteKryesore();
+            return;
+        }
+
+        document.getElementById("kthehu-btn").classList.remove("hidden"); 
+        let h = "";
+        
+        // Kërkojmë në nënkategori
+        allData.nenkats.forEach(n => {
+            if((n.emri || "").toLowerCase().includes(txt)) {
+                if(n.cmimi > 0) {
+                    h += `<div class="pad shadow-sm bg-blue-50 dark:bg-slate-800" onclick="shtoNeShporte('${n.emri}', ${n.cmimi})"><span class="text-[10px] font-black uppercase">${n.emri}<br><small class="text-blue-600">${n.cmimi}L</small></span></div>`;
+                } else {
+                    h += `<div class="pad shadow-sm bg-blue-50 dark:bg-slate-800" onclick="shfaqModalManual('${n.emri}')"><span class="text-[10px] font-black uppercase">${n.emri}</span></div>`;
+                }
+            }
+        });
+
+        // Kërkojmë te kategoritë që nuk kanë nënkategori
+        allData.kats.forEach(k => {
+            let kaNenkat = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE");
+            if(!kaNenkat && (k.emri || "").toLowerCase().includes(txt)) {
+                h += `<div class="pad shadow-sm bg-blue-50 dark:bg-slate-800" onclick="shfaqModalManual('${k.emri}')"><span class="text-[10px] font-black uppercase">${k.emri}</span></div>`;
+            }
+        });
+
+        if(h === "") h = `<div class="col-span-3 text-center text-xs text-slate-500 py-6 italic font-bold">Nuk u gjet asnjë artikull me këtë emër.</div>`;
+        pads.innerHTML = h;
+    }
+
     function shfaqKategoriteKryesore() {
         document.getElementById("kthehu-btn").classList.add("hidden"); 
+        if(document.getElementById("search-artikuj")) {
+            document.getElementById("search-artikuj").value = ""; // Pastro kërkimin kur kthehesh pas
+        }
+        
         let h = "";
         allData.kats.forEach(k => {
             let func = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") ? `shfaqNenkategorite('${k.emri}')` : `shfaqModalManual('${k.emri}')`;
@@ -228,7 +273,7 @@
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    // MODALET (E SHPORTES)
+    // MODALET
     function shfaqModalManual(emri) {
         kategoriaAktuale = emri;
         document.getElementById("manual-titulli").innerText = "Shuma për: " + emri;
@@ -285,7 +330,7 @@
         for (let x in shportaObj) { fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`; }
         
         await fetch(URL, { method: "POST", body: JSON.stringify({ 
-            action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0] || "Të ndryshme", shuma: v, shenime: fatureTekst 
+            action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0] || "Të ndryshme", shuma: v, shenime: fatureTekst.trim() 
         }) });
 
         pastroShporten(); document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅"; merrRaportin(); shfaqKategoriteKryesore();
@@ -444,7 +489,7 @@
         }
     }
 
-    // PAZARI & CLOUD SYNC
+    // PAZARI
     async function fetchPazarCloud() {
         try {
             let res = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "get_pazar" }) });
@@ -463,7 +508,6 @@
         document.getElementById("pazar-lista").innerHTML = h;
     }
 
-    // Funksionet e reja për shtimin e Pazarit nga Kategoritë
     function shfaqPazarKategoriteKryesore() {
         document.getElementById("pazar-kthehu-btn").classList.add("hidden");
         document.getElementById("pazar-custom-nenkat-div").classList.add("hidden");
@@ -481,7 +525,6 @@
         document.getElementById("pazar-kthehu-btn").classList.remove("hidden");
         document.getElementById("pazar-manual-div").classList.add("hidden");
         
-        // Shfaq inputin e posaçëm për artikujt custom të kësaj kategorie
         let customDiv = document.getElementById("pazar-custom-nenkat-div");
         customDiv.classList.remove("hidden");
         
@@ -505,8 +548,7 @@
 
     function shtoNePazarSpecifik(emri) {
         pazarData.push({emri: emri, done: false});
-        syncPazarCloud();
-        shfaqPazarin();
+        syncPazarCloud(); shfaqPazarin();
     }
 
     function shtoNePazarManual() {
@@ -518,16 +560,82 @@
     }
 
     function pazarTeArka(emri, index) {
-        shfaqModalManual(emri);
-        pazarData.splice(index, 1);
-        syncPazarCloud();
-        shfaqPazarin();
+        shfaqModalManual(emri); pazarData.splice(index, 1); syncPazarCloud(); shfaqPazarin();
     }
 
     function pastroPazarin() {
         if(confirm("Dëshiron të pastrosh gjithë listën e pazarit?")) {
             pazarData = []; syncPazarCloud(); shfaqPazarin();
         }
+    }
+    // ... kodi i vjetër mbaron këtu ...
+
+    function pastroPazarin() {
+        if(confirm("Dëshiron të pastrosh gjithë listën e pazarit?")) {
+            pazarData = []; syncPazarCloud(); shfaqPazarin();
+        }
+    }
+
+    // --- KËTU NGJITE FUNKSIONIN E PDF-SË ---
+
+    function shkarkoPDF() {
+        if (!historiData || historiData.length === 0) {
+            alert("Nuk ka të dhëna për këtë muaj për të krijuar raportin!");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(22);
+        doc.setTextColor(30, 64, 175);
+        doc.text("RAPORTI MUJOR I SHPENZIMEVE", 14, 22);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text("Gjeneruar nga: " + uAktual, 14, 32);
+        doc.text("Data: " + new Date().toLocaleString('sq-AL'), 14, 37);
+        
+        const muajiEmri = document.getElementById("muaji").options[document.getElementById("muaji").selectedIndex].text;
+        const vitiZgjedhur = document.getElementById("viti").value;
+        doc.text("Periudha: " + muajiEmri + " " + vitiZgjedhur, 14, 42);
+
+        let totaliHyrje = 0;
+        let totaliDalje = 0;
+
+        const rreshtat = historiData.map(x => {
+            let isHyrje = (x.t === "hyrje");
+            let vlera = Math.abs(parseFloat(x.s));
+            if (isHyrje) totaliHyrje += vlera; else totaliDalje += vlera;
+            return [x.d, x.k, x.n ? x.n.replace(/\n/g, ", ") : "---", (isHyrje ? "+" : "-") + vlera.toLocaleString() + " L"];
+        });
+
+        doc.autoTable({
+            head: [['Data', 'Kategoria', 'Artikujt e Shportës', 'Shuma']],
+            body: rreshtat,
+            startY: 50,
+            theme: 'striped',
+            headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: { 2: { cellWidth: 70 }, 3: { halign: 'right', fontStyle: 'bold' } },
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.column.index === 3) {
+                    if (data.cell.raw.includes('+')) data.cell.styles.textColor = [34, 197, 94];
+                    else data.cell.styles.textColor = [239, 68, 68];
+                }
+            }
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 15;
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text("PËRMBLEDHJE:", 14, finalY);
+        doc.text("Totali i Hyrjeve: +" + totaliHyrje.toLocaleString() + " L", 14, finalY + 8);
+        doc.text("Totali i Shpenzimeve: -" + totaliDalje.toLocaleString() + " L", 14, finalY + 14);
+        doc.setFontSize(13); doc.setFont(undefined, 'bold');
+        doc.text("BILANCI FINAL: " + (totaliHyrje - totaliDalje).toLocaleString() + " L", 14, finalY + 24);
+
+        doc.save("Raporti_" + uAktual + "_" + muajiEmri + "_" + vitiZgjedhur + ".pdf");
     }
 </script>
 </body>
