@@ -76,14 +76,34 @@
     </div>
 
     <div class="box mb-4 border-2 border-blue-400 bg-blue-50/5">
-        <h3 class="text-[10px] font-black uppercase text-blue-600 mb-3 flex justify-between"><span>🛒 Pazari</span> <button onclick="pastroPazarin()" class="text-red-500">Pastro</button></h3>
-        <div class="flex gap-2 mb-3">
-            <input id="pazar-manual-input" type="text" placeholder="Shto në pazar..." class="flex-1 p-3 rounded-xl text-xs outline-none bg-white dark:bg-slate-800 border-blue-200">
-            <button onclick="shtoNePazar()" class="bg-blue-600 text-white px-4 rounded-xl font-black text-xs">SHTO</button>
-        </div>
-        <div id="pazar-lista" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto"></div>
-    </div>
+        <h3 class="text-[10px] font-black uppercase text-blue-600 mb-3 flex justify-between">
+            <span>🛒 Pazari</span> 
+            <button onclick="pastroPazarin()" class="text-red-500">Pastro</button>
+        </h3>
+        
+        <div id="pazar-lista" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-4"></div>
+        
+        <hr class="border-blue-200 dark:border-slate-700 my-3">
+        <h4 class="text-[10px] font-black text-slate-500 uppercase mb-3 text-center">Shto Artikuj në Pazar</h4>
 
+        <div id="pazar-kthehu-btn" class="hidden mb-3">
+            <button onclick="shfaqPazarKategoriteKryesore()" class="w-full p-2 bg-blue-100 dark:bg-slate-700 text-blue-700 dark:text-blue-200 text-[10px] font-black uppercase rounded-xl border border-blue-300 dark:border-slate-600 flex items-center justify-center gap-2">
+                <span>⬅️</span> KTHEHU TE KATEGORITË E PAZARIT
+            </button>
+        </div>
+
+        <div id="pazar-custom-nenkat-div" class="hidden flex gap-2 mb-3">
+            <input id="pazar-custom-nenkat-input" type="text" placeholder="Shto artikull që s'e gjen..." class="flex-1 p-3 rounded-xl text-xs outline-none bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-600 text-slate-800 dark:text-white">
+            <button id="pazar-custom-nenkat-btn" class="bg-blue-500 text-white px-4 rounded-xl font-black text-xs shadow-md">SHTO</button>
+        </div>
+
+        <div id="pazar-kategori-pads" class="grid grid-cols-3 gap-2 mb-3"></div>
+
+        <div id="pazar-manual-div" class="flex gap-2">
+            <input id="pazar-manual-input" type="text" placeholder="Shto në pazar manualisht..." class="flex-1 p-3 rounded-xl text-xs outline-none bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-600 text-slate-800 dark:text-white">
+            <button onclick="shtoNePazarManual()" class="bg-blue-600 text-white px-4 rounded-xl font-black text-xs shadow-md">SHTO</button>
+        </div>
+    </div>
     <div id="kategori-section" class="mb-6">
         <div id="kthehu-btn" class="hidden mb-3">
             <button onclick="shfaqKategoriteKryesore()" class="w-full p-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-black uppercase rounded-xl border border-slate-300 dark:border-slate-600 flex items-center justify-center gap-2">
@@ -146,7 +166,6 @@
 
 <script>
     google.charts.load('current', {'packages':['corechart']});
-    // ZËVENDËSO KËTË URL ME TË REJËN PASI TË BËSH NEW DEPLOYMENT NË APPS SCRIPT!
     const URL = "https://script.google.com/macros/s/AKfycbwD-BYY6LGfIRF0fyHOmMaaN0-OsUdk5sBChbvxt7MKgEVPldVzwuY4s4ZoRSF6iA/exec"; 
 
     let uAktual = "", allData = {}, shportaObj = {}, historiData = [];
@@ -181,7 +200,9 @@
         if(d.status == "ok") { 
             uAktual = u; document.getElementById("login-ui").classList.add("hidden"); 
             document.getElementById("app-ui").classList.remove("hidden"); 
-            shfaqKategoriteKryesore(); merrRaportin(); initKursimet(); fetchPazarCloud();
+            shfaqKategoriteKryesore(); 
+            shfaqPazarKategoriteKryesore(); // <- Thirrje e re për kategoritë e Pazarit
+            merrRaportin(); initKursimet(); fetchPazarCloud();
         } else { alert("PIN i gabuar!"); btn.innerText = "Hyni"; }
     };
 
@@ -207,7 +228,7 @@
         document.getElementById("kategori-pads").innerHTML = h;
     }
 
-    // MODALET
+    // MODALET (E SHPORTES)
     function shfaqModalManual(emri) {
         kategoriaAktuale = emri;
         document.getElementById("manual-titulli").innerText = "Shuma për: " + emri;
@@ -216,16 +237,11 @@
         setTimeout(() => document.getElementById("manual-input").focus(), 200);
     }
     
-    function mbyllModal() {
-        document.getElementById("modal-manual").classList.add("hidden");
-    }
+    function mbyllModal() { document.getElementById("modal-manual").classList.add("hidden"); }
 
     function mbyllModalDheShto() {
         let v = document.getElementById("manual-input").value;
-        if(v && v > 0) {
-            shtoNeShporte(kategoriaAktuale, v);
-            mbyllModal();
-        }
+        if(v && v > 0) { shtoNeShporte(kategoriaAktuale, v); mbyllModal(); }
     }
 
     function hapModalCustom() {
@@ -266,9 +282,7 @@
         document.getElementById("btn-ruaj").innerText = "...";
         
         let fatureTekst = "";
-        for (let x in shportaObj) {
-            fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`;
-        }
+        for (let x in shportaObj) { fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`; }
         
         await fetch(URL, { method: "POST", body: JSON.stringify({ 
             action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0] || "Të ndryshme", shuma: v, shenime: fatureTekst 
@@ -277,30 +291,24 @@
         pastroShporten(); document.getElementById("btn-ruaj").innerText = "PAGUAJ ✅"; merrRaportin(); shfaqKategoriteKryesore();
     }
 
-    // SHTO FONDE LLOGJIKA
+    // SHTO FONDE
     function hapModalFonde() {
         document.getElementById("fonde-shuma").value = "";
         document.getElementById("fonde-burimi").value = "";
         document.getElementById("modal-fonde").classList.remove("hidden");
         setTimeout(() => document.getElementById("fonde-shuma").focus(), 200);
     }
-
     function mbyllModalFonde() { document.getElementById("modal-fonde").classList.add("hidden"); }
 
     async function ruajFonde() {
         let v = document.getElementById("fonde-shuma").value;
         let b = document.getElementById("fonde-burimi").value || "Të ndryshme";
-        
         if(!v || v <= 0) return;
         document.getElementById("btn-ruaj-fonde").innerText = "...";
-        
         await fetch(URL, { method: "POST", body: JSON.stringify({ 
             action: "shto", user: uAktual, kat: "Të Ardhura", shuma: v, shenime: "Burimi: " + b 
         }) });
-
-        mbyllModalFonde(); 
-        document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; 
-        merrRaportin();
+        mbyllModalFonde(); document.getElementById("btn-ruaj-fonde").innerText = "SHTO"; merrRaportin();
     }
 
     // RAPORTET & GRAFIKU
@@ -316,8 +324,8 @@
         let totalLimit = 0; allData.kats.forEach(k => totalLimit += (parseFloat(k.limiti) || 0));
         let perq = totalLimit > 0 ? (d.dalje / totalLimit) * 100 : 0;
         
-        if (perq >= 80) { mbetjaElem.classList.add("limit-warning-text"); barElem.classList.add("limit-warning-bar"); } 
-        else { mbetjaElem.classList.remove("limit-warning-text"); barElem.classList.remove("limit-warning-bar"); }
+        if (perq >= 80) { mbetjaElem.classList.add("text-red-500"); barElem.classList.add("bg-red-500"); } 
+        else { mbetjaElem.classList.remove("text-red-500"); barElem.classList.remove("bg-red-500"); barElem.classList.add("bg-blue-500"); }
 
         barElem.style.width = Math.min(perq, 100) + "%";
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
@@ -359,16 +367,13 @@
     }
 
     function shkarkoPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
         doc.setFontSize(18); doc.setTextColor(40); doc.text(`Raporti i Detajuar i Shpenzimeve`, 14, 20);
         doc.setFontSize(10); doc.setTextColor(100); doc.text(`Përdoruesi: ${uAktual}`, 14, 28);
         doc.text(`Data e gjenerimit: ${new Date().toLocaleString()}`, 14, 33);
         doc.text(`Periudha: ${document.getElementById("muaji").options[document.getElementById("muaji").selectedIndex].text} ${document.getElementById("viti").value}`, 14, 38);
 
         let totaliHyrje = 0; let totaliDalje = 0;
-
         const rreshtat = historiData.map(x => {
             let isHyrje = (x.t === "hyrje");
             if (isHyrje) totaliHyrje += Math.abs(x.s); else totaliDalje += Math.abs(x.s);
@@ -420,9 +425,7 @@
     
     async function syncKursimToSheet() {
         const e = document.getElementById("obj-emri").value; localStorage.setItem("obj_emri", e);
-        await fetch(URL, { method: "POST", body: JSON.stringify({ 
-            action: "sync_kursim", user: uAktual, emri: e, mbledhur: localStorage.getItem("kursime_mbledhura"), synimi: localStorage.getItem("obj_vlera") 
-        }) });
+        await fetch(URL, { method: "POST", body: JSON.stringify({ action: "sync_kursim", user: uAktual, emri: e, mbledhur: localStorage.getItem("kursime_mbledhura"), synimi: localStorage.getItem("obj_vlera") }) });
     }
     
     async function shtoKursim() { 
@@ -430,20 +433,14 @@
         if(v && !isNaN(v) && v > 0){ 
             localStorage.setItem("kursime_mbledhura", (parseFloat(localStorage.getItem("kursime_mbledhura"))||0)+parseFloat(v)); 
             perditesoKasaforten(); syncKursimToSheet(); 
-            
-            await fetch(URL, { method: "POST", body: JSON.stringify({ 
-                action: "shto", user: uAktual, kat: "Kursime", shuma: v, shenime: "Shtuar në arkën e kursimit" 
-            }) });
+            await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: "Kursime", shuma: v, shenime: "Shtuar në arkën e kursimit" }) });
             merrRaportin();
         }
     }
-
     function ndryshoQellimin() { let t = prompt("Synimi i ri:"); if(t){ localStorage.setItem("obj_vlera", t); perditesoKasaforten(); syncKursimToSheet(); }}
-    
     function zeroKursimet() {
         if(confirm("Jeni i sigurt që doni të zeronit shumën e kursyer?")) {
-            localStorage.setItem("kursime_mbledhura", 0);
-            perditesoKasaforten(); syncKursimToSheet();
+            localStorage.setItem("kursime_mbledhura", 0); perditesoKasaforten(); syncKursimToSheet();
         }
     }
 
@@ -452,16 +449,11 @@
         try {
             let res = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "get_pazar" }) });
             let dat = await res.json();
-            if(dat.pazar_list) { 
-                pazarData = JSON.parse(dat.pazar_list); 
-                shfaqPazarin(); 
-            }
+            if(dat.pazar_list) { pazarData = JSON.parse(dat.pazar_list); shfaqPazarin(); }
         } catch(e) {}
     }
 
-    function syncPazarCloud() {
-        fetch(URL, { method: "POST", body: JSON.stringify({ action: "sync_pazar", pazar_list: JSON.stringify(pazarData) }) }).catch(e => {});
-    }
+    function syncPazarCloud() { fetch(URL, { method: "POST", body: JSON.stringify({ action: "sync_pazar", pazar_list: JSON.stringify(pazarData) }) }).catch(e => {}); }
 
     function shfaqPazarin() {
         let h = ""; 
@@ -471,20 +463,62 @@
         document.getElementById("pazar-lista").innerHTML = h;
     }
 
-    function shtoNePazar() {
+    // Funksionet e reja për shtimin e Pazarit nga Kategoritë
+    function shfaqPazarKategoriteKryesore() {
+        document.getElementById("pazar-kthehu-btn").classList.add("hidden");
+        document.getElementById("pazar-custom-nenkat-div").classList.add("hidden");
+        document.getElementById("pazar-manual-div").classList.remove("hidden");
+        
+        let h = "";
+        allData.kats.forEach(k => {
+            let func = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") ? `shfaqPazarNenkategorite('${k.emri}')` : `shtoNePazarSpecifik('${k.emri}')`;
+            h += `<div class="pad shadow-sm border border-blue-100 dark:border-slate-700 bg-white dark:bg-slate-800" onclick="${func}"><span class="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400">${k.emri}</span></div>`;
+        });
+        document.getElementById("pazar-kategori-pads").innerHTML = h;
+    }
+
+    function shfaqPazarNenkategorite(prindi) {
+        document.getElementById("pazar-kthehu-btn").classList.remove("hidden");
+        document.getElementById("pazar-manual-div").classList.add("hidden");
+        
+        // Shfaq inputin e posaçëm për artikujt custom të kësaj kategorie
+        let customDiv = document.getElementById("pazar-custom-nenkat-div");
+        customDiv.classList.remove("hidden");
+        
+        let customBtn = document.getElementById("pazar-custom-nenkat-btn");
+        customBtn.onclick = function() {
+            let ipt = document.getElementById("pazar-custom-nenkat-input");
+            if(ipt.value.trim() !== "") {
+                shtoNePazarSpecifik(ipt.value.trim());
+                ipt.value = "";
+            }
+        };
+
+        let h = "";
+        allData.nenkats.forEach(n => {
+            if(n.prindi == prindi) {
+                h += `<div class="pad shadow-sm border border-indigo-100 dark:border-slate-600 bg-indigo-50 dark:bg-slate-700" onclick="shtoNePazarSpecifik('${n.emri}')"><span class="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-300">${n.emri}</span></div>`;
+            }
+        });
+        document.getElementById("pazar-kategori-pads").innerHTML = h;
+    }
+
+    function shtoNePazarSpecifik(emri) {
+        pazarData.push({emri: emri, done: false});
+        syncPazarCloud();
+        shfaqPazarin();
+    }
+
+    function shtoNePazarManual() {
         let ipt = document.getElementById("pazar-manual-input");
         if(ipt.value.trim() !== "") {
-            pazarData.push({emri: ipt.value, done: false});
+            shtoNePazarSpecifik(ipt.value.trim());
             ipt.value = "";
-            syncPazarCloud();
-            shfaqPazarin();
         }
     }
 
     function pazarTeArka(emri, index) {
-        // Hapim modalin që të vendosësh çmimin e artikullit që bleve
         shfaqModalManual(emri);
-        // Fshijmë artikullin nga lista e pazarit (siç kërkove)
         pazarData.splice(index, 1);
         syncPazarCloud();
         shfaqPazarin();
@@ -492,9 +526,7 @@
 
     function pastroPazarin() {
         if(confirm("Dëshiron të pastrosh gjithë listën e pazarit?")) {
-            pazarData = [];
-            syncPazarCloud();
-            shfaqPazarin();
+            pazarData = []; syncPazarCloud(); shfaqPazarin();
         }
     }
 </script>
