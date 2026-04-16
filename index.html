@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa Family Pro v4.4</title>
+    <title>Financa Family Pro v4.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -33,7 +33,9 @@
         <span class="text-7xl block mb-4">💎</span>
         <h2 class="text-white text-3xl font-black mb-2 uppercase tracking-tighter">✍🏼Financa✍🏼 <span class="text-blue-500">Family</span></h2>
         <p class="text-slate-500 text-[14px] tracking-[2px] font-bold mb-8">Created By AGLIEN</p>
-        <select id="user-select" class="w-full p-4 mb-3 rounded-2xl bg-slate-800 text-white border border-slate-700 outline-none text-center font-bold"></select>
+        <select id="user-select" class="w-full p-4 mb-3 rounded-2xl bg-slate-800 text-white border border-slate-700 outline-none text-center font-bold">
+            <option disabled selected>Duke ngarkuar përdoruesit...</option>
+        </select>
         <input id="pass" type="password" placeholder="PIN" class="w-full p-4 mb-8 rounded-2xl text-center text-xl font-black bg-white outline-none" inputmode="numeric">
         <button id="btn-login" class="w-full p-5 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-lg">Hyni ne Sistem</button>
     </div>
@@ -42,6 +44,11 @@
 <div id="app-ui" class="max-w-md mx-auto hidden">
     <div class="flex justify-between items-center mb-4 gap-2">
         <button onclick="toggleDark()" class="p-3 bg-slate-200 dark:bg-slate-800 rounded-2xl active-scale">🌓</button>
+        
+        <div id="header-user" class="bg-blue-600 text-white font-black text-[10px] px-3 py-2 rounded-xl uppercase flex items-center justify-center truncate max-w-[100px] shadow-md hidden">
+            👤
+        </div>
+
         <div class="flex gap-1 flex-1">
             <select id="muaji" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold outline-none flex-1 border border-slate-200 dark:border-slate-700"></select>
             <select id="viti" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold outline-none flex-1 border border-slate-200 dark:border-slate-700"></select>
@@ -177,19 +184,29 @@
     const URL = "https://script.google.com/macros/s/AKfycbwWs6QK8PDVSzkUN8pHKoKDjqjO1mveykN9W3rb5faGC02F8QQ8VUtNAhrw5zE6Wbvm/exec"; 
 
     let uAktual = "", allData = {}, shportaObj = {}, historiData = [], pazarData = [], kategoriaAktuale = "", modalContext = "arka", globalRaport = {}; 
+    let prindiZgjedhur = ""; 
 
     window.onload = async () => {
         const m = document.getElementById("muaji"), v = document.getElementById("viti");
+        const uSelect = document.getElementById("user-select");
+        
         const muajt = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
         muajt.forEach((emri, i) => { m.innerHTML += `<option value="${i+1}" ${i+1==new Date().getMonth()+1?'selected':''}>${emri}</option>`; });
         for(let i=2025; i<=2027; i++) v.innerHTML += `<option value="${i}" ${i==2026?'selected':''}>${i}</option>`;
+        
         m.onchange = v.onchange = () => merrRaportin();
         if(localStorage.getItem("dark-mode") === "true") document.body.classList.add("dark");
+
         try {
             const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "get_data" }) });
             allData = await r.json();
-            allData.users.forEach(u => { document.getElementById("user-select").innerHTML += `<option value="${u}">${u}</option>`; });
-        } catch(e) {}
+            if(allData && allData.users) {
+                uSelect.innerHTML = "";
+                allData.users.forEach(u => { uSelect.innerHTML += `<option value="${u}">${u}</option>`; });
+            }
+        } catch(e) {
+            uSelect.innerHTML = "<option>Gabim lidhjeje</option>";
+        }
     };
 
     function showToast(msg) {
@@ -209,13 +226,16 @@
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "login", user: u, pass: p }) });
         const d = await r.json();
         if(d.status == "ok") { 
-            uAktual = u; document.getElementById("login-ui").classList.add("hidden"); 
+            uAktual = u; 
+            const headerU = document.getElementById("header-user");
+            headerU.innerText = "👤 " + u;
+            headerU.classList.remove("hidden");
+            document.getElementById("login-ui").classList.add("hidden"); 
             document.getElementById("app-ui").classList.remove("hidden"); 
             merrRaportin(); fetchPazarCloud();
         } else { alert("PIN i gabuar!"); }
     };
 
-    // --- LOGJIKA E FONDEVE (E RE) ---
     function hapModalFonde() {
         document.getElementById("fonde-shuma").value = "";
         document.getElementById("fonde-burimi").value = "";
@@ -232,35 +252,32 @@
         btn.innerText = "..."; btn.disabled = true;
 
         try {
-            await fetch(URL, { method: "POST", body: JSON.stringify({ 
-                action: "shto_fond", user: uAktual, shuma: v, burimi: b 
-            }) });
+            await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto_fond", user: uAktual, shuma: v, burimi: b }) });
             mbyllModalFonde();
             merrRaportin();
             showToast("Të ardhurat u shtuan! ✅");
-        } catch(e) {
-            alert("Gabim gjatë lidhjes me serverin!");
-        }
+        } catch(e) { alert("Gabim gjatë lidhjes me serverin!"); }
         btn.innerText = "SHTO"; btn.disabled = false;
     }
 
-    // --- ARKA MANUAL LOGIC (E RE) ---
-    function shtoManualNeArke() { document.getElementById("modal-arka-manual").classList.remove("hidden"); }
+    function shtoManualNeArke() { 
+        prindiZgjedhur = ""; 
+        document.getElementById("modal-arka-manual").classList.remove("hidden"); 
+    }
     function mbyllArkaManual() { document.getElementById("modal-arka-manual").classList.add("hidden"); }
     function kryejShtimManualArka() {
         const e = document.getElementById("arka-emri-input").value;
         const s = document.getElementById("arka-shuma-input").value;
-        
         if(e && s && s > 0) { 
-            shtoNeShporte(e, s); 
+            shtoNeShporte(e, s, prindiZgjedhur); 
             document.getElementById("arka-emri-input").value = ""; 
             document.getElementById("arka-shuma-input").value = ""; 
+            prindiZgjedhur = ""; 
             mbyllArkaManual(); 
             showToast(`+ ${e} u shtua!`);
         }
     }
 
-    // --- MODAL SEARCH LOGIC ---
     function hapModalKategorite(context) {
         modalContext = context;
         document.getElementById("modal-kategorite").classList.remove("hidden");
@@ -271,30 +288,44 @@
         shfaqKategoriteModal();
     }
     function mbyllModalKategorite() { document.getElementById("modal-kategorite").classList.add("hidden"); }
+    
     function shfaqKategoriteModal() {
         document.getElementById("modal-kthehu-btn").classList.add("hidden");
         let h = "";
         allData.kats.forEach(k => {
-            let func = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") ? `shfaqNenkategoriteModal('${k.emri}')` : `seleksionoArtikullModal('${k.emri}', 0)`;
+            let func = (k.kaNen === true || k.kaNen === "Po" || k.kaNen === "TRUE") ? `shfaqNenkategoriteModal('${k.emri}')` : `seleksionoArtikullModal('${k.emri}', 0, '${k.emri}')`;
             h += `<div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="${func}">
                     <span class="text-[10px] font-black uppercase text-center">${k.emri}</span>
                   </div>`;
         });
         document.getElementById("modal-pads-container").innerHTML = h;
     }
+
     function shfaqNenkategoriteModal(prindi) {
         document.getElementById("modal-kthehu-btn").classList.remove("hidden");
         let h = "";
         allData.nenkats.forEach(n => {
             if(n.prindi == prindi) {
-                h += `<div class="p-4 ${modalContext === 'arka' ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/10' : 'bg-orange-50 border-orange-100 dark:bg-orange-900/10'} rounded-2xl border flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="seleksionoArtikullModal('${n.emri}', ${n.cmimi || 0})">
+                h += `<div class="p-4 ${modalContext === 'arka' ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/10' : 'bg-orange-50 border-orange-100 dark:bg-orange-900/10'} rounded-2xl border flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="seleksionoArtikullModal('${n.emri}', ${n.cmimi || 0}, '${prindi}')">
                         <span class="text-[10px] font-black uppercase text-center">${n.emri}</span>
                         ${n.cmimi > 0 ? `<span class="text-[9px] font-bold mt-1 opacity-60">${n.cmimi}L</span>` : ''}
                       </div>`;
             }
         });
+        
+        h += `<div class="p-4 bg-slate-100 border-slate-300 dark:bg-slate-800 dark:border-slate-600 rounded-2xl border border-dashed flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="artikullIriNgaNenkategoria('${prindi}')">
+                <span class="text-[10px] font-black uppercase text-center text-slate-500 dark:text-slate-400">+ TJETËR</span>
+              </div>`;
+              
         document.getElementById("modal-pads-container").innerHTML = h;
     }
+
+    function artikullIriNgaNenkategoria(prindi) {
+        prindiZgjedhur = prindi; 
+        mbyllModalKategorite();
+        if(modalContext === 'arka') { shtoManualNeArke(); } else { shfaqManualPazar(); }
+    }
+
     function kerkoArtikullModal() {
         let txt = document.getElementById("modal-search").value.toLowerCase().trim();
         if(txt === "") { shfaqKategoriteModal(); return; }
@@ -302,23 +333,24 @@
         let h = "";
         allData.nenkats.forEach(n => {
             if(n.emri.toLowerCase().includes(txt)) {
-                h += `<div class="p-4 ${modalContext === 'arka' ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/10' : 'bg-orange-50 border-orange-100 dark:bg-orange-900/10'} rounded-2xl border flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="seleksionoArtikullModal('${n.emri}', ${n.cmimi || 0})">
+                h += `<div class="p-4 ${modalContext === 'arka' ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/10' : 'bg-orange-50 border-orange-100 dark:bg-orange-900/10'} rounded-2xl border flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="seleksionoArtikullModal('${n.emri}', ${n.cmimi || 0}, '${n.prindi}')">
                         <span class="text-[10px] font-black uppercase text-center">${n.emri}</span>
                       </div>`;
             }
         });
         document.getElementById("modal-pads-container").innerHTML = h || `<div class="col-span-2 py-10 text-slate-400 text-xs italic">Nuk u gjet asgjë...</div>`;
     }
-    function seleksionoArtikullModal(emri, cmimi) {
+
+    function seleksionoArtikullModal(emri, cmimi, prindi) {
+        prindiZgjedhur = prindi || emri; 
         if(modalContext === 'arka') {
-            if(cmimi > 0) { shtoNeShporte(emri, cmimi); showToast(`+ ${emri} shtuar!`); } 
-            else { shfaqModalManual(emri); }
+            if(cmimi > 0) { shtoNeShporte(emri, cmimi, prindiZgjedhur); showToast(`+ ${emri} shtuar!`); } 
+            else { shfaqModalManual(emri); } 
         } else {
-            shtoNePazarSpecifik(emri); showToast(`🛒 ${emri} në pazar!`);
+            shtoNePazarSpecifik(emri, prindiZgjedhur); showToast(`🛒 ${emri} në pazar!`);
         }
     }
 
-    // --- KURSIME LOGIC ---
     function initKursimet(kurs) {
         if(kurs) {
             localStorage.setItem("kursime_mbledhura", kurs.mbledhur || 0);
@@ -351,10 +383,13 @@
     function ndryshoQellimin() { let t = prompt("Synimi i ri (Lekë):"); if(t){ localStorage.setItem("obj_vlera", t); perditesoKasaforten(); syncKursimToSheet(); }}
     function zeroKursimet() { if(confirm("Zero kursimin?")) { localStorage.setItem("kursime_mbledhura", 0); perditesoKasaforten(); syncKursimToSheet(); }}
 
-    // --- ARKA & PAZARI ---
-    function shtoNeShporte(e, c) {
-        if (shportaObj[e]) { shportaObj[e].s += 1; } 
-        else { shportaObj[e] = {s: 1, c: parseFloat(c)}; }
+    function shtoNeShporte(e, c, p = "") {
+        let prindKategori = p || prindiZgjedhur || e; 
+        if (shportaObj[e]) { 
+            shportaObj[e].s += 1; 
+        } else { 
+            shportaObj[e] = {s: 1, c: parseFloat(c), p: prindKategori}; 
+        }
         perditesoArken();
     }
     function hiqNgaShporta(e) {
@@ -379,8 +414,12 @@
         const btn = document.getElementById("btn-ruaj"); btn.innerText = "Duke u ruajtur..."; btn.disabled = true;
         let fatureTekst = "";
         for (let x in shportaObj) { fatureTekst += `${x} x${shportaObj[x].s} (${shportaObj[x].s * shportaObj[x].c}L)\n`; }
+        
+        let firstItem = Object.keys(shportaObj)[0];
+        let kategoriaPerServer = shportaObj[firstItem].p || firstItem;
+
         try {
-            await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: Object.keys(shportaObj)[0], shuma: v, shenime: fatureTekst.trim() }) });
+            await fetch(URL, { method: "POST", body: JSON.stringify({ action: "shto", user: uAktual, kat: kategoriaPerServer, shuma: v, shenime: fatureTekst.trim() }) });
             pastroShporten(); merrRaportin(); showToast("Pagesa u krye! ✅");
         } catch(e) { alert("Gabim!"); }
         btn.innerText = "KRYEJ PAGESËN ✅"; btn.disabled = false;
@@ -401,15 +440,35 @@
         }); 
         document.getElementById("pazar-lista").innerHTML = h;
     }
-    function shtoNePazarSpecifik(emri) { pazarData.push({emri: emri}); shfaqPazarin(); syncPazarCloud(); }
-    function shfaqManualPazar() { document.getElementById("modal-pazar-tekst").classList.remove("hidden"); }
+    function shtoNePazarSpecifik(emri, prindi = "") { 
+        let p = prindi || prindiZgjedhur || emri;
+        pazarData.push({emri: emri, prindi: p}); 
+        shfaqPazarin(); 
+        syncPazarCloud(); 
+    }
+    function shfaqManualPazar() { 
+        prindiZgjedhur = ""; 
+        document.getElementById("modal-pazar-tekst").classList.remove("hidden"); 
+    }
     function mbyllManualPazar() { document.getElementById("modal-pazar-tekst").classList.add("hidden"); }
     function shtoNePazarManual() { 
-        let i = document.getElementById("pazar-manual-input"); if(i.value) { shtoNePazarSpecifik(i.value); i.value = ""; mbyllManualPazar(); showToast("U shtua!"); } 
+        let i = document.getElementById("pazar-manual-input"); 
+        if(i.value) { 
+            shtoNePazarSpecifik(i.value, prindiZgjedhur); 
+            i.value = ""; 
+            prindiZgjedhur = ""; 
+            mbyllManualPazar(); 
+            showToast("U shtua!"); 
+        } 
     }
     function pazarTeArka(emri, index) {
         let c = prompt(`Çmimi për "${emri}":`);
-        if(c && !isNaN(c)) { shtoNeShporte(emri, c); pazarData.splice(index, 1); shfaqPazarin(); syncPazarCloud(); }
+        if(c && !isNaN(c)) { 
+            shtoNeShporte(emri, c, pazarData[index].prindi || emri); 
+            pazarData.splice(index, 1); 
+            shfaqPazarin(); 
+            syncPazarCloud(); 
+        }
     }
     function pastroPazarin() { if(confirm("Fshij gjithë listën?")) { pazarData = []; shfaqPazarin(); syncPazarCloud(); } }
 
@@ -418,13 +477,33 @@
         const r = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "raporti", muaji: m, viti: v, user: uAktual }) });
         const d = await r.json(); globalRaport = d; historiData = d.lista;
         document.getElementById("r-mbetja").innerText = d.mbetja.toLocaleString() + " L";
+        
         let totalLimit = 0; allData.kats.forEach(k => totalLimit += (parseFloat(k.limiti) || 0));
         let perq = totalLimit > 0 ? (d.dalje / totalLimit) * 100 : 0;
         document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%";
         document.getElementById("txt-limit").innerText = `${d.dalje.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
+        
         let hHtml = ""; 
         d.lista.slice(0, 15).forEach(x => {
-            hHtml += `<div class="border-b dark:border-slate-700 py-3 flex justify-between"><div><span class="font-black text-[10px] uppercase">${x.k}</span><span class="text-[9px] text-slate-400 ml-2">${x.d}</span>${x.n ? `<div class="text-[9px] text-slate-400 mt-1 italic">${x.n.replace(/\n/g, ", ")}</div>` : ''}</div><span class="${x.t === 'hyrje' ? 'text-green-500' : 'text-red-400'} font-bold">${x.t === 'hyrje' ? '+' : '-'}${Math.abs(x.s).toLocaleString()} L</span></div>`;
+            let fatureDetaje = "";
+            if(x.n) {
+                // KETU ESHTE MAGJIA E FATURES: Zevendesojme \n me <br> qe te dalin nen njera tjetren si kolone
+                let detajet = x.n.trim().replace(/\n/g, "<br>");
+                fatureDetaje = `<div class="mt-2 p-2 bg-slate-50 dark:bg-slate-800/80 rounded border border-dashed border-slate-300 dark:border-slate-600 text-[10px] text-slate-500 dark:text-slate-400 font-mono leading-relaxed w-full">${detajet}</div>`;
+            }
+
+            hHtml += `<div class="border-b dark:border-slate-700 py-3 flex flex-col">
+                        <div class="flex justify-between items-center w-full">
+                            <div>
+                                <span class="font-black text-[10px] uppercase">${x.k}</span>
+                                <span class="text-[9px] text-slate-400 ml-2">${x.d}</span>
+                            </div>
+                            <span class="${x.t === 'hyrje' ? 'text-green-500' : 'text-red-400'} font-bold">
+                                ${x.t === 'hyrje' ? '+' : '-'}${Math.abs(x.s).toLocaleString()} L
+                            </span>
+                        </div>
+                        ${fatureDetaje}
+                      </div>`;
         });
         document.getElementById("historiku-list").innerHTML = hHtml;
         initKursimet(d.kurs); shfaqGrafikun(d.grafiku);
@@ -434,7 +513,7 @@
         let gD = [['Kategoria', 'Lekë']]; for(let k in data) gD.push([k, data[k]]);
         new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(gD), {
             backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6'],
-            legend: { position: 'right', textStyle: { color: '#ffffff', fontSize: 10, bold: true } },
+            legend: { position: 'right', textStyle: { color: '#ffffff', fontSize: 10, bold: true } }, 
             chartArea: {width:'100%', height:'100%'}, pieHole: 0.5
         });
     }
@@ -447,10 +526,13 @@
     function mbyllModalManual() { document.getElementById("modal-manual").classList.add("hidden"); }
     function mbyllModalManualDheShto() {
         let v = document.getElementById("manual-input").value;
-        if(v && v > 0) { shtoNeShporte(kategoriaAktuale, v); mbyllModalManual(); showToast(`+ ${kategoriaAktuale} shtuar!`); }
+        if(v && v > 0) { 
+            shtoNeShporte(kategoriaAktuale, v, prindiZgjedhur); 
+            mbyllModalManual(); 
+            showToast(`+ ${kategoriaAktuale} shtuar!`); 
+        }
     }
 
-    // --- PDF ENGINE V2 (FULL BALANCE) ---
     function shkarkoPDF() {
         const { jsPDF } = window.jspdf; 
         const doc = new jsPDF();
@@ -458,8 +540,7 @@
         const muajiEmri = muajt[document.getElementById("muaji").value - 1];
         const viti = document.getElementById("viti").value;
 
-        // Header Design
-        doc.setFillColor(15, 23, 42); // Slate 900
+        doc.setFillColor(15, 23, 42); 
         doc.rect(0, 0, 210, 45, 'F');
         
         doc.setTextColor(255, 255, 255);
@@ -472,7 +553,6 @@
         doc.text(`PERIUDHA: ${muajiEmri} ${viti}`, 14, 28);
         doc.text(`PERDORUESI: ${uAktual.toUpperCase()}`, 14, 34);
 
-        // Summary Boxes
         doc.setFillColor(248, 250, 252); 
         doc.roundedRect(14, 50, 182, 35, 3, 3, 'F');
         
@@ -484,20 +564,20 @@
 
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(16, 185, 129); // Green
+        doc.setTextColor(16, 185, 129); 
         doc.text(`${globalRaport.hyrje.toLocaleString()} L`, 25, 72);
         
-        doc.setTextColor(239, 68, 68); // Red
+        doc.setTextColor(239, 68, 68); 
         doc.text(`${globalRaport.dalje.toLocaleString()} L`, 85, 72);
         
-        doc.setTextColor(59, 130, 246); // Blue
+        doc.setTextColor(59, 130, 246); 
         doc.text(`${globalRaport.mbetja.toLocaleString()} L`, 145, 72);
 
-        // Transaction Table
         doc.setTextColor(100, 116, 139);
         doc.setFontSize(11);
         doc.text("DETAJET E TRANSAKSIONEVE", 14, 100);
 
+        // KETU PER PDF-ne MBAJTA ATE ORIGJINALEN TENDEN QE MOS TE PRISHET TABELA E PDF-se
         const rreshtat = historiData.map(x => [
             x.d, 
             x.k, 
@@ -515,7 +595,6 @@
             columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } }
         });
 
-        // Footer
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(8);
         doc.setTextColor(150);
