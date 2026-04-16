@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa Family Pro v4.5</title>
+    <title>Financa Family Pro v4.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -260,6 +260,7 @@
         btn.innerText = "SHTO"; btn.disabled = false;
     }
 
+    // Sigurohemi që nëse shtypet "📝 Manual" nga jashtë, kategoria të fshihet
     function shtoManualNeArke() { 
         prindiZgjedhur = ""; 
         document.getElementById("modal-arka-manual").classList.remove("hidden"); 
@@ -279,6 +280,7 @@
     }
 
     function hapModalKategorite(context) {
+        prindiZgjedhur = ""; // Fshijmë memorien sa herë hapim listën e kategorive
         modalContext = context;
         document.getElementById("modal-kategorite").classList.remove("hidden");
         document.getElementById("modal-search").value = "";
@@ -320,10 +322,15 @@
         document.getElementById("modal-pads-container").innerHTML = h;
     }
 
+    // KETU ISHTE GABIMI! Tani hapim drejtpërdrejt modalet pa thirrur funksionet që e fshijnë memorien
     function artikullIriNgaNenkategoria(prindi) {
         prindiZgjedhur = prindi; 
         mbyllModalKategorite();
-        if(modalContext === 'arka') { shtoManualNeArke(); } else { shfaqManualPazar(); }
+        if(modalContext === 'arka') { 
+            document.getElementById("modal-arka-manual").classList.remove("hidden");
+        } else { 
+            document.getElementById("modal-pazar-tekst").classList.remove("hidden");
+        }
     }
 
     function kerkoArtikullModal() {
@@ -486,19 +493,21 @@
         let hHtml = ""; 
         d.lista.slice(0, 15).forEach(x => {
             let fatureDetaje = "";
+            // NGJYRAT E REJA TE FATURES KETU: Te qarta, moderne, kontrast i larte.
             if(x.n) {
-                // KETU ESHTE MAGJIA E FATURES: Zevendesojme \n me <br> qe te dalin nen njera tjetren si kolone
                 let detajet = x.n.trim().replace(/\n/g, "<br>");
-                fatureDetaje = `<div class="mt-2 p-2 bg-slate-50 dark:bg-slate-800/80 rounded border border-dashed border-slate-300 dark:border-slate-600 text-[10px] text-slate-500 dark:text-slate-400 font-mono leading-relaxed w-full">${detajet}</div>`;
+                fatureDetaje = `<div class="mt-3 p-3 bg-white dark:bg-slate-800 rounded-xl border-l-4 border-blue-500 shadow-sm">
+                                    <div class="text-[11px] text-slate-700 dark:text-slate-200 font-mono leading-relaxed w-full">${detajet}</div>
+                                </div>`;
             }
 
-            hHtml += `<div class="border-b dark:border-slate-700 py-3 flex flex-col">
-                        <div class="flex justify-between items-center w-full">
+            hHtml += `<div class="border-b dark:border-slate-700 py-4 flex flex-col">
+                        <div class="flex justify-between items-center w-full mb-1">
                             <div>
-                                <span class="font-black text-[10px] uppercase">${x.k}</span>
-                                <span class="text-[9px] text-slate-400 ml-2">${x.d}</span>
+                                <span class="font-black text-[11px] uppercase">${x.k}</span>
+                                <span class="text-[10px] text-slate-400 ml-2">${x.d}</span>
                             </div>
-                            <span class="${x.t === 'hyrje' ? 'text-green-500' : 'text-red-400'} font-bold">
+                            <span class="${x.t === 'hyrje' ? 'text-green-500' : 'text-red-500'} font-bold text-[12px]">
                                 ${x.t === 'hyrje' ? '+' : '-'}${Math.abs(x.s).toLocaleString()} L
                             </span>
                         </div>
@@ -577,7 +586,6 @@
         doc.setFontSize(11);
         doc.text("DETAJET E TRANSAKSIONEVE", 14, 100);
 
-        // KETU PER PDF-ne MBAJTA ATE ORIGJINALEN TENDEN QE MOS TE PRISHET TABELA E PDF-se
         const rreshtat = historiData.map(x => [
             x.d, 
             x.k, 
