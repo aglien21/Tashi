@@ -27,8 +27,7 @@
 
     <script>
         window.onerror = function(msg, url, lineNo) {
-            var el = document.getElementById('loading-text');
-            if(el) { el.innerText = 'Gabim: ' + msg; el.style.color = 'red'; el.classList.remove('animate-pulse'); }
+            console.error('Gabim Sistemi:', msg, lineNo);
             return false;
         };
     </script>
@@ -110,7 +109,7 @@
                 <input id="setting-tg-id" type="text" placeholder="Chat ID" class="w-full p-3 border rounded-xl text-xs">
             </div>
 
-            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white font-black p-5 rounded-2xl shadow-xl mb-4">RUAJ TË GJITHA</button>
+            <button onclick="saveSettings()" id="btn-save-settings" class="w-full bg-indigo-600 text-white font-black p-5 rounded-2xl shadow-xl mb-4 transition-all">RUAJ TË GJITHA</button>
             <button onclick="resetApp()" class="w-full text-red-400 font-bold p-3">Reset Data</button>
         </div>
 
@@ -192,39 +191,65 @@
             if(form) form.classList.remove('hidden'); 
         }
         
+        // UPDATE UI ËSHTË I BLINDUAR KUNDËR GABIMEVE
         function updateUI() {
             if(!appConfig) return;
-            const femijetSafe = appConfig.femijet || [];
-            const prinderitSafe = appConfig.prinderit || [];
+            try {
+                const femijetSafe = appConfig.femijet || [];
+                const prinderitSafe = appConfig.prinderit || [];
 
-            const cc = document.getElementById('assign-checkboxes');
-            cc.innerHTML = `<div class="w-full mb-2"><input type="checkbox" id="check-all" class="hidden checkbox-custom" onchange="toggleAll(this)"><label for="check-all" class="cursor-pointer block p-2 border-2 border-indigo-100 bg-white rounded-xl text-center font-bold text-gray-500 shadow-sm transition-all">Zgjidh të gjithë</label></div>`;
-            femijetSafe.forEach(f => {
-                cc.innerHTML += `<div class="flex-1"><input type="checkbox" id="chk-${f.id}" value="${f.emri}" class="hidden checkbox-custom child-chk"><label for="chk-${f.id}" class="cursor-pointer block p-3 border-2 border-indigo-100 bg-white rounded-2xl font-black text-center text-xs shadow-sm transition-all">${f.emri}</label></div>`;
-            });
+                const cc = document.getElementById('assign-checkboxes');
+                if(cc) {
+                    cc.innerHTML = `<div class="w-full mb-2"><input type="checkbox" id="check-all" class="hidden checkbox-custom" onchange="toggleAll(this)"><label for="check-all" class="cursor-pointer block p-2 border-2 border-indigo-100 bg-white rounded-xl text-center font-bold text-gray-500 shadow-sm transition-all">Zgjidh të gjithë</label></div>`;
+                    femijetSafe.forEach(f => {
+                        cc.innerHTML += `<div class="flex-1"><input type="checkbox" id="chk-${f.id}" value="${f.emri}" class="hidden checkbox-custom child-chk"><label for="chk-${f.id}" class="cursor-pointer block p-3 border-2 border-indigo-100 bg-white rounded-2xl font-black text-center text-xs shadow-sm transition-all">${f.emri}</label></div>`;
+                    });
+                }
 
-            document.getElementById('setting-goal-points').value = appConfig.goal_piket || 100;
-            document.getElementById('setting-goal-reward').value = appConfig.goal_shperblimi || "";
-            
-            // TITULLI I MADH I SHPËRBLIMIT
-            document.getElementById('goal-text').innerText = appConfig.goal_shperblimi ? appConfig.goal_shperblimi : "S'KA SHPËRBLIM AKTIV";
-            document.getElementById('goal-points-display').innerText = appConfig.goal_piket || 100;
+                // Plotëso Settings Goal
+                const gPoints = document.getElementById('setting-goal-points');
+                if(gPoints) gPoints.value = appConfig.goal_piket || 100;
+                
+                const gReward = document.getElementById('setting-goal-reward');
+                if(gReward) gReward.value = appConfig.goal_shperblimi || "";
+                
+                // Plotëso Child Panel Goal
+                const txtGoal = document.getElementById('goal-text');
+                if(txtGoal) txtGoal.innerText = appConfig.goal_shperblimi ? appConfig.goal_shperblimi : "S'KA SHPËRBLIM AKTIV";
+                
+                const dispPoints = document.getElementById('goal-points-display');
+                if(dispPoints) dispPoints.innerText = appConfig.goal_piket || 100;
 
-            const qs = document.getElementById('quick-task-select'); qs.innerHTML = `<option value="">-- Misionet e Gati --</option>`;
-            const sl = document.getElementById('saved-tasks-list'); sl.innerHTML = "";
-            (appConfig.shabllone || []).forEach((sh, i) => { 
-                qs.innerHTML += `<option value="${sh.titulli}|${sh.emoji}|${sh.piket}">${sh.emoji} ${sh.titulli}</option>`; 
-                sl.innerHTML += `<li class="flex justify-between items-center bg-slate-50 p-3 rounded-xl font-bold"><span>${sh.emoji} ${sh.titulli}</span><button onclick="deleteTemplate(${i})" class="text-red-400 bg-red-50 px-2 rounded">X</button></li>`;
-            });
-            
-            const pl = document.getElementById('edit-parents-list'); pl.innerHTML = `<h3 class="font-black mb-3 text-indigo-600 italic">👤 PRINDËRIT</h3>`;
-            prinderitSafe.forEach(p => { pl.innerHTML += `<div class="flex gap-2 mb-2"><input type="text" id="edit-pname-${p.id}" value="${p.emri}" class="w-1/2 p-2 border rounded-lg font-bold"><input type="text" id="edit-ppass-${p.id}" value="${p.pass}" class="w-1/2 p-2 border rounded-lg font-bold" placeholder="PIN"></div>`; });
+                const qs = document.getElementById('quick-task-select'); 
+                const sl = document.getElementById('saved-tasks-list'); 
+                if(qs && sl) {
+                    qs.innerHTML = `<option value="">-- Misionet e Gati --</option>`;
+                    sl.innerHTML = "";
+                    (appConfig.shabllone || []).forEach((sh, i) => { 
+                        qs.innerHTML += `<option value="${sh.titulli}|${sh.emoji}|${sh.piket}">${sh.emoji} ${sh.titulli}</option>`; 
+                        sl.innerHTML += `<li class="flex justify-between items-center bg-slate-50 p-3 rounded-xl font-bold"><span>${sh.emoji} ${sh.titulli}</span><button onclick="deleteTemplate(${i})" class="text-red-400 bg-red-50 px-2 rounded">X</button></li>`;
+                    });
+                }
+                
+                const pl = document.getElementById('edit-parents-list'); 
+                if(pl) {
+                    pl.innerHTML = `<h3 class="font-black mb-3 text-indigo-600 italic">👤 PRINDËRIT</h3>`;
+                    prinderitSafe.forEach(p => { pl.innerHTML += `<div class="flex gap-2 mb-2"><input type="text" id="edit-pname-${p.id}" value="${p.emri}" class="w-1/2 p-2 border rounded-lg font-bold"><input type="text" id="edit-ppass-${p.id}" value="${p.pass}" class="w-1/2 p-2 border rounded-lg font-bold" placeholder="PIN"></div>`; });
+                }
 
-            const el = document.getElementById('edit-children-list'); el.innerHTML = `<h3 class="font-black mb-3 text-blue-600 italic">👦 FËMIJËT (PIN & Tel)</h3>`;
-            femijetSafe.forEach(f => { el.innerHTML += `<div class="p-3 border-b border-gray-100 mb-2"><div class="flex gap-2 mb-2"><input type="text" id="edit-name-${f.id}" value="${f.emri}" class="w-1/2 border p-2 rounded text-sm font-bold"><input type="text" id="edit-pass-${f.id}" value="${f.pass}" class="w-1/2 border p-2 rounded text-sm font-bold" placeholder="PIN"></div><input type="text" id="edit-tel-${f.id}" value="${f.tel || ''}" placeholder="WhatsApp" class="w-full text-xs p-2 border rounded"></div>`; });
-            
-            document.getElementById('setting-tg-token').value = appConfig.tg_token || "";
-            document.getElementById('setting-tg-id').value = appConfig.tg_id || "";
+                const el = document.getElementById('edit-children-list'); 
+                if(el) {
+                    el.innerHTML = `<h3 class="font-black mb-3 text-blue-600 italic">👦 FËMIJËT (PIN & Tel)</h3>`;
+                    femijetSafe.forEach(f => { el.innerHTML += `<div class="p-3 border-b border-gray-100 mb-2"><div class="flex gap-2 mb-2"><input type="text" id="edit-name-${f.id}" value="${f.emri}" class="w-1/2 border p-2 rounded text-sm font-bold"><input type="text" id="edit-pass-${f.id}" value="${f.pass}" class="w-1/2 border p-2 rounded text-sm font-bold" placeholder="PIN"></div><input type="text" id="edit-tel-${f.id}" value="${f.tel || ''}" placeholder="WhatsApp" class="w-full text-xs p-2 border rounded"></div>`; });
+                }
+                
+                const tgToken = document.getElementById('setting-tg-token');
+                if(tgToken) tgToken.value = appConfig.tg_token || "";
+                
+                const tgId = document.getElementById('setting-tg-id');
+                if(tgId) tgId.value = appConfig.tg_id || "";
+                
+            } catch(e) { console.error("Gabim në UpdateUI: ", e); }
         }
 
         window.login = () => {
@@ -247,7 +272,7 @@
         window.sendTaskToFirebase = async () => {
             const n = document.getElementById('task-name').value, e = document.getElementById('task-emoji').value || "✨", p = parseInt(document.getElementById('task-points').value);
             const r = Array.from(document.querySelectorAll('.child-chk:checked')).map(c => c.value);
-            if(!n || isNaN(p) || r.length === 0) return alert("Plotëso misionin!");
+            if(!n || isNaN(p) || r.length === 0) return alert("Plotëso misionin dhe pikët!");
             
             const btn = document.getElementById('btn-send-task');
             btn.innerText = "⏳ DUKE U DËRGUAR...";
@@ -319,8 +344,10 @@
             let perc = Math.floor((pts / goal) * 100);
             if(perc > 100) perc = 100;
             if(perc < 0) perc = 0;
-            document.getElementById('progress-bar').style.width = perc + "%";
-            document.getElementById('progress-percent').innerText = perc + "% PËRFUNDUAR";
+            const pBar = document.getElementById('progress-bar');
+            if(pBar) pBar.style.width = perc + "%";
+            const pPerc = document.getElementById('progress-percent');
+            if(pPerc) pPerc.innerText = perc + "% PËRFUNDUAR";
             if(perc >= 100) { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
         }
 
@@ -379,27 +406,73 @@
             } catch(e) {}
         }
 
+        // FUNKSIONI I BLINDUAR PËR TË RUAJTUR SETTINGS
         window.saveSettings = async () => {
-            let upF = (appConfig.femijet || []).map(f => ({ id: f.id, emri: document.getElementById(`edit-name-${f.id}`).value, tel: document.getElementById(`edit-tel-${f.id}`).value, pass: document.getElementById(`edit-pass-${f.id}`).value }));
-            let upP = (appConfig.prinderit || []).map(p => ({ id: p.id, emri: document.getElementById(`edit-pname-${p.id}`).value, pass: document.getElementById(`edit-ppass-${p.id}`).value }));
-            await updateDoc(configRef, { 
-                femijet: upF, prinderit: upP, 
-                goal_piket: parseInt(document.getElementById('setting-goal-points').value),
-                goal_shperblimi: document.getElementById('setting-goal-reward').value,
-                tg_token: document.getElementById('setting-tg-token').value,
-                tg_id: document.getElementById('setting-tg-id').value
-            }); 
-            alert("TË DHËNAT U RUAJTËN!");
+            const btn = document.getElementById('btn-save-settings');
+            const txtOrig = btn.innerText;
+            btn.innerText = "⏳ DUKE U RUAJTUR...";
+            btn.disabled = true;
+
+            try {
+                let upF = (appConfig.femijet || []).map(f => {
+                    const iEmri = document.getElementById(`edit-name-${f.id}`);
+                    const iTel = document.getElementById(`edit-tel-${f.id}`);
+                    const iPass = document.getElementById(`edit-pass-${f.id}`);
+                    return { 
+                        id: f.id, 
+                        emri: iEmri ? iEmri.value : f.emri, 
+                        tel: iTel ? iTel.value : (f.tel || ""), 
+                        pass: iPass ? iPass.value : f.pass 
+                    };
+                });
+                
+                let upP = (appConfig.prinderit || []).map(p => {
+                    const iEmri = document.getElementById(`edit-pname-${p.id}`);
+                    const iPass = document.getElementById(`edit-ppass-${p.id}`);
+                    return { 
+                        id: p.id, 
+                        emri: iEmri ? iEmri.value : p.emri, 
+                        pass: iPass ? iPass.value : p.pass 
+                    };
+                });
+
+                // Mbrojtja për pikët (Nëse e lë bosh, bëhet 100)
+                let rawPoints = parseInt(document.getElementById('setting-goal-points').value);
+                let safeGoalPoints = (isNaN(rawPoints) || rawPoints <= 0) ? 100 : rawPoints;
+                let safeGoalReward = document.getElementById('setting-goal-reward').value || "";
+
+                await updateDoc(configRef, { 
+                    femijet: upF, 
+                    prinderit: upP, 
+                    goal_piket: safeGoalPoints,
+                    goal_shperblimi: safeGoalReward,
+                    tg_token: document.getElementById('setting-tg-token').value || "",
+                    tg_id: document.getElementById('setting-tg-id').value || ""
+                }); 
+                
+                btn.classList.replace('bg-indigo-600', 'bg-green-500');
+                btn.innerText = "✅ TË DHËNAT U RUAJTËN!";
+                setTimeout(() => { 
+                    btn.classList.replace('bg-green-500', 'bg-indigo-600'); 
+                    btn.innerText = txtOrig; 
+                    btn.disabled = false; 
+                }, 2500);
+
+            } catch (err) {
+                alert("Nuk u ruajt dot! Gabim: " + err.message);
+                btn.innerText = "GABIM! PROVO PRAPË";
+                setTimeout(() => { btn.innerText = txtOrig; btn.disabled = false; }, 3000);
+            }
         };
 
         window.saveTaskTemplate = async () => {
-            const n = prompt("Titulli?"), e = prompt("Emoji?"), p = parseInt(prompt("Pikët?"));
-            if(n) await updateDoc(configRef, { shabllone: [...(appConfig.shabllone || []), {titulli: n, emoji: e, piket: p}] });
+            const n = prompt("Titulli i Misionit?"), e = prompt("Emoji (p.sh. 📚)?"), p = parseInt(prompt("Pikët?"));
+            if(n && !isNaN(p)) await updateDoc(configRef, { shabllone: [...(appConfig.shabllone || []), {titulli: n, emoji: e || "✨", piket: p}] });
         };
         window.deleteTemplate = async i => { let nt = [...(appConfig.shabllone || [])]; nt.splice(i,1); await updateDoc(configRef, { shabllone: nt }); };
-        window.resetApp = async () => { if(confirm("ZERO GJITHÇKA?")) { const q = await getDocs(collection(db, "tasks")); const b = writeBatch(db); q.forEach(d => b.delete(d.ref)); await b.commit(); location.reload(); } };
+        window.resetApp = async () => { if(confirm("KUJDES: ZERO GJITHÇKA? Të gjitha pikët do të fshihen!")) { const q = await getDocs(collection(db, "tasks")); const b = writeBatch(db); q.forEach(d => b.delete(d.ref)); await b.commit(); location.reload(); } };
         window.logout = () => location.reload();
-        window.toggleSettings = () => { document.getElementById('admin-panel').classList.toggle('hidden'); document.getElementById('settings-panel').classList.toggle('hidden'); };
+        window.toggleSettings = () => { document.getElementById('admin-panel').classList.toggle('hidden'); document.getElementById('settings-panel').classList.toggle('hidden'); window.scrollTo(0,0); };
         window.fillTaskForm = () => { const s = document.getElementById('quick-task-select').value; if(s) { const p = s.split('|'); document.getElementById('task-name').value = p[0]; document.getElementById('task-emoji').value = p[1]; document.getElementById('task-points').value = p[2]; } };
         window.toggleAll = m => document.querySelectorAll('.child-chk').forEach(c => c.checked = m.checked);
     </script>
