@@ -191,7 +191,6 @@
             if(form) form.classList.remove('hidden'); 
         }
         
-        // UPDATE UI ËSHTË I BLINDUAR KUNDËR GABIMEVE
         function updateUI() {
             if(!appConfig) return;
             try {
@@ -206,14 +205,12 @@
                     });
                 }
 
-                // Plotëso Settings Goal
                 const gPoints = document.getElementById('setting-goal-points');
                 if(gPoints) gPoints.value = appConfig.goal_piket || 100;
                 
                 const gReward = document.getElementById('setting-goal-reward');
                 if(gReward) gReward.value = appConfig.goal_shperblimi || "";
                 
-                // Plotëso Child Panel Goal
                 const txtGoal = document.getElementById('goal-text');
                 if(txtGoal) txtGoal.innerText = appConfig.goal_shperblimi ? appConfig.goal_shperblimi : "S'KA SHPËRBLIM AKTIV";
                 
@@ -406,7 +403,9 @@
             } catch(e) {}
         }
 
-        // FUNKSIONI I BLINDUAR PËR TË RUAJTUR SETTINGS
+        // ==========================================
+        // KËTU ËSHTË FILTERI "ANTI-UNDEFINED"
+        // ==========================================
         window.saveSettings = async () => {
             const btn = document.getElementById('btn-save-settings');
             const txtOrig = btn.innerText;
@@ -419,10 +418,10 @@
                     const iTel = document.getElementById(`edit-tel-${f.id}`);
                     const iPass = document.getElementById(`edit-pass-${f.id}`);
                     return { 
-                        id: f.id, 
-                        emri: iEmri ? iEmri.value : f.emri, 
-                        tel: iTel ? iTel.value : (f.tel || ""), 
-                        pass: iPass ? iPass.value : f.pass 
+                        id: f.id || String(Math.random()), 
+                        emri: (iEmri && iEmri.value) ? iEmri.value : (f.emri || "Fëmijë"), 
+                        tel: (iTel && iTel.value) ? iTel.value : (f.tel || ""), 
+                        pass: (iPass && iPass.value) ? iPass.value : (f.pass || "123") 
                     };
                 });
                 
@@ -430,24 +429,32 @@
                     const iEmri = document.getElementById(`edit-pname-${p.id}`);
                     const iPass = document.getElementById(`edit-ppass-${p.id}`);
                     return { 
-                        id: p.id, 
-                        emri: iEmri ? iEmri.value : p.emri, 
-                        pass: iPass ? iPass.value : p.pass 
+                        id: p.id || String(Math.random()), 
+                        emri: (iEmri && iEmri.value) ? iEmri.value : (p.emri || "Prind"), 
+                        pass: (iPass && iPass.value) ? iPass.value : (p.pass || "123") 
                     };
                 });
 
-                // Mbrojtja për pikët (Nëse e lë bosh, bëhet 100)
-                let rawPoints = parseInt(document.getElementById('setting-goal-points').value);
+                let inpPoints = document.getElementById('setting-goal-points');
+                let rawPoints = parseInt(inpPoints ? inpPoints.value : "100");
                 let safeGoalPoints = (isNaN(rawPoints) || rawPoints <= 0) ? 100 : rawPoints;
-                let safeGoalReward = document.getElementById('setting-goal-reward').value || "";
+                
+                let inpReward = document.getElementById('setting-goal-reward');
+                let safeGoalReward = (inpReward && inpReward.value) ? inpReward.value : "";
+                
+                let inpTgToken = document.getElementById('setting-tg-token');
+                let safeTgToken = (inpTgToken && inpTgToken.value) ? inpTgToken.value : "";
+                
+                let inpTgId = document.getElementById('setting-tg-id');
+                let safeTgId = (inpTgId && inpTgId.value) ? inpTgId.value : "";
 
                 await updateDoc(configRef, { 
                     femijet: upF, 
                     prinderit: upP, 
                     goal_piket: safeGoalPoints,
                     goal_shperblimi: safeGoalReward,
-                    tg_token: document.getElementById('setting-tg-token').value || "",
-                    tg_id: document.getElementById('setting-tg-id').value || ""
+                    tg_token: safeTgToken,
+                    tg_id: safeTgId
                 }); 
                 
                 btn.classList.replace('bg-indigo-600', 'bg-green-500');
