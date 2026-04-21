@@ -22,16 +22,20 @@
         .progress-fill { transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .shake { animation: shake 0.5s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+        
+        /* FIKSOVA BUTONAT KËTU */
+        .checkbox-custom:checked + label { 
+            background-color: #4f46e5 !important; 
+            color: white !important; 
+            border-color: #4f46e5 !important; 
+            transform: scale(0.95);
+        }
     </style>
 
     <script>
         window.onerror = function(msg, url, lineNo) {
             var el = document.getElementById('loading-text');
-            if(el) {
-                el.innerText = 'Gabim: ' + msg + ' (Rreshti ' + lineNo + ')';
-                el.style.color = 'red';
-                el.classList.remove('animate-pulse');
-            }
+            if(el) { el.innerText = 'Gabim: ' + msg; el.style.color = 'red'; el.classList.remove('animate-pulse'); }
             return false;
         };
     </script>
@@ -48,7 +52,7 @@
             <div id="login-form" class="hidden space-y-4">
                 <input id="user-input" type="text" placeholder="Emri yt..." class="w-full p-4 bg-slate-100 rounded-2xl font-bold focus:outline-none focus:ring-4 focus:ring-indigo-200">
                 <input id="pass-input" type="password" placeholder="PIN" class="w-full p-4 bg-slate-100 rounded-2xl font-bold focus:outline-none focus:ring-4 focus:ring-indigo-200">
-                <button onclick="login()" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1 active:shadow-none">HYR NË LOJË</button>
+                <button onclick="login()" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1 active:shadow-none transition-all">HYR NË LOJË</button>
             </div>
         </div>
     </div>
@@ -76,7 +80,7 @@
                     <input id="task-emoji" type="text" readonly onclick="openCustomEmojiPicker('task-emoji')" placeholder="👇" class="w-1/4 p-4 border-2 border-indigo-200 rounded-2xl bg-white text-center text-2xl cursor-pointer">
                     <input id="task-name" type="text" placeholder="Emri i misionit" class="w-3/4 p-4 border-2 border-indigo-200 rounded-2xl font-bold">
                 </div>
-                <input id="task-points" type="number" placeholder="Pikët (Përdor - për zbritje)" class="w-full p-4 mb-5 border-2 border-indigo-200 rounded-2xl font-bold">
+                <input id="task-points" type="number" placeholder="Pikët" class="w-full p-4 mb-5 border-2 border-indigo-200 rounded-2xl font-bold">
                 <div id="assign-checkboxes" class="flex flex-wrap gap-2 mb-6"></div>
                 <button onclick="sendTaskToFirebase()" id="btn-send-task" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1">DËRGO</button>
             </div>
@@ -98,16 +102,16 @@
                 </div>
             </div>
 
-            <div id="edit-parents-list" class="bg-white p-5 rounded-3xl border-2 mb-6"></div>
-            <div id="edit-children-list" class="bg-white p-5 rounded-3xl border-2 mb-6"></div>
+            <div id="edit-parents-list" class="bg-white p-5 rounded-3xl border-2 mb-6 shadow-sm"></div>
+            <div id="edit-children-list" class="bg-white p-5 rounded-3xl border-2 mb-6 shadow-sm"></div>
 
-            <div class="bg-white p-5 rounded-3xl border-2 border-purple-100 mb-6">
-                <h3 class="text-purple-600 font-black mb-3">📝 SHABLLONET</h3>
+            <div class="bg-white p-5 rounded-3xl border-2 border-purple-100 mb-6 shadow-sm">
+                <h3 class="text-purple-600 font-black mb-3 italic">📝 SHABLLONET</h3>
                 <ul id="saved-tasks-list" class="space-y-2 mb-4"></ul>
                 <button onclick="saveTaskTemplate()" class="w-full bg-purple-100 text-purple-700 p-3 rounded-xl font-bold">SHTO TË RE</button>
             </div>
             
-            <div class="bg-white p-5 rounded-3xl border-2 border-green-100 mb-6">
+            <div class="bg-white p-5 rounded-3xl border-2 border-green-100 mb-6 shadow-sm">
                 <h3 class="text-green-600 font-black mb-3 italic">📲 Telegram Njoftimet</h3>
                 <input id="setting-tg-token" type="text" placeholder="Bot Token" class="w-full p-3 border rounded-xl text-xs mb-3">
                 <input id="setting-tg-id" type="text" placeholder="Chat ID" class="w-full p-3 border rounded-xl text-xs">
@@ -120,7 +124,7 @@
         <div id="child-panel" class="hidden p-5">
             <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border-b-8 border-slate-100 mb-8 mt-2">
                 <div class="flex justify-between items-end mb-2">
-                    <span id="goal-text" class="text-sm font-black text-indigo-600 italic">Dhurata: Duke u ngarkuar...</span>
+                    <span id="goal-text" class="text-sm font-black text-indigo-600 italic">Dhurata...</span>
                     <span class="text-xs font-bold text-slate-400"><span id="my-points">0</span> / <span id="goal-points-display">0</span> ⭐</span>
                 </div>
                 <div class="w-full bg-slate-100 h-8 rounded-full overflow-hidden border-2 border-slate-50 p-1">
@@ -171,28 +175,15 @@
 
         const configRef = doc(db, "system", "settings");
         
-        // Mbrojtja Firebase & onSnapshot
         onSnapshot(configRef, (docSnap) => {
-            try {
-                if (!docSnap.exists()) {
-                    const def = { 
-                        femijet: [{id:"c1", emri:"Ian", pass:"123", tel:""}, {id:"c2", emri:"Jon", pass:"123", tel:""}, {id:"c3", emri:"Ansi", pass:"123", tel:""}], 
-                        prinderit: [{id:"p1", emri:"Babi", pass:"123"}], 
-                        shabllone: [], goal_piket: 100, goal_shperblimi: "Dhuratë Mister", tg_token: "", tg_id: "" 
-                    };
-                    setDoc(configRef, def).then(() => { 
-                        appConfig = def; showLogin(); updateUI(); 
-                    }).catch(e => {
-                        document.getElementById('loading-text').innerText = "Gabim Databaze: " + e.message;
-                    });
-                } else { 
-                    appConfig = docSnap.data(); showLogin(); updateUI(); 
-                }
-            } catch(e) {
-                document.getElementById('loading-text').innerText = "Gabim Kodi: " + e.message;
-            }
-        }, (err) => {
-            document.getElementById('loading-text').innerText = "Lidhja Firebase dështoi: " + err.message;
+            if (!docSnap.exists()) {
+                const def = { 
+                    femijet: [{id:"c1", emri:"Ian", pass:"123", tel:""}, {id:"c2", emri:"Jon", pass:"123", tel:""}, {id:"c3", emri:"Ansi", pass:"123", tel:""}], 
+                    prinderit: [{id:"p1", emri:"Babi", pass:"123"}], 
+                    shabllone: [], goal_piket: 100, goal_shperblimi: "Dhuratë Mister", tg_token: "", tg_id: "" 
+                };
+                setDoc(configRef, def).then(() => { appConfig = def; showLogin(); updateUI(); });
+            } else { appConfig = docSnap.data(); showLogin(); updateUI(); }
         });
 
         function showLogin() { 
@@ -204,15 +195,13 @@
         
         function updateUI() {
             if(!appConfig) return;
-            
             const femijetSafe = appConfig.femijet || [];
             const prinderitSafe = appConfig.prinderit || [];
-            const shablloneSafe = appConfig.shabllone || [];
 
             const cc = document.getElementById('assign-checkboxes');
-            cc.innerHTML = `<div class="w-full mb-2"><input type="checkbox" id="check-all" class="hidden checkbox-custom" onchange="toggleAll(this)"><label for="check-all" class="cursor-pointer block p-2 border-2 rounded-xl text-center font-bold text-gray-400">Zgjidh të gjithë</label></div>`;
+            cc.innerHTML = `<div class="w-full mb-2"><input type="checkbox" id="check-all" class="hidden checkbox-custom" onchange="toggleAll(this)"><label for="check-all" class="cursor-pointer block p-2 border-2 border-indigo-100 bg-white rounded-xl text-center font-bold text-gray-500 shadow-sm transition-all">Zgjidh të gjithë</label></div>`;
             femijetSafe.forEach(f => {
-                cc.innerHTML += `<div class="flex-1"><input type="checkbox" id="chk-${f.id}" value="${f.emri}" class="hidden checkbox-custom child-chk"><label for="chk-${f.id}" class="cursor-pointer block p-3 border-2 border-indigo-100 bg-white rounded-2xl font-black text-center text-xs shadow-sm">${f.emri}</label></div>`;
+                cc.innerHTML += `<div class="flex-1"><input type="checkbox" id="chk-${f.id}" value="${f.emri}" class="hidden checkbox-custom child-chk"><label for="chk-${f.id}" class="cursor-pointer block p-3 border-2 border-indigo-100 bg-white rounded-2xl font-black text-center text-xs shadow-sm transition-all">${f.emri}</label></div>`;
             });
 
             document.getElementById('setting-goal-points').value = appConfig.goal_piket || 100;
@@ -222,22 +211,16 @@
 
             const qs = document.getElementById('quick-task-select'); qs.innerHTML = `<option value="">-- Misionet e Gati --</option>`;
             const sl = document.getElementById('saved-tasks-list'); sl.innerHTML = "";
-            shablloneSafe.forEach((sh, i) => { 
+            (appConfig.shabllone || []).forEach((sh, i) => { 
                 qs.innerHTML += `<option value="${sh.titulli}|${sh.emoji}|${sh.piket}">${sh.emoji} ${sh.titulli}</option>`; 
-                sl.innerHTML += `<li class="flex justify-between bg-slate-50 p-3 rounded-xl font-bold"><span>${sh.emoji} ${sh.titulli}</span><button onclick="deleteTemplate(${i})" class="text-red-400 bg-red-50 px-2 rounded">X</button></li>`;
+                sl.innerHTML += `<li class="flex justify-between items-center bg-slate-50 p-3 rounded-xl font-bold"><span>${sh.emoji} ${sh.titulli}</span><button onclick="deleteTemplate(${i})" class="text-red-400 bg-red-50 px-2 rounded">X</button></li>`;
             });
             
-            const pl = document.getElementById('edit-parents-list'); 
-            pl.innerHTML = `<h3 class="font-black mb-3">👤 ADMINS</h3>`;
-            prinderitSafe.forEach(p => { 
-                pl.innerHTML += `<div class="flex gap-2 mb-2"><input type="text" id="edit-pname-${p.id}" value="${p.emri}" class="w-1/2 p-2 border rounded-lg"><input type="text" id="edit-ppass-${p.id}" value="${p.pass}" class="w-1/2 p-2 border rounded-lg" placeholder="PIN"></div>`; 
-            });
+            const pl = document.getElementById('edit-parents-list'); pl.innerHTML = `<h3 class="font-black mb-3 text-indigo-600 italic">👤 PRINDËRIT</h3>`;
+            prinderitSafe.forEach(p => { pl.innerHTML += `<div class="flex gap-2 mb-2"><input type="text" id="edit-pname-${p.id}" value="${p.emri}" class="w-1/2 p-2 border rounded-lg font-bold"><input type="text" id="edit-ppass-${p.id}" value="${p.pass}" class="w-1/2 p-2 border rounded-lg font-bold" placeholder="PIN"></div>`; });
 
-            const el = document.getElementById('edit-children-list'); 
-            el.innerHTML = `<h3 class="font-black mb-3 text-blue-600">👦 HEROES</h3>`;
-            femijetSafe.forEach(f => { 
-                el.innerHTML += `<div class="p-3 border-b mb-2"><div class="flex gap-2 mb-2"><input type="text" id="edit-name-${f.id}" value="${f.emri}" class="w-1/2 border p-2 rounded text-sm font-bold"><input type="text" id="edit-pass-${f.id}" value="${f.pass}" class="w-1/2 border p-2 rounded text-sm font-bold" placeholder="PIN"></div><input type="text" id="edit-tel-${f.id}" value="${f.tel || ''}" placeholder="WhatsApp" class="w-full text-xs p-2 border rounded"></div>`; 
-            });
+            const el = document.getElementById('edit-children-list'); el.innerHTML = `<h3 class="font-black mb-3 text-blue-600 italic">👦 FËMIJËT (PIN & Tel)</h3>`;
+            femijetSafe.forEach(f => { el.innerHTML += `<div class="p-3 border-b border-gray-100 mb-2"><div class="flex gap-2 mb-2"><input type="text" id="edit-name-${f.id}" value="${f.emri}" class="w-1/2 border p-2 rounded text-sm font-bold"><input type="text" id="edit-pass-${f.id}" value="${f.pass}" class="w-1/2 border p-2 rounded text-sm font-bold" placeholder="PIN"></div><input type="text" id="edit-tel-${f.id}" value="${f.tel || ''}" placeholder="WhatsApp" class="w-full text-xs p-2 border rounded"></div>`; });
             
             document.getElementById('setting-tg-token').value = appConfig.tg_token || "";
             document.getElementById('setting-tg-id').value = appConfig.tg_id || "";
@@ -289,19 +272,41 @@
             onSnapshot(query(collection(db, "tasks"), orderBy("koha", "desc")), (snap) => {
                 const l = document.getElementById('task-list'); l.innerHTML = ""; let pts = 0;
                 snap.forEach(d => {
-                    const t = d.data(); if(t.kujt_i_caktohet === c && t.statusi !== "refuzuar") {
-                        if(t.statusi === "aprovuar") pts += t.piket;
+                    const t = d.data(); 
+                    if(t.kujt_i_caktohet === c) {
+                        let vleraPikeve = t.piket;
                         let b = "", clr = "bg-white border-indigo-200";
-                        if(t.statusi === "hapur" && t.piket > 0) b = `<button onclick="sub('${d.id}', '${t.titulli}')" class="bg-indigo-500 text-white px-4 py-2 rounded-xl font-black shadow-[0_4px_0_#4338ca]">KREVA</button>`;
-                        else if(t.statusi === "hapur" && t.piket <= 0) b = `<button onclick="dec('${d.id}','aprovuar')" class="bg-red-500 text-white px-4 py-2 rounded-xl font-black">KUPTOVA</button>`;
-                        else if(t.statusi === "ne_pritje") { b = `<span class="text-orange-400 font-bold italic text-xs">Prit...</span>`; clr = "bg-orange-50 border-orange-200 shake"; }
-                        else if(t.statusi === "aprovuar") { b = `<span class="text-green-500 text-xl font-black">✔</span>`; clr = "bg-gray-50 border-gray-100 opacity-60"; }
+                        
+                        // LOGJIKA E RE PËR REFUZIM DHE PIKËT
+                        if(t.statusi === "aprovuar") {
+                            pts += t.piket;
+                            b = `<span class="text-green-500 text-xl font-black">✔</span>`; 
+                            clr = "bg-green-50 border-green-200 opacity-80";
+                        } 
+                        else if (t.statusi === "refuzuar") {
+                            let penalty = Math.floor(t.piket / 2);
+                            pts -= penalty; // Zbritja e dënimit
+                            vleraPikeve = "-" + penalty;
+                            b = `<span class="text-red-500 text-xl font-black">✖ DËNIM</span>`; 
+                            clr = "bg-red-50 border-red-300 opacity-90";
+                        }
+                        else if(t.statusi === "hapur" && t.piket > 0) {
+                            b = `<button onclick="sub('${d.id}', '${t.titulli}')" class="bg-indigo-500 text-white px-4 py-2 rounded-xl font-black shadow-[0_4px_0_#4338ca]">KREVA</button>`;
+                        }
+                        else if(t.statusi === "hapur" && t.piket <= 0) {
+                            b = `<button onclick="dec('${d.id}','aprovuar')" class="bg-red-500 text-white px-4 py-2 rounded-xl font-black">KUPTOVA</button>`;
+                        }
+                        else if(t.statusi === "ne_pritje") { 
+                            b = `<span class="text-orange-400 font-bold italic text-xs">Prit...</span>`; 
+                            clr = "bg-orange-50 border-orange-200 shake"; 
+                        }
                         
                         if(t.piket < 0 && t.statusi !== "aprovuar") clr = "bg-red-50 border-red-300 shake";
-                        const showPiket = t.piket > 0 ? '+' + t.piket : t.piket;
-                        const txtColor = t.piket > 0 ? 'text-yellow-600' : 'text-red-500';
                         
-                        l.innerHTML += `<div class="${clr} p-4 rounded-3xl border-2 mb-3 flex justify-between items-center game-card"><div><p class="font-black text-sm">${t.emoji} ${t.titulli}</p><p class="text-[10px] font-bold ${txtColor}">${showPiket} ⭐</p></div>${b}</div>`;
+                        const txtColor = (t.statusi === "refuzuar" || t.piket < 0) ? 'text-red-500' : 'text-yellow-600';
+                        const treguesi = (t.statusi !== "refuzuar" && t.piket > 0) ? '+' + vleraPikeve : vleraPikeve;
+                        
+                        l.innerHTML += `<div class="${clr} p-4 rounded-3xl border-2 mb-3 flex justify-between items-center game-card"><div><p class="font-black text-sm">${t.emoji} ${t.titulli}</p><p class="text-[11px] font-black ${txtColor}">${treguesi} ⭐</p></div>${b}</div>`;
                     }
                 });
                 document.getElementById('my-points').innerText = pts;
@@ -330,7 +335,7 @@
         window.listenForApprovals = () => {
             onSnapshot(query(collection(db, "tasks"), where("statusi", "==", "ne_pritje")), (snap) => {
                 const pl = document.getElementById('admin-pending-tasks'); const bd = document.getElementById('pending-count'); pl.innerHTML = ""; let c = 0;
-                snap.forEach(d => { c++; const t = d.data(); pl.innerHTML += `<div class="bg-orange-50 p-4 rounded-2xl border-2 border-orange-200 flex justify-between items-center mb-2"><div><p class="font-black text-xs">${t.emoji} ${t.titulli}</p><p class="text-[10px] text-indigo-500 font-bold">${t.kujt_i_caktohet}</p></div><div class="flex gap-2"><button onclick="dec('${d.id}','aprovuar')" class="bg-green-500 text-white p-3 rounded-xl font-bold">✔</button><button onclick="dec('${d.id}','refuzuar')" class="bg-red-500 text-white p-3 rounded-xl font-bold">✖</button></div></div>`; });
+                snap.forEach(d => { c++; const t = d.data(); pl.innerHTML += `<div class="bg-orange-50 p-4 rounded-2xl border-2 border-orange-200 flex justify-between items-center mb-2"><div><p class="font-black text-xs">${t.emoji} ${t.titulli}</p><p class="text-[10px] text-indigo-500 font-bold">${t.kujt_i_caktohet} (${t.piket}⭐)</p></div><div class="flex gap-2"><button onclick="dec('${d.id}','aprovuar')" class="bg-green-500 text-white p-3 rounded-xl font-bold">✔</button><button onclick="dec('${d.id}','refuzuar')" class="bg-red-500 text-white p-3 rounded-xl font-bold">✖</button></div></div>`; });
                 bd.innerText = c;
             });
         };
@@ -338,15 +343,18 @@
         window.dec = async (id, decision) => { await updateDoc(doc(db, "tasks", id), { statusi: decision }); };
 
         window.calculateTotalPoints = () => {
-            onSnapshot(query(collection(db, "tasks"), where("statusi", "==", "aprovuar")), (snap) => {
+            onSnapshot(query(collection(db, "tasks"), where("statusi", "in", ["aprovuar", "refuzuar"])), (snap) => {
                 if(!appConfig) return;
                 pointsData = {}; (appConfig.femijet || []).forEach(f => pointsData[f.emri] = 0);
                 let wData = {}; const ditet = ["E Diel", "E Hënë", "E Martë", "E Mërkurë", "E Enjte", "E Premte", "E Shtunë"];
                 ditet.forEach(d => { wData[d] = {}; (appConfig.femijet || []).forEach(f => wData[d][f.emri] = 0); });
+                
                 snap.forEach(d => {
-                    const t = d.data(); if(pointsData[t.kujt_i_caktohet] !== undefined) {
-                        pointsData[t.kujt_i_caktohet] += t.piket;
-                        if(t.koha) { try { const dObj = t.koha.toDate(); wData[ditet[dObj.getDay()]][t.kujt_i_caktohet] += t.piket; } catch(e) {} }
+                    const t = d.data(); 
+                    if(pointsData[t.kujt_i_caktohet] !== undefined) {
+                        let vlera = t.statusi === "refuzuar" ? -Math.floor(t.piket / 2) : t.piket;
+                        pointsData[t.kujt_i_caktohet] += vlera;
+                        if(t.koha) { try { const dObj = t.koha.toDate(); wData[ditet[dObj.getDay()]][t.kujt_i_caktohet] += vlera; } catch(e) {} }
                     }
                 });
                 renderCharts(wData);
