@@ -22,14 +22,7 @@
         .progress-fill { transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .shake { animation: shake 0.5s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
-        
-        /* FIKSOVA BUTONAT KËTU */
-        .checkbox-custom:checked + label { 
-            background-color: #4f46e5 !important; 
-            color: white !important; 
-            border-color: #4f46e5 !important; 
-            transform: scale(0.95);
-        }
+        .checkbox-custom:checked + label { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; transform: scale(0.95); }
     </style>
 
     <script>
@@ -80,7 +73,7 @@
                     <input id="task-emoji" type="text" readonly onclick="openCustomEmojiPicker('task-emoji')" placeholder="👇" class="w-1/4 p-4 border-2 border-indigo-200 rounded-2xl bg-white text-center text-2xl cursor-pointer">
                     <input id="task-name" type="text" placeholder="Emri i misionit" class="w-3/4 p-4 border-2 border-indigo-200 rounded-2xl font-bold">
                 </div>
-                <input id="task-points" type="number" placeholder="Pikët" class="w-full p-4 mb-5 border-2 border-indigo-200 rounded-2xl font-bold">
+                <input id="task-points" type="number" placeholder="Pikët (Përdor - për dënim)" class="w-full p-4 mb-5 border-2 border-indigo-200 rounded-2xl font-bold">
                 <div id="assign-checkboxes" class="flex flex-wrap gap-2 mb-6"></div>
                 <button onclick="sendTaskToFirebase()" id="btn-send-task" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1">DËRGO</button>
             </div>
@@ -98,7 +91,7 @@
                 <h3 class="font-black mb-4 italic">🎯 SYNIMI I MADH</h3>
                 <div class="space-y-3">
                     <input id="setting-goal-points" type="number" placeholder="Sa pikë duhen?" class="w-full p-3 rounded-xl text-slate-900 font-bold">
-                    <input id="setting-goal-reward" type="text" placeholder="Cili është shpërblimi?" class="w-full p-3 rounded-xl text-slate-900 font-bold">
+                    <input id="setting-goal-reward" type="text" placeholder="P.sh. Pizza, Lodra, Park..." class="w-full p-3 rounded-xl text-slate-900 font-bold">
                 </div>
             </div>
 
@@ -123,14 +116,20 @@
 
         <div id="child-panel" class="hidden p-5">
             <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border-b-8 border-slate-100 mb-8 mt-2">
-                <div class="flex justify-between items-end mb-2">
-                    <span id="goal-text" class="text-sm font-black text-indigo-600 italic">Dhurata...</span>
-                    <span class="text-xs font-bold text-slate-400"><span id="my-points">0</span> / <span id="goal-points-display">0</span> ⭐</span>
+                
+                <div class="text-center mb-6 bg-indigo-50 p-4 rounded-3xl border-2 border-indigo-100">
+                    <p class="text-[10px] font-black text-indigo-400 tracking-widest uppercase mb-1">Misioni i Madh:</p>
+                    <h3 id="goal-text" class="text-2xl font-black text-indigo-700 uppercase">Duke u ngarkuar...</h3>
+                </div>
+
+                <div class="flex justify-between items-end mb-2 px-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Progresi Yt</span>
+                    <span class="text-xs font-black text-indigo-600"><span id="my-points">0</span> / <span id="goal-points-display">0</span> ⭐</span>
                 </div>
                 <div class="w-full bg-slate-100 h-8 rounded-full overflow-hidden border-2 border-slate-50 p-1">
                     <div id="progress-bar" class="progress-fill h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full" style="width: 0%"></div>
                 </div>
-                <p id="progress-percent" class="text-center mt-2 font-black text-slate-300 text-xs tracking-widest">0% COMPLETED</p>
+                <p id="progress-percent" class="text-center mt-2 font-black text-slate-300 text-xs tracking-widest">0% PËRFUNDUAR</p>
             </div>
 
             <h3 class="text-2xl font-black mb-5 text-indigo-800 flex items-center gap-2">🎯 MISIONET <span class="bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-lg">LIVE</span></h3>
@@ -180,7 +179,7 @@
                 const def = { 
                     femijet: [{id:"c1", emri:"Ian", pass:"123", tel:""}, {id:"c2", emri:"Jon", pass:"123", tel:""}, {id:"c3", emri:"Ansi", pass:"123", tel:""}], 
                     prinderit: [{id:"p1", emri:"Babi", pass:"123"}], 
-                    shabllone: [], goal_piket: 100, goal_shperblimi: "Dhuratë Mister", tg_token: "", tg_id: "" 
+                    shabllone: [], goal_piket: 100, goal_shperblimi: "Shpërblim Sekret", tg_token: "", tg_id: "" 
                 };
                 setDoc(configRef, def).then(() => { appConfig = def; showLogin(); updateUI(); });
             } else { appConfig = docSnap.data(); showLogin(); updateUI(); }
@@ -206,7 +205,9 @@
 
             document.getElementById('setting-goal-points').value = appConfig.goal_piket || 100;
             document.getElementById('setting-goal-reward').value = appConfig.goal_shperblimi || "";
-            document.getElementById('goal-text').innerText = "SHPËRBLIMI: " + (appConfig.goal_shperblimi || "Vazhdo Misionet!");
+            
+            // TITULLI I MADH I SHPËRBLIMIT
+            document.getElementById('goal-text').innerText = appConfig.goal_shperblimi ? appConfig.goal_shperblimi : "S'KA SHPËRBLIM AKTIV";
             document.getElementById('goal-points-display').innerText = appConfig.goal_piket || 100;
 
             const qs = document.getElementById('quick-task-select'); qs.innerHTML = `<option value="">-- Misionet e Gati --</option>`;
@@ -277,7 +278,6 @@
                         let vleraPikeve = t.piket;
                         let b = "", clr = "bg-white border-indigo-200";
                         
-                        // LOGJIKA E RE PËR REFUZIM DHE PIKËT
                         if(t.statusi === "aprovuar") {
                             pts += t.piket;
                             b = `<span class="text-green-500 text-xl font-black">✔</span>`; 
@@ -285,7 +285,7 @@
                         } 
                         else if (t.statusi === "refuzuar") {
                             let penalty = Math.floor(t.piket / 2);
-                            pts -= penalty; // Zbritja e dënimit
+                            pts -= penalty; 
                             vleraPikeve = "-" + penalty;
                             b = `<span class="text-red-500 text-xl font-black">✖ DËNIM</span>`; 
                             clr = "bg-red-50 border-red-300 opacity-90";
@@ -320,7 +320,7 @@
             if(perc > 100) perc = 100;
             if(perc < 0) perc = 0;
             document.getElementById('progress-bar').style.width = perc + "%";
-            document.getElementById('progress-percent').innerText = perc + "% COMPLETED";
+            document.getElementById('progress-percent').innerText = perc + "% PËRFUNDUAR";
             if(perc >= 100) { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
         }
 
