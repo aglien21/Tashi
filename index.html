@@ -3,647 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Financa Family Pro v6.0 (Admin & Roles)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     
-    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/180/star--v1.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <title>KidQuest Pro - Gamified</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #f8fafc; --box: white; --txt: #0f172a; --border: #e2e8f0; }
-        .dark { --bg: #020617; --box: #0f172a; --txt: #f8fafc; --border: #1e293b; }
-        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; }
-        .box { background: var(--box); padding: 20px; border-radius: 28px; border: 1px solid var(--border); }
-        .pad { background: var(--box); padding: 15px; border-radius: 20px; text-align: center; border: 1px solid var(--border); cursor: pointer; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .active-scale:active { transform: scale(0.95); }
-        
-        #toast { visibility: hidden; min-width: 200px; margin-left: -100px; background-color: #333; color: #fff; text-align: center; border-radius: 12px; padding: 12px; position: fixed; z-index: 1000; left: 50%; top: 30px; font-size: 12px; font-weight: bold; }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 1.5s; }
-        @keyframes fadein { from {top: 0; opacity: 0;} to {top: 30px; opacity: 1;} }
-        @keyframes fadeout { from {top: 30px; opacity: 1;} to {top: 0; opacity: 0;} }
-        
-        /* Stile për TAB-et e Settings */
-        .tab-btn { padding: 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-radius: 12px; flex: 1; text-align: center; transition: 0.3s; }
-        .tab-active { background: #2563eb; color: white; }
-        .tab-inactive { background: #e2e8f0; color: #475569; }
-        .dark .tab-inactive { background: #334155; color: #cbd5e1; }
+        body { font-family: 'Nunito', sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .game-card { border-bottom-width: 6px; border-right-width: 4px; transition: all 0.1s; }
+        .game-card:active { border-bottom-width: 2px; border-right-width: 2px; transform: translateY(4px) translateX(2px); }
+        .progress-fill { transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
     </style>
 </head>
-<body class="p-4 pb-28">
+<body class="bg-slate-50 text-slate-900">
 
-<div id="toast">Veprimi u krye! ✅</div>
-
-<div id="login-ui" class="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-6 text-center">
-    <div class="w-full max-w-sm p-10 rounded-[40px] bg-slate-900 border border-blue-500/20 shadow-2xl">
-        <div class="flex items-center justify-center mb-6">
-            <img src="apple-touch-icon.jpg" alt="Family Hub Icon" class="w-24 h-24 drop-shadow-2xl rounded-2xl">
+    <div id="login-screen" class="flex flex-col items-center justify-center h-screen px-4 bg-indigo-600">
+        <div class="text-center mb-8 text-white">
+            <h1 class="text-6xl font-black mb-2 drop-shadow-xl italic">KidQuest</h1>
+            <p class="font-bold opacity-80 uppercase tracking-tighter">Mission Control</p>
         </div>
-        <h2 class="text-white text-3xl font-black mb-2 uppercase tracking-tighter">Family<span class="text-blue-500">Hub</span>✍🏼</h2>
-        <p class="text-slate-500 text-[14px] tracking-[2px] font-bold mb-8">V6.0 PRO EDITION</p>
-        
-        <select id="user-select" class="w-full p-4 mb-4 rounded-2xl bg-slate-800 text-white border border-slate-700 outline-none text-center font-bold text-lg">
-            <option disabled selected>Duke ngarkuar...</option>
-        </select>
-        
-        <input id="pass" type="password" placeholder="Vendos PIN" class="w-full p-4 mb-8 rounded-2xl text-center text-2xl font-black bg-white outline-none text-slate-900" inputmode="numeric" onkeydown="if(event.key === 'Enter') hyrNeSistem()">
-        
-        <button id="btn-login" class="w-full p-6 bg-blue-600 text-white rounded-2xl font-black uppercase text-lg shadow-lg" onclick="hyrNeSistem()">Hyni ne Sistem</button>
-    </div>
-</div>
-
-<div id="app-ui" class="max-w-md mx-auto hidden">
-    <div class="flex justify-between items-center mb-4 gap-2">
-        <button onclick="toggleDark()" class="p-3 bg-slate-200 dark:bg-slate-800 rounded-2xl active-scale">🌓</button>
-        <button id="btn-settings" onclick="hapSettings()" class="p-3 bg-slate-200 dark:bg-slate-800 rounded-2xl active-scale">⚙️</button>
-        
-        <select id="header-user-select" class="bg-blue-600 text-white font-black text-[10px] px-2 py-2 rounded-xl uppercase outline-none shadow-md hidden text-center cursor-pointer max-w-[120px] active-scale transition" onchange="merrRaportin()">
-        </select>
-
-        <div class="flex gap-1 flex-1">
-            <select id="muaji" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold outline-none flex-1 border border-slate-200 dark:border-slate-700"></select>
-            <select id="viti" class="p-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold outline-none flex-1 border border-slate-200 dark:border-slate-700"></select>
-        </div>
-        <button onclick="shkarkoPDF()" class="p-3 bg-red-600 text-white rounded-2xl font-black text-[10px] active-scale">PDF</button>
-    </div>
-
-    <div class="relative p-6 bg-slate-900 rounded-[35px] mb-4 shadow-2xl text-center text-white flex flex-col gap-3">
-        <div class="absolute top-3 right-3 w-8 h-8 rounded-full border border-slate-700 p-0.5 bg-slate-800">
-            <img src="apple-touch-icon.jpg" alt="FamilyHub Icon" class="w-full h-full rounded-full">
-        </div>
-        <h1 id="r-mbetja" class="text-4xl font-black text-blue-400">0 L</h1>
-        <div id="piechart" style="width: 100%; height: 160px;"></div>
-        <div class="mt-4 px-2 text-[10px] font-black uppercase text-left">
-            <div class="flex justify-between mb-1 text-slate-400"><span>Dalje / Limiti i muajit</span><span id="txt-limit" class="text-white">0 / 0 L</span></div>
-            <div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
-                <div id="bar-limit" class="bg-blue-500 h-full w-0 transition-all duration-1000"></div>
+        <div class="bg-white p-8 rounded-[3rem] shadow-2xl w-full max-w-md border-b-8 border-indigo-200">
+            <p id="loading-text" class="text-indigo-500 font-bold mb-4 animate-pulse italic text-center">Po lidhet me serverin...</p>
+            <div id="login-form" class="hidden space-y-4">
+                <input id="user-input" type="text" placeholder="Emri yt..." class="w-full p-4 bg-slate-100 rounded-2xl font-bold focus:outline-none focus:ring-4 focus:ring-indigo-200">
+                <input id="pass-input" type="password" placeholder="PIN" class="w-full p-4 bg-slate-100 rounded-2xl font-bold focus:outline-none focus:ring-4 focus:ring-indigo-200">
+                <button onclick="login()" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1 active:shadow-none">HYR NË LOJË</button>
             </div>
         </div>
-        <button onclick="hapModalFonde()" class="bg-green-500 text-white text-[10px] font-black px-4 py-2 rounded-full active-scale shadow-lg mt-2">+ SHTO TË ARDHURA</button>
     </div>
 
-    <div class="box mb-4 bg-gradient-to-br from-indigo-700 to-blue-900 text-white border-none shadow-xl relative">
-        <div class="flex justify-between items-center mb-2 italic px-1">
-            <input id="obj-emri" class="bg-transparent border-none text-xs font-bold text-white outline-none w-1/2" onchange="syncKursimToSheet()" placeholder="Emri i kursimit" onkeydown="if(event.key==='Enter') this.blur()">
-            <span id="obj-perq" class="text-[10px] font-black bg-white/20 px-2 py-1 rounded-md">0%</span>
-        </div>
-        <div class="w-full bg-black/20 rounded-full h-1.5 mb-3">
-            <div id="obj-bar" class="bg-white h-full rounded-full transition-all duration-700" style="width: 0%"></div>
-        </div>
-        <div class="flex justify-between items-center px-1">
-            <span id="obj-vlerat" class="text-[11px] font-black">0 / 0 L</span>
+    <div id="app-screen" class="hidden max-w-lg mx-auto bg-white min-h-screen shadow-2xl relative pb-20">
+        <header class="bg-indigo-600 text-white p-6 flex justify-between items-center rounded-b-[2.5rem] shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-xl">👑</div>
+                <h2 id="welcome-text" class="text-xl font-black">Heroi</h2>
+            </div>
             <div class="flex gap-2">
-                <button onclick="shtoKursim()" class="bg-green-500 text-[9px] font-black px-3 py-2 rounded-xl active-scale">+ SHTO</button>
-                <button onclick="ndryshoQellimin()" class="bg-white/20 text-[9px] font-black px-3 py-2 rounded-xl active-scale">🎯</button>
-                <button onclick="zeroKursimet()" class="bg-red-500 text-[9px] font-black px-3 py-2 rounded-xl active-scale">0️⃣</button>
+                <button id="btn-settings" onclick="toggleSettings()" class="hidden bg-white/20 p-3 rounded-xl">⚙️</button>
+                <button onclick="logout()" class="bg-red-500/80 px-4 py-2 rounded-xl text-xs font-bold">Dil</button>
             </div>
-        </div>
-    </div>
+        </header>
 
-    <div class="box mb-4 border-2 border-orange-400 bg-orange-50/5">
-        <h3 class="text-[10px] font-black uppercase text-orange-600 mb-3 flex justify-between items-center">
-            <span>🛒 Lista e Pazarit (Cloud)</span> 
-            <button onclick="pastroPazarin()" class="text-red-500 text-[9px] active-scale underline">Pastro</button>
-        </h3>
-        <div id="pazar-lista" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-4 no-scrollbar"></div>
-        <div class="flex gap-2">
-            <button onclick="hapModalKategorite('pazar')" class="flex-1 p-3 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase shadow-md active-scale">+ Shto nga Lista</button>
-            <button onclick="shfaqManualPazar()" class="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-lg active-scale">📝</button>
-        </div>
-    </div>
+        <div id="admin-panel" class="hidden p-5">
+            <h3 class="text-lg font-black text-orange-500 mb-4 flex items-center gap-2">⏳ NË PRITJE <span id="pending-count" class="bg-orange-500 text-white px-2 rounded-full">0</span></h3>
+            <div id="admin-pending-tasks" class="space-y-3 mb-8"></div>
 
-    <div class="box mb-6 border-2 border-blue-600 shadow-xl text-center relative">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-[10px] font-black uppercase text-blue-600">💳 Arkëtim / Pagesë</h3>
-            <button onclick="pastroShporten()" class="text-red-500 text-xl active-scale">🗑️</button>
-        </div>
-        <input id="shuma" type="number" placeholder="0 L" class="text-4xl font-black text-blue-600 bg-transparent border-none w-full text-center outline-none mb-2" readonly>
-        <div id="shporta-list" class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl min-h-[40px] text-[11px] font-black text-slate-500 overflow-y-auto max-h-32 text-left space-y-1">Shporta është bosh...</div>
-        
-        <div class="grid grid-cols-2 gap-2 mt-3">
-            <button onclick="hapModalKategorite('arka')" class="p-3 bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-300 rounded-xl font-black uppercase text-[10px] border border-blue-200 dark:border-slate-600 active-scale">+ Nga Lista</button>
-            <button onclick="shtoManualNeArke()" class="p-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-black uppercase text-[10px] border border-slate-200 dark:border-slate-600 active-scale">📝 Manual</button>
-        </div>
-        <button id="btn-ruaj" onclick="ruajShpenzim()" class="w-full mt-4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase active-scale shadow-lg">KRYEJ PAGESËN ✅</button>
-    </div>
-
-    <div class="box mb-4 relative">
-        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-3 italic">Transaksionet e Fundit</h3>
-        <div id="historiku-list" class="space-y-2 text-[11px]"></div>
-    </div>
-</div>
-
-<div id="modal-settings" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center p-4 z-[500]">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-[35px] p-6 max-h-[90vh] flex flex-col relative shadow-2xl overflow-hidden">
-        <button onclick="mbyllSettings()" class="absolute top-4 right-6 text-2xl font-black text-slate-400 active-scale z-10">×</button>
-        <h3 class="text-lg font-black mb-4 uppercase text-center text-slate-700 dark:text-white mt-2">⚙️ Paneli i Kontrollit</h3>
-
-        <div class="flex gap-2 mb-4">
-            <button id="tab-kat-btn" onclick="ndryshoTabSettings('kategori')" class="tab-btn tab-active">Kategoritë</button>
-            <button id="tab-usr-btn" onclick="ndryshoTabSettings('perdorues')" class="tab-btn tab-inactive">Përdoruesit</button>
-        </div>
-
-        <div class="overflow-y-auto no-scrollbar flex-1 pb-4">
+            <div class="bg-indigo-50 p-6 rounded-[2.5rem] border-4 border-indigo-100 mb-8 shadow-inner">
+                <h3 class="font-black text-indigo-700 mb-4">🚀 JEP NJË MISION</h3>
+                <select id="quick-task-select" class="w-full p-4 mb-4 border-2 border-indigo-200 rounded-2xl font-bold text-sm" onchange="fillTaskForm()"></select>
+                <div class="flex gap-2 mb-3">
+                    <input id="task-emoji" type="text" readonly onclick="openCustomEmojiPicker('task-emoji')" placeholder="👇" class="w-1/4 p-4 border-2 border-indigo-200 rounded-2xl bg-white text-center text-2xl cursor-pointer">
+                    <input id="task-name" type="text" placeholder="Emri i misionit" class="w-3/4 p-4 border-2 border-indigo-200 rounded-2xl font-bold">
+                </div>
+                <input id="task-points" type="number" placeholder="Pikët (Përdor - për zbritje)" class="w-full p-4 mb-5 border-2 border-indigo-200 rounded-2xl font-bold">
+                <div id="assign-checkboxes" class="flex flex-wrap gap-2 mb-6"></div>
+                <button onclick="sendTaskToFirebase()" id="btn-send-task" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1">DËRGO</button>
+            </div>
             
-            <div id="sec-kategori" class="block">
-                <div class="mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600">
-                    <h4 class="text-xs font-bold uppercase mb-2 text-slate-500">1. Kategori Kryesore e Re</h4>
-                    <div class="flex gap-2">
-                        <input id="set-kat-emri" type="text" placeholder="Emri (psh: Rroba)" class="flex-1 p-2 rounded-lg text-xs outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600">
-                        <input id="set-kat-limit" type="number" placeholder="Limiti (L)" class="w-20 p-2 rounded-lg text-xs outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600">
-                        <button onclick="shtoKatKryesore()" class="bg-blue-600 text-white px-3 rounded-lg text-xs font-bold active-scale">+</button>
-                    </div>
-                </div>
+            <div class="grid grid-cols-1 gap-4 mb-8">
+                <div class="bg-white p-4 rounded-3xl border-2 h-44"><canvas id="adminChart"></canvas></div>
+                <div class="bg-slate-900 p-5 rounded-[2rem] h-60"><canvas id="weeklyChart"></canvas></div>
+            </div>
+        </div>
 
-                <div class="mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600">
-                    <h4 class="text-xs font-bold uppercase mb-2 text-slate-500">2. Artikull i Ri (Me Çmim)</h4>
-                    <div class="flex gap-2 mb-2">
-                        <input id="set-art-emri" type="text" placeholder="Artikulli" class="flex-1 p-2 rounded-lg text-xs outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600">
-                        <input id="set-art-cmimi" type="number" placeholder="Çmimi" class="w-20 p-2 rounded-lg text-xs outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600">
-                    </div>
-                    <div class="flex gap-2">
-                        <select id="set-art-prindi" class="flex-1 p-2 rounded-lg text-xs outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600"></select>
-                        <button onclick="shtoArtikull()" class="bg-orange-500 text-white px-3 rounded-lg text-xs font-bold active-scale">Shto</button>
-                    </div>
+        <div id="settings-panel" class="hidden p-5 bg-slate-50 min-h-screen">
+            <h2 class="text-3xl font-black mb-6 text-indigo-700">Settings</h2>
+            
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-3xl text-white mb-6 shadow-lg">
+                <h3 class="font-black mb-4 italic">🎯 SYNIMI I MADH</h3>
+                <div class="space-y-3">
+                    <input id="setting-goal-points" type="number" placeholder="Sa pikë duhen?" class="w-full p-3 rounded-xl text-slate-900 font-bold">
+                    <input id="setting-goal-reward" type="text" placeholder="Cili është shpërblimi?" class="w-full p-3 rounded-xl text-slate-900 font-bold">
                 </div>
-                <h4 class="text-xs font-bold uppercase mb-2 text-slate-500 text-center">Listat Ekzistuese</h4>
-                <div id="set-list-container" class="space-y-2 mb-2"></div>
-                <button onclick="ruajKategoriteNeFirebase()" class="w-full p-3 mt-2 bg-green-600 text-white rounded-xl font-black uppercase active-scale shadow-lg">Ruaj Kategoritë ✅</button>
             </div>
 
-            <div id="sec-perdorues" class="hidden">
-                <div class="mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600">
-                    <h4 class="text-xs font-bold uppercase mb-2 text-slate-500">Shto / Ndrysho Përdorues</h4>
-                    <div class="flex gap-2 mb-2">
-                        <input id="set-usr-emri" type="text" placeholder="Emri" class="flex-1 p-2 rounded-lg text-xs font-bold outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600">
-                        <input id="set-usr-pin" type="text" placeholder="PIN (psh 1234)" class="w-24 p-2 rounded-lg text-xs font-bold outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600" inputmode="numeric">
-                    </div>
-                    <div class="flex gap-2">
-                        <select id="set-usr-rol" class="flex-1 p-2 rounded-lg text-xs font-bold outline-none border dark:bg-slate-800 dark:text-white dark:border-slate-600">
-                            <option value="user">Përdorues (User)</option>
-                            <option value="admin">Administrator (Admin)</option>
-                        </select>
-                        <button onclick="shtoPerdorues()" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold active-scale">Ruaj</button>
-                    </div>
-                    <p class="text-[9px] text-slate-400 mt-2 italic">*Nëse shkruan emrin e dikujt që ekziston, do t'i ndryshohet PIN-i/Roli.</p>
-                </div>
-                
-                <h4 class="text-xs font-bold uppercase mb-2 text-slate-500 text-center">Lista e Përdoruesve</h4>
-                <div id="set-usr-list-container" class="space-y-2 mb-2"></div>
-                <button onclick="ruajPerdoruesitNeFirebase()" class="w-full p-3 mt-2 bg-green-600 text-white rounded-xl font-black uppercase active-scale shadow-lg">Ruaj Përdoruesit ✅</button>
+            <div id="edit-parents-list" class="bg-white p-5 rounded-3xl border-2 mb-6"></div>
+            <div id="edit-children-list" class="bg-white p-5 rounded-3xl border-2 mb-6"></div>
+
+            <div class="bg-white p-5 rounded-3xl border-2 border-purple-100 mb-6">
+                <h3 class="text-purple-600 font-black mb-3">📝 SHABLLONET</h3>
+                <ul id="saved-tasks-list" class="space-y-2 mb-4"></ul>
+                <button onclick="saveTaskTemplate()" class="w-full bg-purple-100 text-purple-700 p-3 rounded-xl font-bold">SHTO TË RE</button>
             </div>
 
+            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white font-black p-5 rounded-2xl shadow-xl mb-4">RUAJ TË GJITHA</button>
+            <button onclick="resetApp()" class="w-full text-red-400 font-bold p-3">Reset Data</button>
+        </div>
+
+        <div id="child-panel" class="hidden p-5">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border-b-8 border-slate-100 mb-8 mt-2">
+                <div class="flex justify-between items-end mb-2">
+                    <span id="goal-text" class="text-sm font-black text-indigo-600 italic">Dhurata: Duke u ngarkuar...</span>
+                    <span class="text-xs font-bold text-slate-400"><span id="my-points">0</span> / <span id="goal-points-display">0</span> ⭐</span>
+                </div>
+                <div class="w-full bg-slate-100 h-8 rounded-full overflow-hidden border-2 border-slate-50 p-1">
+                    <div id="progress-bar" class="progress-fill h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="progress-percent" class="text-center mt-2 font-black text-slate-300 text-xs tracking-widest">0% COMPLETED</p>
+            </div>
+
+            <h3 class="text-2xl font-black mb-5 text-indigo-800 flex items-center gap-2">🎯 MISIONET <span class="bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-lg">LIVE</span></h3>
+            <div id="task-list" class="space-y-4"></div>
+            
+            <div class="mt-10 bg-slate-900 p-5 rounded-[2.5rem] h-44 shadow-2xl border-b-4 border-indigo-500">
+                <canvas id="childChart"></canvas>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="modal-fonde" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center shadow-2xl relative"><h3 class="text-sm font-black mb-4 uppercase text-green-600">Shto Të Ardhura</h3><input id="fonde-shuma" type="number" placeholder="Shuma (Lekë)" class="w-full p-4 mb-2 rounded-xl font-black text-2xl text-center border-2 border-slate-100 outline-none dark:bg-slate-900 dark:text-white dark:border-slate-700" onkeydown="if(event.key === 'Enter') document.getElementById('fonde-burimi').focus()"><input id="fonde-burimi" type="text" placeholder="Burimi (psh: Paga)" class="w-full p-4 mb-4 rounded-xl font-bold text-center border-2 border-slate-100 outline-none dark:bg-slate-900 dark:text-white dark:border-slate-700" onkeydown="if(event.key === 'Enter') ruajFonde()"><div class="flex gap-2"><button onclick="mbyllModalFonde()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white active-scale">X</button><button id="btn-ruaj-fonde" onclick="ruajFonde()" class="w-3/4 p-4 bg-green-600 text-white rounded-2xl font-black uppercase active-scale">SHTO</button></div></div>
-</div>
+    <div id="emoji-modal" class="hidden fixed inset-0 bg-slate-900/80 flex items-center justify-center z-50 px-4 backdrop-blur-md">
+        <div class="bg-white rounded-[3rem] p-8 w-full max-w-xs shadow-2xl text-center">
+            <div class="grid grid-cols-5 gap-3 text-3xl mb-8" id="emoji-grid"></div>
+            <button onclick="closeEmojiModal()" class="w-full bg-slate-100 font-black py-4 rounded-2xl">MBYLL</button>
+        </div>
+    </div>
 
-<div id="modal-arka-manual" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center shadow-2xl relative"><h3 class="text-sm font-black mb-4 uppercase text-blue-600">Artikull Manual</h3><input id="arka-emri-input" type="text" placeholder="Emri (psh: Bukë)" class="w-full p-4 mb-2 rounded-xl font-bold text-center border-2 border-slate-100 outline-none dark:bg-slate-900 dark:text-white dark:border-slate-700" onkeydown="if(event.key === 'Enter') document.getElementById('arka-shuma-input').focus()"><input id="arka-shuma-input" type="number" placeholder="Lekë" class="w-full p-4 mb-4 rounded-xl font-black text-2xl text-center border-2 border-slate-100 outline-none dark:bg-slate-900 dark:text-white dark:border-slate-700" onkeydown="if(event.key === 'Enter') kryejShtimManualArka()"><div class="flex gap-2"><button onclick="mbyllArkaManual()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white active-scale">X</button><button onclick="kryejShtimManualArka()" class="w-3/4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase active-scale">SHTO</button></div></div>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, doc, updateDoc, where, setDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-<div id="modal-kategorite" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[35px] p-6 text-center max-h-[85vh] flex flex-col relative shadow-2xl relative"><button onclick="mbyllModalKategorite()" class="absolute top-4 right-6 text-2xl font-black text-slate-400 active-scale">×</button><h3 id="modal-kat-titulli" class="text-sm font-black mb-4 uppercase">Zgjidh</h3><input id="modal-search" type="text" placeholder="🔍 Kërko artikull..." class="w-full p-4 mb-4 rounded-xl text-xs font-bold outline-none bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 text-slate-800 dark:text-white" onkeyup="kerkoArtikullModal()"><button id="modal-kthehu-btn" onclick="shfaqKategoriteModal()" class="hidden mb-3 w-full p-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase rounded-xl border border-slate-200 dark:border-slate-600 flex items-center justify-center gap-2 active-scale transition"><span>⬅️ Kthehu</span></button><div id="modal-pads-container" class="grid grid-cols-2 gap-3 overflow-y-auto no-scrollbar pb-4"></div></div>
-</div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAaN5zEU0_pByPUM_EySHnLvEkbduuFX34",
+            authDomain: "ian-jon-ansi.firebaseapp.com",
+            projectId: "ian-jon-ansi",
+            storageBucket: "ian-jon-ansi.firebasestorage.app",
+            messagingSenderId: "847967076537",
+            appId: "1:847967076537:web:05f57a87a71decf14e5b68"
+        };
 
-<div id="modal-manual" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center p-6 z-[400]">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center shadow-2xl relative"><h3 id="manual-titulli" class="text-sm font-black mb-4 uppercase text-blue-600">Vendos Shumën</h3><input id="manual-input" type="number" class="w-full p-5 mb-4 rounded-2xl font-black text-4xl text-center border-2 border-blue-200 outline-none dark:bg-slate-900 dark:text-white" inputmode="decimal" onkeydown="if(event.key === 'Enter') mbyllModalManualDheShto()"><div class="flex gap-2"><button onclick="mbyllModalManual()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white active-scale">X</button><button onclick="mbyllModalManualDheShto()" class="w-3/4 p-4 bg-blue-600 text-white rounded-2xl font-black uppercase active-scale">SHTO</button></div></div>
-</div>
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-<div id="modal-pazar-tekst" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-6 z-[300]">
-    <div class="bg-white dark:bg-slate-800 w-full max-w-xs rounded-[35px] p-6 text-center shadow-2xl relative"><h3 class="text-sm font-black mb-4 uppercase text-orange-600">Shto Shënim Manual</h3><input id="pazar-manual-input" type="text" placeholder="Psh: Bukë..." class="w-full p-4 mb-4 rounded-2xl font-bold text-center border-2 border-slate-200 outline-none dark:bg-slate-900 dark:text-white dark:border-slate-700" onkeydown="if(event.key === 'Enter') shtoNePazarManual()"><div class="flex gap-2"><button onclick="mbyllManualPazar()" class="w-1/4 p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl font-black italic dark:text-white active-scale">X</button><button onclick="shtoNePazarManual()" class="w-3/4 p-4 bg-orange-600 text-white rounded-2xl font-black uppercase active-scale">SHTO</button></div></div>
-</div>
+        let currentUser = null, adminChart = null, childChart = null, weekChart = null, isFirstLoad = true, pointsData = {}, appConfig = null;
+        const myEmojis = ['📚','🛏️','🧹','🍽️','👕','🦷','🚿','🗑️','🏃','🎨','📝','🐶','🐱','🍎','🥦','🏅','🏆','⭐','🎮','🚗','🏀','⚽','🌱','🛠️','🧩','🧸','🎵','🚲','🧼','🙌'];
+        let targetEmojiField = null;
 
-<script>
-    google.charts.load('current', {'packages':['corechart']});
-    
-    // LIDHJA ME FIREBASE
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_2iV7446l4DjJH9vTZNqZyzJ1KJOuhlk",
-      authDomain: "test-33dc4.firebaseapp.com",
-      projectId: "test-33dc4",
-      storageBucket: "test-33dc4.firebasestorage.app",
-      messagingSenderId: "215773689117",
-      appId: "1:215773689117:web:538e1cd1cfb3e653c9ddf4"
-    };
+        window.openCustomEmojiPicker = f => { targetEmojiField = document.getElementById(f); document.getElementById('emoji-grid').innerHTML = myEmojis.map(e => `<div class="cursor-pointer hover:scale-125 transition-transform" onclick="selectEmoji('${e}')">${e}</div>`).join(''); document.getElementById('emoji-modal').classList.remove('hidden'); };
+        window.selectEmoji = e => { if(targetEmojiField) targetEmojiField.value = e; window.closeEmojiModal(); };
+        window.closeEmojiModal = () => document.getElementById('emoji-modal').classList.add('hidden');
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // TË DHËNAT PËR TELEGRAMIN
-    const TELEGRAM_TOKEN = "8782069667:AAFB-obtVC7LNw3Tt86mxlvqUNnC58H1DwE";
-    const TELEGRAM_CHAT_ID = "5461448562";
-
-    // Të dhënat Dinamike (Kategoritë + Përdoruesit me objekte)
-    let allData = { users: [], kats: [], nenkats: [] };
-    let uAktual = "", uRol = "", shportaObj = {}, historiData = [], pazarData = [], kategoriaAktuale = "", modalContext = "arka", globalRaport = {}; 
-    let prindiZgjedhur = ""; 
-
-    window.onload = async () => {
-        const m = document.getElementById("muaji"), v = document.getElementById("viti");
-        
-        const muajt = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
-        muajt.forEach((emri, i) => { m.innerHTML += `<option value="${i+1}" ${i+1==new Date().getMonth()+1?'selected':''}>${emri}</option>`; });
-        for(let i=2025; i<=2027; i++) v.innerHTML += `<option value="${i}" ${i==new Date().getFullYear()?'selected':''}>${i}</option>`;
-        m.onchange = v.onchange = () => merrRaportin();
-        
-        if(localStorage.getItem("dark-mode") === "true") document.body.classList.add("dark");
-
-        // Ngarkojmë Kategoritë dhe Përdoruesit
-        await fetchKategoriteCloud();
-        await fetchPerdoruesitCloud();
-    };
-
-    function showToast(msg) {
-        const t = document.getElementById("toast");
-        t.innerText = msg; t.className = "show";
-        setTimeout(() => { t.className = t.className.replace("show", ""); }, 2000);
-    }
-
-    function toggleDark() { 
-        let isDark = document.body.classList.toggle("dark"); 
-        localStorage.setItem("dark-mode", isDark); 
-        if(uAktual) merrRaportin(); 
-    }
-
-    // TELEGRAM
-    function dergoNjoftimTelegram(mesazhi) {
-        const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesazhi, parse_mode: "HTML" }) }).catch(err => console.warn("Gabim Telegram:", err));
-    }
-
-    // ================= MENAXHIMI I PËRDORUESVE DHE LOGIN =================
-    async function fetchPerdoruesitCloud() {
-        const uSelect = document.getElementById("user-select");
-        try {
-            let doc = await db.collection("settings").doc("perdoruesit").get();
-            if(doc.exists && doc.data().lista && doc.data().lista.length > 0) {
-                allData.users = doc.data().lista;
-            } else {
-                // Krijo përdorues default nëse databaza është bosh
-                allData.users = [
-                    { emri: "Ian", pin: "0000", rol: "admin" },
-                    { emri: "Mami", pin: "1111", rol: "admin" },
-                    { emri: "Babi", pin: "2222", rol: "user" }
-                ];
-                await db.collection("settings").doc("perdoruesit").set({ lista: allData.users });
-            }
-            
-            // Popullojmë listën e hyrjes
-            uSelect.innerHTML = "<option disabled selected>Zgjidh Emrin</option>";
-            allData.users.forEach(u => { uSelect.innerHTML += `<option value="${u.emri}">${u.emri}</option>`; });
-        } catch(e) { console.error("Gabim në përdorues:", e); uSelect.innerHTML = "<option>Gabim lidhjeje</option>"; }
-    }
-
-    function hyrNeSistem() {
-        const emri = document.getElementById("user-select").value;
-        const pin = document.getElementById("pass").value;
-        
-        if(emri === "Zgjidh Emrin") return alert("Të lutem zgjidh emrin tënd nga lista!");
-        
-        const userObj = allData.users.find(u => u.emri === emri);
-        if(!userObj) return;
-
-        // Kontrollojmë PIN-in
-        if(userObj.pin && userObj.pin !== pin) {
-            alert("❌ PIN i gabuar! Provo përsëri.");
-            return;
-        }
-
-        uAktual = emri; 
-        uRol = userObj.rol || "user"; // Nëse s'ka rol, e bëjmë user normal
-        
-        // Përshtatim pamjen sipas Rolit
-        const usSelect = document.getElementById("header-user-select");
-        usSelect.innerHTML = "";
-        
-        if(uRol === "admin") {
-            // Admini sheh "TOTALIN", të gjithë njerëzit, dhe butonin e Settings
-            usSelect.innerHTML += `<option value="TOTALI">👨‍👩‍👧‍👦 TOTALI</option>`;
-            allData.users.forEach(u => { usSelect.innerHTML += `<option value="${u.emri}">👤 ${u.emri}</option>`; });
-            document.getElementById("btn-settings").classList.remove("hidden");
-        } else {
-            // Useri i thjeshtë sheh vetëm veten dhe NUK ka buton Settings
-            usSelect.innerHTML += `<option value="${uAktual}">👤 ${uAktual}</option>`;
-            document.getElementById("btn-settings").classList.add("hidden");
-        }
-        
-        usSelect.classList.remove("hidden");
-        document.getElementById("login-ui").classList.add("hidden"); 
-        document.getElementById("app-ui").classList.remove("hidden"); 
-        
-        merrRaportin(); 
-        fetchPazarCloud();
-    }
-
-    // ================= MENAXHIMI I KATEGORIVE (SETTINGS PANEL) =================
-    async function fetchKategoriteCloud() {
-        try {
-            let doc = await db.collection("settings").doc("kategorite").get();
-            if(doc.exists) {
-                let d = doc.data();
-                allData.kats = d.kats || [];
-                allData.nenkats = d.nenkats || [];
-            } else {
-                allData.kats = [{ emri: "Ushqime", limiti: 30000, kaNen: true }, { emri: "Fatura", limiti: 15000, kaNen: false }, { emri: "Kursime", limiti: 0, kaNen: false }];
-                allData.nenkats = [{ emri: "Bukë", prindi: "Ushqime", cmimi: 100 }];
-                await db.collection("settings").doc("kategorite").set({ kats: allData.kats, nenkats: allData.nenkats });
-            }
-        } catch(e) { console.error("Gabim në kategori:", e); }
-    }
-
-    // Tabet brenda Settings
-    function ndryshoTabSettings(tab) {
-        document.getElementById('sec-kategori').classList.add('hidden');
-        document.getElementById('sec-perdorues').classList.add('hidden');
-        document.getElementById('tab-kat-btn').className = "tab-btn tab-inactive";
-        document.getElementById('tab-usr-btn').className = "tab-btn tab-inactive";
-        
-        if(tab === 'kategori') {
-            document.getElementById('sec-kategori').classList.remove('hidden');
-            document.getElementById('tab-kat-btn').className = "tab-btn tab-active";
-        } else {
-            document.getElementById('sec-perdorues').classList.remove('hidden');
-            document.getElementById('tab-usr-btn').className = "tab-btn tab-active";
-        }
-    }
-
-    function hapSettings() {
-        document.getElementById("modal-settings").classList.remove("hidden");
-        // Popullo select për prindin
-        let sel = document.getElementById("set-art-prindi");
-        sel.innerHTML = `<option disabled selected>Zgjidh Prindin</option>`;
-        allData.kats.forEach(k => { sel.innerHTML += `<option value="${k.emri}">${k.emri}</option>`; });
-        shfaqListenESettings();
-        shfaqListenEPerdoruesve();
-        ndryshoTabSettings('kategori'); // Hap tabin e parë gjithmonë
-    }
-    function mbyllSettings() { document.getElementById("modal-settings").classList.add("hidden"); }
-
-    // Funksionet e Kategorive
-    function shtoKatKryesore() {
-        let emri = document.getElementById("set-kat-emri").value.trim(), limiti = parseFloat(document.getElementById("set-kat-limit").value) || 0;
-        if(emri) { allData.kats.push({ emri: emri, limiti: limiti, kaNen: true }); document.getElementById("set-kat-emri").value = ""; document.getElementById("set-kat-limit").value = ""; hapSettings(); }
-    }
-    function shtoArtikull() {
-        let emri = document.getElementById("set-art-emri").value.trim(), cmimi = parseFloat(document.getElementById("set-art-cmimi").value) || 0, prindi = document.getElementById("set-art-prindi").value;
-        if(emri && prindi && prindi !== "Zgjidh Prindin") {
-            allData.nenkats.push({ emri: emri, cmimi: cmimi, prindi: prindi });
-            let pIndex = allData.kats.findIndex(k => k.emri === prindi); if(pIndex > -1) allData.kats[pIndex].kaNen = true;
-            document.getElementById("set-art-emri").value = ""; document.getElementById("set-art-cmimi").value = ""; hapSettings();
-        }
-    }
-    function fshiKat(index) { if(confirm("Je i sigurt? Kjo do të fshijë edhe artikujt e saj!")) { let kEmri = allData.kats[index].emri; allData.kats.splice(index, 1); allData.nenkats = allData.nenkats.filter(n => n.prindi !== kEmri); hapSettings(); } }
-    function fshiArt(index) { if(confirm("Fshi këtë artikull?")) { allData.nenkats.splice(index, 1); hapSettings(); } }
-    
-    function shfaqListenESettings() {
-        let html = "";
-        allData.kats.forEach((k, i) => {
-            html += `<div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 mb-2">
-                        <div class="flex justify-between items-center mb-1">
-                            <strong class="text-[11px] text-blue-600 dark:text-blue-400 uppercase">${k.emri} (Limiti: ${k.limiti}L)</strong>
-                            <button onclick="fshiKat(${i})" class="text-white bg-red-500 rounded px-2 py-1 text-[9px] font-bold">Fshi</button>
-                        </div>
-                        <div class="pl-3 mt-2 border-l-2 border-blue-100 dark:border-slate-600 space-y-1">`;
-            let kaNen = false;
-            allData.nenkats.forEach((n, j) => {
-                if(n.prindi === k.emri) { kaNen = true; html += `<div class="flex justify-between items-center text-[10px] bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded"><span class="text-slate-700 dark:text-slate-300">${n.emri} ${n.cmimi > 0 ? `<b>(${n.cmimi}L)</b>` : ''}</span><button onclick="fshiArt(${j})" class="text-red-500 font-black px-1">X</button></div>`; }
-            });
-            if(!kaNen) html += `<span class="text-[9px] italic text-slate-400">Nuk ka artikuj...</span>`;
-            html += `</div></div>`;
+        const configRef = doc(db, "system", "settings");
+        onSnapshot(configRef, (docSnap) => {
+            if (!docSnap.exists()) {
+                const def = { 
+                    femijet: [{id:"c1", emri:"Ian", pass:"123", tel:""}, {id:"c2", emri:"Jon", pass:"123", tel:""}, {id:"c3", emri:"Ansi", pass:"123", tel:""}], 
+                    prinderit: [{id:"p1", emri:"Babi", pass:"123"}], 
+                    shabllone: [], goal_piket: 100, goal_shperblimi: "Dhuratë Mister", tg_token: "", tg_id: "" 
+                };
+                setDoc(configRef, def);
+            } else { appConfig = docSnap.data(); showLogin(); updateUI(); }
         });
-        document.getElementById("set-list-container").innerHTML = html;
-    }
-    
-    async function ruajKategoriteNeFirebase() {
-        try { await db.collection("settings").doc("kategorite").set({ kats: allData.kats, nenkats: allData.nenkats }); showToast("Kategoritë u ruajtën! ✅"); mbyllSettings(); if(uAktual) merrRaportin(); } 
-        catch(e) { alert("Gabim në ruajtje!"); }
-    }
 
-    // Funksionet e Përdoruesve
-    function shfaqListenEPerdoruesve() {
-        let html = "";
-        allData.users.forEach((u, i) => {
-            let rolBadge = u.rol === 'admin' ? '<span class="bg-blue-100 text-blue-700 text-[9px] px-1 rounded ml-2">ADMIN</span>' : '<span class="bg-slate-100 text-slate-600 text-[9px] px-1 rounded ml-2">USER</span>';
-            html += `<div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 mb-2 flex justify-between items-center">
-                        <div>
-                            <strong class="text-[12px] dark:text-white">${u.emri}</strong> ${rolBadge}
-                            <div class="text-[10px] text-slate-400">PIN: ${u.pin}</div>
-                        </div>
-                        <button onclick="fshiPerdorues(${i})" class="text-white bg-red-500 rounded px-3 py-2 text-[10px] font-black active-scale">FSHI</button>
-                     </div>`;
-        });
-        document.getElementById("set-usr-list-container").innerHTML = html;
-    }
-
-    function shtoPerdorues() {
-        let emri = document.getElementById("set-usr-emri").value.trim();
-        let pin = document.getElementById("set-usr-pin").value.trim();
-        let rol = document.getElementById("set-usr-rol").value;
+        function showLogin() { document.getElementById('loading-text').classList.add('hidden'); document.getElementById('login-form').classList.remove('hidden'); }
         
-        if(!emri || !pin) return alert("Plotëso emrin dhe PIN-in!");
-        
-        // Kontrollo nëse ekziston
-        let ekziston = allData.users.findIndex(u => u.emri.toLowerCase() === emri.toLowerCase());
-        if(ekziston > -1) {
-            allData.users[ekziston].pin = pin;
-            allData.users[ekziston].rol = rol;
-            showToast("U përditësua!");
-        } else {
-            allData.users.push({ emri: emri, pin: pin, rol: rol });
-            showToast("U shtua i ri!");
-        }
-        
-        document.getElementById("set-usr-emri").value = "";
-        document.getElementById("set-usr-pin").value = "";
-        shfaqListenEPerdoruesve();
-    }
-
-    function fshiPerdorues(index) {
-        if(confirm("Je i sigurt që do ta fshish këtë përdorues? (Faturat e tij do të mbeten në historik)")) {
-            allData.users.splice(index, 1);
-            shfaqListenEPerdoruesve();
-        }
-    }
-
-    async function ruajPerdoruesitNeFirebase() {
-        try { 
-            await db.collection("settings").doc("perdoruesit").set({ lista: allData.users }); 
-            showToast("Përdoruesit u ruajtën! ✅"); 
-            mbyllSettings(); 
-        } 
-        catch(e) { alert("Gabim në ruajtje!"); }
-    }
-    // =========================================================================
-
-    // FUNKSIONET E TJERA (FONDE, ARKA, PAZAR, RAPORTI) MBETEN NJËLLOJ SI MË PARË
-    // (Për arsye të hapësirës po i mbaj të pandryshuara funksionet e logjikës kryesore që bëmë dje)
-
-    // FONDE
-    function hapModalFonde() { document.getElementById("fonde-shuma").value = ""; document.getElementById("fonde-burimi").value = ""; document.getElementById("modal-fonde").classList.remove("hidden"); document.getElementById("fonde-shuma").focus(); }
-    function mbyllModalFonde() { document.getElementById("modal-fonde").classList.add("hidden"); }
-    async function ruajFonde() {
-        let v = document.getElementById("fonde-shuma").value, b = document.getElementById("fonde-burimi").value || "Të ndryshme";
-        if(!v || v <= 0) return;
-        const btn = document.getElementById("btn-ruaj-fonde"); btn.innerText = "..."; btn.disabled = true;
-        let mNum = parseInt(document.getElementById("muaji").value), vNum = parseInt(document.getElementById("viti").value);
-        try {
-            await db.collection("transaksionet").add({ lloji: "hyrje", kategoria: b, shuma: Number(v), user: uAktual, muaji: mNum, viti: vNum, data: firebase.firestore.FieldValue.serverTimestamp() });
-            let mesazhTelegram = `✅ <b>Hyrje e re nga ${uAktual}!</b>\n💰 <b>Shuma:</b> +${Number(v).toLocaleString()} Lekë\n📥 <b>Burimi:</b> ${b}\n`;
-            dergoNjoftimTelegram(mesazhTelegram);
-            mbyllModalFonde(); merrRaportin(); showToast("Të ardhurat u shtuan! ✅");
-        } catch(e) { alert("Gabim në ruajtje!"); console.error(e); }
-        btn.innerText = "SHTO"; btn.disabled = false;
-    }
-
-    // ARKA MANUAL
-    function shtoManualNeArke() { prindiZgjedhur = ""; document.getElementById("modal-arka-manual").classList.remove("hidden"); document.getElementById("arka-emri-input").focus(); }
-    function mbyllArkaManual() { document.getElementById("modal-arka-manual").classList.add("hidden"); }
-    function kryejShtimManualArka() { const e = document.getElementById("arka-emri-input").value, s = document.getElementById("arka-shuma-input").value; if(e && s && s > 0) { shtoNeShporte(e, s, prindiZgjedhur); document.getElementById("arka-emri-input").value = ""; document.getElementById("arka-shuma-input").value = ""; mbyllArkaManual(); showToast(`+ ${e} u shtua!`); } }
-
-    // MODAL KATEGORITE
-    function hapModalKategorite(context) {
-        prindiZgjedhur = ""; modalContext = context; document.getElementById("modal-kategorite").classList.remove("hidden"); document.getElementById("modal-search").value = "";
-        const titulli = document.getElementById("modal-kat-titulli"); titulli.innerText = (context === 'arka') ? "Shto në Arkë" : "Shto në Pazar"; titulli.className = (context === 'arka') ? "text-sm font-black mb-4 uppercase text-blue-600" : "text-sm font-black mb-4 uppercase text-orange-600";
-        shfaqKategoriteModal(); document.getElementById("modal-search").focus(); 
-    }
-    function mbyllModalKategorite() { document.getElementById("modal-kategorite").classList.add("hidden"); }
-    function shfaqKategoriteModal() {
-        document.getElementById("modal-kthehu-btn").classList.add("hidden"); let h = "";
-        allData.kats.forEach(k => { let func = (k.kaNen) ? `shfaqNenkategoriteModal('${k.emri}')` : `seleksionoArtikullModal('${k.emri}', 0, '${k.emri}')`; h += `<div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="${func}"><span class="text-[10px] font-black uppercase text-center">${k.emri}</span></div>`; });
-        document.getElementById("modal-pads-container").innerHTML = h;
-    }
-    function shfaqNenkategoriteModal(prindi) {
-        document.getElementById("modal-kthehu-btn").classList.remove("hidden"); let h = "";
-        allData.nenkats.forEach(n => { if(n.prindi == prindi) { h += `<div class="p-4 ${modalContext === 'arka' ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/10' : 'bg-orange-50 border-orange-100 dark:bg-orange-900/10'} rounded-2xl border flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="seleksionoArtikullModal('${n.emri}', ${n.cmimi || 0}, '${prindi}')"><span class="text-[10px] font-black uppercase text-center">${n.emri}</span>${n.cmimi > 0 ? `<span class="text-[9px] font-bold mt-1 opacity-60">${n.cmimi}L</span>` : ''}</div>`; } });
-        h += `<div class="p-4 bg-slate-100 border-slate-300 dark:bg-slate-800 dark:border-slate-600 rounded-2xl border border-dashed flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="artikullIriNgaNenkategoria('${prindi}')"><span class="text-[10px] font-black uppercase text-center text-slate-500 dark:text-slate-400">+ TJETËR</span></div>`;
-        document.getElementById("modal-pads-container").innerHTML = h;
-    }
-    function artikullIriNgaNenkategoria(prindi) { prindiZgjedhur = prindi; mbyllModalKategorite(); if(modalContext === 'arka') { document.getElementById("modal-arka-manual").classList.remove("hidden"); document.getElementById("arka-emri-input").focus(); } else { document.getElementById("modal-pazar-tekst").classList.remove("hidden"); document.getElementById("pazar-manual-input").focus(); } }
-    function kerkoArtikullModal() {
-        let txt = document.getElementById("modal-search").value.toLowerCase().trim(); if(txt === "") { shfaqKategoriteModal(); return; }
-        document.getElementById("modal-kthehu-btn").classList.remove("hidden"); let h = "";
-        allData.nenkats.forEach(n => { if(n.emri.toLowerCase().includes(txt)) { h += `<div class="p-4 ${modalContext === 'arka' ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/10' : 'bg-orange-50 border-orange-100 dark:bg-orange-900/10'} rounded-2xl border flex flex-col items-center justify-center cursor-pointer active-scale transition" onclick="seleksionoArtikullModal('${n.emri}', ${n.cmimi || 0}, '${n.prindi}')"><span class="text-[10px] font-black uppercase text-center">${n.emri}</span></div>`; } });
-        document.getElementById("modal-pads-container").innerHTML = h || `<div class="col-span-2 py-10 text-slate-400 text-xs italic">Nuk u gjet asgjë...</div>`;
-    }
-    function seleksionoArtikullModal(emri, cmimi, prindi) { prindiZgjedhur = prindi || emri; if(modalContext === 'arka') { if(cmimi > 0) { shtoNeShporte(emri, cmimi, prindiZgjedhur); showToast(`+ ${emri} shtuar!`); } else { shfaqModalManual(emri); } } else { shtoNePazarSpecifik(emri, prindiZgjedhur); showToast(`🛒 ${emri} në pazar!`); } }
-
-    // KURSIME
-    function initKursimet(kurs) { if(kurs) { localStorage.setItem("kursime_mbledhura", kurs.mbledhur || 0); localStorage.setItem("obj_vlera", kurs.synimi || 0); localStorage.setItem("obj_emri", kurs.emri || "Kursim"); document.getElementById("obj-emri").value = kurs.emri; perditesoKasaforten(); } }
-    function perditesoKasaforten() { let m = parseFloat(localStorage.getItem("kursime_mbledhura")) || 0, t = parseFloat(localStorage.getItem("obj_vlera")) || 0; let p = t > 0 ? Math.min((m/t)*100, 100) : 0; document.getElementById("obj-bar").style.width = p + "%"; document.getElementById("obj-perq").innerText = Math.floor(p) + "%"; document.getElementById("obj-vlerat").innerText = `${m.toLocaleString()} / ${t.toLocaleString()} L`; }
-    async function syncKursimToSheet() { const e = document.getElementById("obj-emri").value; localStorage.setItem("obj_emri", e); try { await db.collection("settings").doc("kursimet").set({ emri: e, mbledhur: localStorage.getItem("kursime_mbledhura"), synimi: localStorage.getItem("obj_vlera") }); } catch(e) { console.error("Gabim sinkronizimi kursime:", e); } }
-    async function shtoKursim() { 
-        let v = prompt("Sa lekë do të kursesh?"); 
-        if(v && !isNaN(v)){ 
-            localStorage.setItem("kursime_mbledhura", (parseFloat(localStorage.getItem("kursime_mbledhura"))||0)+parseFloat(v)); perditesoKasaforten(); syncKursimToSheet(); 
-            let mNum = parseInt(document.getElementById("muaji").value), vNum = parseInt(document.getElementById("viti").value);
-            try {
-                await db.collection("transaksionet").add({ lloji: "dalje", kategoria: "Kursime", shuma: Number(v), shenime: "Shtuar në kursime", user: uAktual, muaji: mNum, viti: vNum, data: firebase.firestore.FieldValue.serverTimestamp() });
-                dergoNjoftimTelegram(`💰 <b>Kursim i ri nga ${uAktual}!</b>\n💰 <b>Shuma:</b> ${Number(v).toLocaleString()} Lekë\n📝 <b>Shënime:</b> Shtuar në kursime`);
-                merrRaportin(); showToast("U kursyen " + v + " L!");
-            } catch(e) { alert("Nuk u ruajt!"); }
-        }
-    }
-    function ndryshoQellimin() { let t = prompt("Synimi i ri (Lekë):"); if(t){ localStorage.setItem("obj_vlera", t); perditesoKasaforten(); syncKursimToSheet(); }}
-    function zeroKursimet() { if(confirm("Zero kursimin?")) { localStorage.setItem("kursime_mbledhura", 0); perditesoKasaforten(); syncKursimToSheet(); }}
-
-    // SHPORTA & PAGESA
-    function shtoNeShporte(e, c, p = "") { let prindKategori = p || prindiZgjedhur || e; if (shportaObj[e]) { shportaObj[e].s += 1; } else { shportaObj[e] = {s: 1, c: parseFloat(c), p: prindKategori}; } perditesoArken(); }
-    function hiqNgaShporta(e) { if (shportaObj[e]) { if (shportaObj[e].s > 1) shportaObj[e].s -= 1; else delete shportaObj[e]; perditesoArken(); } }
-    function perditesoArken() { let t = 0, h = ""; for(let x in shportaObj) { t += (shportaObj[x].s * shportaObj[x].c); h += `<div class="flex justify-between items-center border-b dark:border-slate-700 py-2 font-bold"><span>${x} x${shportaObj[x].s}</span><div class="flex items-center gap-3"><span class="text-blue-500">${(shportaObj[x].s * shportaObj[x].c)} L</span><button onclick="hiqNgaShporta('${x}')" class="text-red-500 bg-red-50 dark:bg-red-900/20 px-2 rounded-lg text-xs font-black">-</button></div></div>`; } document.getElementById("shuma").value = t; document.getElementById("shporta-list").innerHTML = h || "Shporta është bosh..."; }
-    function pastroShporten() { shportaObj = {}; perditesoArken(); }
-
-    async function ruajShpenzim() {
-        let v = document.getElementById("shuma").value; if(!v || v <= 0) return;
-        const btn = document.getElementById("btn-ruaj"); btn.innerText = "Duke u ruajtur..."; btn.disabled = true;
-        let fatureTekst = ""; for (let x in shportaObj) { fatureTekst += `${x} x${shportaObj[x].s} (${(shportaObj[x].s * shportaObj[x].c)}L)\n`; }
-        let firstItem = Object.keys(shportaObj)[0], kategoriaPerServer = shportaObj[firstItem].p || firstItem;
-        let mNum = parseInt(document.getElementById("muaji").value), vNum = parseInt(document.getElementById("viti").value);
-
-        try {
-            await db.collection("transaksionet").add({ lloji: "dalje", kategoria: kategoriaPerServer, shuma: Number(v), shenime: fatureTekst.trim(), user: uAktual, muaji: mNum, viti: vNum, data: firebase.firestore.FieldValue.serverTimestamp() });
-            let msg = `🚨 <b>Shpenzim i ri nga ${uAktual}!</b>\n💰 <b>Shuma:</b> ${Number(v).toLocaleString()} Lekë\n📂 <b>Kategoria:</b> ${kategoriaPerServer}\n`;
-            if(fatureTekst.trim() !== "") msg += `📝 <b>Detajet:</b>\n${fatureTekst.trim()}`;
-            dergoNjoftimTelegram(msg); pastroShporten(); merrRaportin(); showToast("Pagesa u krye! ✅");
-        } catch(e) { alert("Gabim gjatë ruajtjes së faturës!"); console.error(e); }
-        btn.innerText = "KRYEJ PAGESËN ✅"; btn.disabled = false;
-    }
-
-    // PAZARI CLOUD
-    async function fetchPazarCloud() { try { let doc = await db.collection("settings").doc("pazari").get(); if(doc.exists && doc.data().lista) { pazarData = doc.data().lista; shfaqPazarin(); } } catch(e) { console.error(e); } }
-    async function syncPazarCloud() { try { await db.collection("settings").doc("pazari").set({ lista: pazarData }); } catch(e) { console.error(e); } }
-    function shfaqPazarin() { let h = ""; pazarData.forEach((p, i) => { h += `<div class="pad bg-orange-600 text-white text-[11px] font-black border-none shadow-sm active-scale" onclick="pazarTeArka('${p.emri}', ${i})">${p.emri}</div>`; }); document.getElementById("pazar-lista").innerHTML = h; }
-    function shtoNePazarSpecifik(emri, prindi = "") { let p = prindi || prindiZgjedhur || emri; pazarData.push({emri: emri, prindi: p}); shfaqPazarin(); syncPazarCloud(); }
-    function shfaqManualPazar() { prindiZgjedhur = ""; document.getElementById("modal-pazar-tekst").classList.remove("hidden"); document.getElementById("pazar-manual-input").focus(); }
-    function mbyllManualPazar() { document.getElementById("modal-pazar-tekst").classList.add("hidden"); }
-    function shtoNePazarManual() { let i = document.getElementById("pazar-manual-input"); if(i.value) { shtoNePazarSpecifik(i.value, prindiZgjedhur); i.value = ""; prindiZgjedhur = ""; mbyllManualPazar(); showToast("U shtua!"); } }
-    function pazarTeArka(emri, index) { let c = prompt(`Çmimi për "${emri}":`); if(c && !isNaN(c)) { shtoNeShporte(emri, c, pazarData[index].prindi || emri); pazarData.splice(index, 1); shfaqPazarin(); syncPazarCloud(); } }
-    function pastroPazarin() { if(confirm("Fshij gjithë listën?")) { pazarData = []; shfaqPazarin(); syncPazarCloud(); } }
-
-    // RAPORTI
-    async function merrRaportin() {
-        const m = parseInt(document.getElementById("muaji").value), v = parseInt(document.getElementById("viti").value);
-        const pamjaZgjedhur = document.getElementById("header-user-select").value || "TOTALI";
-        
-        try {
-            const snapshot = await db.collection("transaksionet").where("muaji", "==", m).where("viti", "==", v).get();
-            let hyrjeTotale = 0, daljeTotale = 0, listaTransaksioneve = [], grafikuData = {};
-
-            snapshot.forEach((doc) => {
-                let d = doc.data();
-                if (pamjaZgjedhur !== "TOTALI" && d.user !== pamjaZgjedhur) return;
-                if (d.lloji === "hyrje") { hyrjeTotale += d.shuma; } else if (d.lloji === "dalje") { daljeTotale += d.shuma; grafikuData[d.kategoria] = (grafikuData[d.kategoria] || 0) + d.shuma; }
-                listaTransaksioneve.push({ d: d.data ? new Date(d.data.toDate()).toLocaleDateString('en-GB') : "Sot", u: d.user, k: d.kategoria, n: d.shenime, s: d.shuma, t: d.lloji, koha: d.data ? d.data.toMillis() : 0 });
+        function updateUI() {
+            if(!appConfig) return;
+            const cc = document.getElementById('assign-checkboxes');
+            cc.innerHTML = `<div class="w-full mb-2"><input type="checkbox" id="check-all" class="hidden checkbox-custom" onchange="toggleAll(this)"><label for="check-all" class="cursor-pointer block p-2 border-2 rounded-xl text-center font-bold text-gray-400">Zgjidh të gjithë</label></div>`;
+            appConfig.femijet.forEach(f => {
+                cc.innerHTML += `<div class="flex-1"><input type="checkbox" id="chk-${f.id}" value="${f.emri}" class="hidden checkbox-custom child-chk"><label for="chk-${f.id}" class="cursor-pointer block p-3 border-2 border-indigo-100 bg-white rounded-2xl font-black text-center text-xs shadow-sm">${f.emri}</label></div>`;
             });
-            listaTransaksioneve.sort((a, b) => b.koha - a.koha);
-            
-            const kursDoc = await db.collection("settings").doc("kursimet").get(); let kursDB = kursDoc.exists ? kursDoc.data() : { mbledhur: 0, synimi: 0, emri: "Kursim" };
-            let mbetjaTotale = hyrjeTotale - daljeTotale;
-            globalRaport = { hyrje: hyrjeTotale, dalje: daljeTotale, mbetja: mbetjaTotale, lista: listaTransaksioneve, grafiku: grafikuData, kurs: kursDB };
-            historiData = listaTransaksioneve;
-            
-            document.getElementById("r-mbetja").innerText = mbetjaTotale.toLocaleString() + " L";
-            
-            let totalLimit = 0; allData.kats.forEach(k => totalLimit += (parseFloat(k.limiti) || 0));
-            let perq = totalLimit > 0 ? (daljeTotale / totalLimit) * 100 : 0;
-            document.getElementById("bar-limit").style.width = Math.min(perq, 100) + "%"; document.getElementById("txt-limit").innerText = `${daljeTotale.toLocaleString()} / ${totalLimit.toLocaleString()} L`;
-            
-            let hHtml = ""; 
-            listaTransaksioneve.slice(0, 15).forEach(x => {
-                let fatureDetaje = ""; if(x.n) fatureDetaje = `<div class="mt-3 p-3 bg-white dark:bg-slate-800 rounded-xl border-l-4 border-blue-500 shadow-sm"><div class="text-[11px] text-slate-700 dark:text-slate-200 font-mono leading-relaxed w-full">${x.n.trim().replace(/\n/g, "<br>")}</div></div>`;
-                let userBadge = pamjaZgjedhur === "TOTALI" ? `<span class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 px-1 py-0.5 rounded text-[8px] ml-1">${x.u}</span>` : "";
-                hHtml += `<div class="border-b dark:border-slate-700 py-4 flex flex-col relative"><div class="flex justify-between items-center w-full mb-1"><div><span class="font-black text-[11px] uppercase">${x.k}</span>${userBadge}<span class="text-[10px] text-slate-400 ml-2">${x.d}</span></div><span class="${x.t === 'hyrje' ? 'text-green-500' : 'text-red-500'} font-bold text-[12px]">${x.t === 'hyrje' ? '+' : '-'}${Math.abs(x.s).toLocaleString()} L</span></div>${fatureDetaje}</div>`;
+
+            document.getElementById('setting-goal-points').value = appConfig.goal_piket || 100;
+            document.getElementById('setting-goal-reward').value = appConfig.goal_shperblimi || "";
+            document.getElementById('goal-text').innerText = "SHPËRBLIMI: " + (appConfig.goal_shperblimi || "Vazhdo Misionet!");
+            document.getElementById('goal-points-display').innerText = appConfig.goal_piket || 100;
+
+            const qs = document.getElementById('quick-task-select'); qs.innerHTML = `<option value="">-- Misionet e Gati --</option>`;
+            const sl = document.getElementById('saved-tasks-list'); sl.innerHTML = "";
+            (appConfig.shabllone || []).forEach((sh, i) => { 
+                qs.innerHTML += `<option value="${sh.titulli}|${sh.emoji}|${sh.piket}">${sh.emoji} ${sh.titulli}</option>`; 
+                sl.innerHTML += `<li class="flex justify-between bg-slate-50 p-3 rounded-xl font-bold"><span>${sh.emoji} ${sh.titulli}</span><button onclick="deleteTemplate(${i})" class="text-red-400">X</button></li>`;
             });
-            document.getElementById("historiku-list").innerHTML = hHtml; initKursimet(kursDB); shfaqGrafikun(grafikuData);
-        } catch(e) { console.warn("Gabim gjatë marrjes së raportit nga Firebase", e); }
-    }
+            
+            const pl = document.getElementById('edit-parents-list'); pl.innerHTML = `<h3 class="font-black mb-3">👤 ADMINS</h3>`;
+            appConfig.prinderit.forEach(p => { pl.innerHTML += `<div class="flex gap-2 mb-2"><input type="text" id="edit-pname-${p.id}" value="${p.emri}" class="w-1/2 p-2 border rounded-lg"><input type="text" id="edit-ppass-${p.id}" value="${p.pass}" class="w-1/2 p-2 border rounded-lg"></div>`; });
 
-    function shfaqGrafikun(data) {
-        let gD = [['Kategoria', 'Lekë']]; for(let k in data) gD.push([k, data[k]]);
-        if(gD.length > 1) { new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable(gD), { backgroundColor: 'transparent', colors: ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6'], legend: { position: 'right', textStyle: { color: '#ffffff', fontSize: 10, bold: true } }, chartArea: {width:'100%', height:'100%'}, pieHole: 0.5 }); } 
-        else { document.getElementById('piechart').innerHTML = `<div class="flex items-center justify-center h-full text-slate-400 italic text-xs">Nuk ka të dhëna...</div>`; }
-    }
+            const el = document.getElementById('edit-children-list'); el.innerHTML = `<h3 class="font-black mb-3 text-blue-600">👦 HEROES</h3>`;
+            appConfig.femijet.forEach(f => { el.innerHTML += `<div class="p-2 border-b"><input type="text" id="edit-name-${f.id}" value="${f.emri}" class="font-bold text-sm"> | <input type="text" id="edit-tel-${f.id}" value="${f.tel || ''}" placeholder="WhatsApp" class="text-xs"></div>`; });
+        }
 
-    function shfaqModalManual(emri) { kategoriaAktuale = emri; document.getElementById("manual-titulli").innerText = "Shuma: " + emri; document.getElementById("manual-input").value = ""; document.getElementById("modal-manual").classList.remove("hidden"); document.getElementById("manual-input").focus(); }
-    function mbyllModalManual() { document.getElementById("modal-manual").classList.add("hidden"); }
-    function mbyllModalManualDheShto() { let v = document.getElementById("manual-input").value; if(v && v > 0) { shtoNeShporte(kategoriaAktuale, v, prindiZgjedhur); mbyllModalManual(); showToast(`+ ${kategoriaAktuale} shtuar!`); } }
+        window.login = () => {
+            const u = document.getElementById('user-input').value.trim(), p = document.getElementById('pass-input').value.trim();
+            const pr = appConfig.prinderit.find(x => x.emri.toLowerCase() === u.toLowerCase() && x.pass === p);
+            const fe = appConfig.femijet.find(x => x.emri.toLowerCase() === u.toLowerCase() && x.pass === p);
+            if (pr) { currentUser = { emri: pr.emri, role: 'admin' }; dash(); }
+            else if (fe) { currentUser = { emri: fe.emri, role: 'child' }; dash(); }
+            else alert("PIN i gabuar!");
+        };
 
-    function shkarkoPDF() {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF(); const muajt = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
-        const muajiEmri = muajt[document.getElementById("muaji").value - 1], viti = document.getElementById("viti").value;
-        let docUserTitle = document.getElementById("header-user-select").value; if(docUserTitle === "TOTALI") docUserTitle = "FAMILJA (TOTAL)";
-        doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 45, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("FINANCA FAMILY", 14, 20); doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.text(`PERIUDHA: ${muajiEmri} ${viti}`, 14, 28); doc.text(`PERDORUESI: ${docUserTitle.toUpperCase()}`, 14, 34); doc.setFillColor(248, 250, 252); doc.roundedRect(14, 50, 182, 35, 3, 3, 'F'); doc.setTextColor(15, 23, 42); doc.setFontSize(9); doc.text("HYRJE TOTALE", 25, 62); doc.text("DALJE TOTALE", 85, 62); doc.text("MBETJA FINALE", 145, 62); doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.setTextColor(16, 185, 129); doc.text(`${globalRaport.hyrje.toLocaleString()} L`, 25, 72); doc.setTextColor(239, 68, 68); doc.text(`${globalRaport.dalje.toLocaleString()} L`, 85, 72); doc.setTextColor(59, 130, 246); doc.text(`${globalRaport.mbetja.toLocaleString()} L`, 145, 72); doc.setTextColor(100, 116, 139); doc.setFontSize(11); doc.text("DETAJET E TRANSAKSIONEVE", 14, 100);
-        const rreshtat = historiData.map(x => [x.d, x.u, x.k, x.n ? x.n.replace(/\n/g, ", ") : "---", (x.t=="hyrje"?"+":"-")+Math.abs(x.s).toLocaleString()+" L"]);
-        doc.autoTable({ head: [['Data', 'Kush', 'Kategoria', 'Pershkrimi', 'Shuma']], body: rreshtat, startY: 105, theme: 'striped', headStyles: { fillColor: [59, 130, 246], fontSize: 10 }, styles: { fontSize: 8 }, columnStyles: { 4: { halign: 'right', fontStyle: 'bold' } } });
-        doc.setFontSize(8); doc.setTextColor(150); doc.text("Gjeneruar automatikisht nga Financa Family App (Firebase & Telegram)", 14, doc.lastAutoTable.finalY + 10);
-        doc.save(`Bilanci_${docUserTitle}_${muajiEmri}_${viti}.pdf`);
-    }
-</script>
+        function dash() {
+            document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('welcome-text').innerText = currentUser.emri;
+            window.calculateTotalPoints();
+            if (currentUser.role === 'admin') { document.getElementById('btn-settings').classList.remove('hidden'); document.getElementById('admin-panel').classList.remove('hidden'); window.listenForApprovals(); }
+            else { document.getElementById('child-panel').classList.remove('hidden'); window.listenToMyTasks(currentUser.emri); }
+        }
+
+        window.sendTaskToFirebase = async () => {
+            const n = document.getElementById('task-name').value, e = document.getElementById('task-emoji').value || "✨", p = parseInt(document.getElementById('task-points').value);
+            const r = Array.from(document.querySelectorAll('.child-chk:checked')).map(c => c.value);
+            if(!n || isNaN(p) || r.length === 0) return alert("Plotëso misionin!");
+            
+            const btn = document.getElementById('btn-send-task');
+            btn.innerText = "⏳ DUKE U DËRGUAR...";
+            
+            for (let c of r) { await addDoc(collection(db, "tasks"), { titulli: n, emoji: e, piket: p, kujt_i_caktohet: c, krijuar_nga: currentUser.emri, statusi: "hapur", koha: serverTimestamp() }); }
+            
+            if(r.length === 1) { 
+                btn.innerText = "KLIKO PËR WHATSAPP"; 
+                btn.onclick = () => {
+                    const f = appConfig.femijet.find(x => x.emri === r[0]);
+                    if(f && f.tel) window.location.href = `https://api.whatsapp.com/send?phone=${f.tel.replace(/\D/g,'')}&text=${encodeURIComponent(`🚀 Mision: *${n}* (+${p}⭐)`) }`;
+                };
+            } else { alert("Misionet u dërguan!"); location.reload(); }
+        };
+
+        window.listenToMyTasks = (c) => {
+            onSnapshot(query(collection(db, "tasks"), orderBy("koha", "desc")), (snap) => {
+                const l = document.getElementById('task-list'); l.innerHTML = ""; let pts = 0;
+                snap.forEach(d => {
+                    const t = d.data(); if(t.kujt_i_caktohet === c && t.statusi !== "refuzuar") {
+                        if(t.statusi === "aprovuar") pts += t.piket;
+                        let b = "", clr = "bg-white border-indigo-200";
+                        if(t.statusi === "hapur") b = `<button onclick="sub('${d.id}', '${t.titulli}')" class="bg-indigo-500 text-white px-4 py-2 rounded-xl font-black shadow-[0_4px_0_#4338ca]">KREVA</button>`;
+                        else if(t.statusi === "ne_pritje") { b = `<span class="text-orange-400 font-bold italic text-xs">Prit...</span>`; clr = "bg-orange-50 border-orange-200 shake"; }
+                        else if(t.statusi === "aprovuar") { b = `<span class="text-green-500 text-xl font-black">✔</span>`; clr = "bg-gray-50 border-gray-100 opacity-60"; }
+                        l.innerHTML += `<div class="${clr} p-4 rounded-3xl border-2 mb-3 flex justify-between items-center game-card"><div><p class="font-black text-sm">${t.emoji} ${t.titulli}</p><p class="text-[10px] font-bold text-yellow-600">${t.piket > 0 ? '+'+t.piket : t.piket} ⭐</p></div>${b}</div>`;
+                    }
+                });
+                document.getElementById('my-points').innerText = pts;
+                updateProgressBar(pts);
+            });
+        };
+
+        function updateProgressBar(pts) {
+            const goal = appConfig.goal_piket || 100;
+            let perc = Math.floor((pts / goal) * 100);
+            if(perc > 100) perc = 100;
+            if(perc < 0) perc = 0;
+            document.getElementById('progress-bar').style.width = perc + "%";
+            document.getElementById('progress-percent').innerText = perc + "% COMPLETED";
+            if(perc >= 100) { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
+        }
+
+        window.sub = async (id, t) => { 
+            await updateDoc(doc(db, "tasks", id), { statusi: "ne_pritje" }); 
+            if(appConfig.tg_token) fetch(`https://api.telegram.org/bot${appConfig.tg_token}/sendMessage?chat_id=${appConfig.tg_id}&text=${encodeURIComponent(`✅ ${currentUser.emri} kreu: "${t}"`)}`);
+        };
+
+        window.listenForApprovals = () => {
+            onSnapshot(query(collection(db, "tasks"), where("statusi", "==", "ne_pritje")), (snap) => {
+                const pl = document.getElementById('admin-pending-tasks'); const bd = document.getElementById('pending-count'); pl.innerHTML = ""; let c = 0;
+                snap.forEach(d => { c++; const t = d.data(); pl.innerHTML += `<div class="bg-orange-50 p-4 rounded-2xl border-2 border-orange-200 flex justify-between items-center mb-2"><div><p class="font-black text-xs">${t.emoji} ${t.titulli}</p><p class="text-[10px] text-indigo-500 font-bold">${t.kujt_i_caktohet}</p></div><div class="flex gap-2"><button onclick="dec('${d.id}','aprovuar')" class="bg-green-500 text-white p-3 rounded-xl font-bold">✔</button><button onclick="dec('${d.id}','refuzuar')" class="bg-red-500 text-white p-3 rounded-xl font-bold">✖</button></div></div>`; });
+                bd.innerText = c;
+            });
+        };
+
+        window.dec = async (id, decision) => {
+            await updateDoc(doc(db, "tasks", id), { statusi: decision });
+            if(decision === 'aprovuar') {
+                // Kjo do të shkaktojë animacionin te fëmija (sepse Snapshot përditësohet)
+            }
+        };
+
+        window.calculateTotalPoints = () => {
+            onSnapshot(query(collection(db, "tasks"), where("statusi", "==", "aprovuar")), (snap) => {
+                if(!appConfig) return;
+                pointsData = {}; appConfig.femijet.forEach(f => pointsData[f.emri] = 0);
+                let wData = {}; const ditet = ["E Diel", "E Hënë", "E Martë", "E Mërkurë", "E Enjte", "E Premte", "E Shtunë"];
+                ditet.forEach(d => { wData[d] = {}; appConfig.femijet.forEach(f => wData[d][f.emri] = 0); });
+                snap.forEach(d => {
+                    const t = d.data(); if(pointsData[t.kujt_i_caktohet] !== undefined) {
+                        pointsData[t.kujt_i_caktohet] += t.piket;
+                        if(t.koha) { try { const dObj = t.koha.toDate(); wData[ditet[dObj.getDay()]][t.kujt_i_caktohet] += t.piket; } catch(e) {} }
+                    }
+                });
+                renderCharts(wData);
+            });
+        };
+
+        function renderCharts(wData) {
+            const labels = Object.keys(pointsData), vals = Object.values(pointsData);
+            const opt = { plugins: { legend: false }, scales: { y: { display: false } } };
+            const ctxA = document.getElementById('adminChart')?.getContext('2d');
+            if(ctxA) { if(adminChart) adminChart.destroy(); adminChart = new Chart(ctxA, { type: 'bar', data: { labels, datasets: [{ data: vals, backgroundColor: ['#4f46e5', '#f97316', '#10b981'], borderRadius: 12 }] }, options: opt }); }
+            const ctxC = document.getElementById('childChart')?.getContext('2d');
+            if(ctxC) { if(childChart) childChart.destroy(); childChart = new Chart(ctxC, { type: 'bar', data: { labels, datasets: [{ data: vals, backgroundColor: ['#818cf8', '#fb923c', '#4ade80'], borderRadius: 12 }] }, options: { ...opt, scales: { x: { ticks: { color: '#fff' } }, y: { display: false } } } }); }
+            const ctxW = document.getElementById('weeklyChart')?.getContext('2d');
+            if(ctxW) {
+                if(weekChart) weekChart.destroy();
+                const dL = ["E Hënë", "E Martë", "E Mërkurë", "E Enjte", "E Premte", "E Shtunë", "E Diel"];
+                const ds = appConfig.femijet.map((f, i) => ({ label: f.emri, data: dL.map(d => wData[d][f.emri]), borderColor: ['#818cf8', '#fb923c', '#4ade80'][i], tension: 0.4 }));
+                weekChart = new Chart(ctxW, { type: 'line', data: { labels: dL, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } } });
+            }
+        }
+
+        window.saveSettings = async () => {
+            let upF = appConfig.femijet.map(f => ({ id: f.id, emri: document.getElementById(`edit-name-${f.id}`).value, tel: document.getElementById(`edit-tel-${f.id}`).value, pass: f.pass }));
+            let upP = appConfig.prinderit.map(p => ({ id: p.id, emri: document.getElementById(`edit-pname-${p.id}`).value, pass: document.getElementById(`edit-ppass-${p.id}`).value }));
+            await updateDoc(configRef, { 
+                femijet: upF, prinderit: upP, 
+                goal_piket: parseInt(document.getElementById('setting-goal-points').value),
+                goal_shperblimi: document.getElementById('setting-goal-reward').value
+            }); 
+            alert("U RUAJT!");
+        };
+
+        window.saveTaskTemplate = async () => {
+            const n = prompt("Titulli?"), e = prompt("Emoji?"), p = parseInt(prompt("Pikët?"));
+            if(n) await updateDoc(configRef, { shabllone: [...(appConfig.shabllone || []), {titulli: n, emoji: e, piket: p}] });
+        };
+        window.deleteTemplate = async i => { let nt = [...appConfig.shabllone]; nt.splice(i,1); await updateDoc(configRef, { shabllone: nt }); };
+        window.resetApp = async () => { if(confirm("ZERO GJITHÇKA?")) { const q = await getDocs(collection(db, "tasks")); const b = writeBatch(db); q.forEach(d => b.delete(d.ref)); await b.commit(); location.reload(); } };
+        window.logout = () => location.reload();
+        window.toggleSettings = () => { document.getElementById('admin-panel').classList.toggle('hidden'); document.getElementById('settings-panel').classList.toggle('hidden'); };
+        window.fillTaskForm = () => { const s = document.getElementById('quick-task-select').value; if(s) { const p = s.split('|'); document.getElementById('task-name').value = p[0]; document.getElementById('task-emoji').value = p[1]; document.getElementById('task-points').value = p[2]; } };
+        window.toggleAll = m => document.querySelectorAll('.child-chk').forEach(c => c.checked = m.checked);
+    </script>
 </body>
 </html>
