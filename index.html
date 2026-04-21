@@ -74,7 +74,10 @@
                 </div>
                 <input id="task-points" type="number" placeholder="Pikët (Përdor - për dënim)" class="w-full p-4 mb-5 border-2 border-indigo-200 rounded-2xl font-bold">
                 <div id="assign-checkboxes" class="flex flex-wrap gap-2 mb-6"></div>
-                <button onclick="sendTaskToFirebase()" id="btn-send-task" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1">DËRGO</button>
+                
+                <button onclick="sendTaskToFirebase()" id="btn-send-task" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1 transition-all">DËRGO</button>
+                
+                <button id="btn-wa-task" class="hidden w-full bg-green-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#16a34a] active:translate-y-1 transition-all">✅ U RUA! DËRGO NË WHATSAPP</button>
             </div>
             
             <div class="grid grid-cols-1 gap-4 mb-8">
@@ -115,7 +118,6 @@
 
         <div id="child-panel" class="hidden p-5">
             <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border-b-8 border-slate-100 mb-8 mt-2">
-                
                 <div class="text-center mb-6 bg-indigo-50 p-4 rounded-3xl border-2 border-indigo-100">
                     <p class="text-[10px] font-black text-indigo-400 tracking-widest uppercase mb-1">Misioni i Madh:</p>
                     <h3 id="goal-text" class="text-2xl font-black text-indigo-700 uppercase">Duke u ngarkuar...</h3>
@@ -266,29 +268,59 @@
             else { document.getElementById('child-panel').classList.remove('hidden'); window.listenToMyTasks(currentUser.emri); }
         }
 
+        // LLOGJIKA E RE E DËRGIMIT NË WHATSAPP ME 2 BUTONA
         window.sendTaskToFirebase = async () => {
-            const n = document.getElementById('task-name').value, e = document.getElementById('task-emoji').value || "✨", p = parseInt(document.getElementById('task-points').value);
+            const n = document.getElementById('task-name').value;
+            const e = document.getElementById('task-emoji').value || "✨";
+            const p = parseInt(document.getElementById('task-points').value);
             const r = Array.from(document.querySelectorAll('.child-chk:checked')).map(c => c.value);
-            if(!n || isNaN(p) || r.length === 0) return alert("Plotëso misionin dhe pikët!");
             
-            const btn = document.getElementById('btn-send-task');
-            btn.innerText = "⏳ DUKE U DËRGUAR...";
+            if(!n || isNaN(p) || r.length === 0) return alert("Plotëso misionin dhe zgjidh fëmijët!");
+            
+            const btnSend = document.getElementById('btn-send-task');
+            const btnWa = document.getElementById('btn-wa-task');
+            
+            btnSend.innerText = "⏳ DUKE U DËRGUAR...";
+            btnSend.disabled = true;
             
             try {
-                for (let c of r) { await addDoc(collection(db, "tasks"), { titulli: n, emoji: e, piket: p, kujt_i_caktohet: c, krijuar_nga: currentUser.emri, statusi: "hapur", koha: serverTimestamp() }); }
+                for (let c of r) { 
+                    await addDoc(collection(db, "tasks"), { 
+                        titulli: n, emoji: e, piket: p, 
+                        kujt_i_caktohet: c, krijuar_nga: currentUser.emri, 
+                        statusi: "hapur", koha: serverTimestamp() 
+                    }); 
+                }
                 
                 if(r.length === 1 && p > 0) { 
-                    btn.innerText = "KLIKO PËR WHATSAPP"; 
-                    btn.onclick = () => {
+                    // Fsheh butonin blu
+                    btnSend.classList.add('hidden');
+                    // Shfaq butonin e gjelbër të WhatsApp
+                    btnWa.classList.remove('hidden');
+                    
+                    btnWa.onclick = () => {
                         const f = (appConfig.femijet || []).find(x => x.emri === r[0]);
                         if(f && f.tel) {
                             const pastruarTel = f.tel.replace(/\D/g,'');
-                            const msgText = "🚀 Mision: *" + n + "* (+" + p + "⭐)";
+                            const msgText = "🚀 Mision i ri: *" + n + "* (+" + p + "⭐)";
                             window.location.href = "https://api.whatsapp.com/send?phone=" + pastruarTel + "&text=" + encodeURIComponent(msgText);
+                            
+                            // Pas 2 sekondash ringarkon faqen që të bëhet gati për misionin tjetër
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            alert("S'ka numër telefoni për këtë fëmijë!");
+                            location.reload();
                         }
                     };
-                } else { alert("Misionet u dërguan!"); location.reload(); }
-            } catch (err) { alert("Gabim: " + err.message); }
+                } else { 
+                    alert("Misionet u dërguan!"); 
+                    location.reload(); 
+                }
+            } catch (err) { 
+                alert("Gabim: " + err.message); 
+                btnSend.innerText = "DËRGO";
+                btnSend.disabled = false;
+            }
         };
 
         window.listenToMyTasks = (c) => {
@@ -403,9 +435,6 @@
             } catch(e) {}
         }
 
-        // ==========================================
-        // KËTU ËSHTË FILTERI "ANTI-UNDEFINED"
-        // ==========================================
         window.saveSettings = async () => {
             const btn = document.getElementById('btn-save-settings');
             const txtOrig = btn.innerText;
